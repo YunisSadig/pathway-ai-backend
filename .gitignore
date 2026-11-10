@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local secrets/config ###
+.env
+.env.local
+*.local.yaml
+*.local.yml
+.claude/settings.local.json
