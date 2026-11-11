@@ -144,7 +144,9 @@ class UniversityApiIT {
                         "slug", "name", "city", "countryCode", "countryName", "websiteUrl", "description",
                         "programs")))
                 .andExpect(jsonPath("$.programs[0].keys()").value(org.hamcrest.Matchers.containsInAnyOrder(
-                        "slug", "name", "degreeLevel", "fieldOfStudy", "durationMonths", "teachingLanguage")))
+                        "identifier", "slug", "name", "degreeLevel", "fieldOfStudy", "durationMonths",
+                        "teachingLanguage")))
+                .andExpect(jsonPath("$.programs[0].identifier").value("beta-university--synthetic-bsc"))
                 .andExpect(jsonPath("$.programs[0].degreeLevel").value("BACHELOR"));
     }
 

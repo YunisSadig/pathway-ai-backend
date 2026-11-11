@@ -77,6 +77,15 @@ public class University {
         updatedAt = Instant.now();
     }
 
+    /** Applies imported institution facts. The slug is the identity and never changes. */
+    public void describe(Country country, String name, String city, String websiteUrl, String description) {
+        this.country = country;
+        this.name = name;
+        this.city = city;
+        this.websiteUrl = websiteUrl;
+        this.description = description;
+    }
+
     public Long getId() { return id; }
     public Country getCountry() { return country; }
     public String getSlug() { return slug; }

@@ -26,6 +26,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request, List.of());
     }
 
+    @ExceptionHandler(InvalidRequestException.class)
+    ResponseEntity<ApiError> invalidRequest(InvalidRequestException ex, HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "Invalid request parameters", request,
+                List.of(new FieldViolation(ex.getField(), ex.getMessage())));
+    }
+
     @ExceptionHandler(HandlerMethodValidationException.class)
     ResponseEntity<ApiError> invalidParameters(HandlerMethodValidationException ex, HttpServletRequest request) {
         List<FieldViolation> violations = ex.getParameterValidationResults().stream()

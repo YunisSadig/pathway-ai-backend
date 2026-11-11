@@ -27,6 +27,10 @@ app:
   cors:
     # Explicit origins only (comma separated). Set CORS_ALLOWED_ORIGINS to the deployed frontend origin in production.
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  reference-data:
+    # Off by default. Set IMPORT_REFERENCE_DATA=true to run the idempotent source-cited import at startup.
+    import-on-startup: ${IMPORT_REFERENCE_DATA:false}
+    location: ${REFERENCE_DATA_LOCATION:classpath:reference-data/programs.json}
 
 management:
   endpoints:

@@ -27,7 +27,8 @@ class FlywayMigrationIT {
         assertThat(flyway.info().pending()).isEmpty();
         MigrationInfo current = flyway.info().current();
         assertThat(current).isNotNull();
-        assertThat(current.getVersion().getVersion()).isEqualTo("1");
+        assertThat(current.getVersion().getVersion()).isEqualTo("3");
+        assertThat(flyway.info().applied()).extracting(m -> m.getVersion().getVersion()).containsExactly("1", "2", "3");
         assertThat(current.getState().isApplied()).isTrue();
     }
 
@@ -36,7 +37,8 @@ class FlywayMigrationIT {
         List<String> tables = jdbc.queryForList(
                 "select table_name from information_schema.tables where table_schema = 'public'", String.class);
         assertThat(tables).contains("country", "university", "degree_program", "academic_requirement",
-                "tuition_fee", "source", "flyway_schema_history");
+                "tuition_fee", "source", "flyway_schema_history", "academic_field", "program_language",
+                "program_source", "program_intake");
     }
 
     @Test
@@ -45,7 +47,11 @@ class FlywayMigrationIT {
                 "select indexname from pg_indexes where schemaname = 'public'", String.class);
         assertThat(indexes).contains("idx_university_country_id", "idx_university_name_lower",
                 "idx_program_university_id", "idx_requirement_program_cycle", "uq_university_slug",
-                "uq_tuition_program_year_category");
+                "uq_tuition_program_year_category", "idx_program_academic_field_id", "idx_program_degree_level",
+                "idx_program_language_code", "uq_intake_natural",
+                "uq_academic_field_slug");
+        // V3 removed an index that measurement showed is never used by the contains-style name search.
+        assertThat(indexes).doesNotContain("idx_program_name_lower");
     }
 
     @Test
@@ -53,7 +59,9 @@ class FlywayMigrationIT {
         Integer fkCount = jdbc.queryForObject(
                 "select count(*) from information_schema.table_constraints "
                         + "where constraint_type = 'FOREIGN KEY' and table_schema = 'public'", Integer.class);
-        // university->country, program->university, requirement->(program, source), tuition->(program, source)
-        assertThat(fkCount).isEqualTo(6);
+        // V1: university->country, program->university, requirement->(program, source), tuition->(program, source)
+        // V2: field->parent, program->field, language->program, program_source->(program, source),
+        //     intake->(program, source)
+        assertThat(fkCount).isEqualTo(13);
     }
 }
