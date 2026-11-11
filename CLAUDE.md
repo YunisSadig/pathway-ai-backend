@@ -3,6 +3,7 @@
 Spring Boot 4.1.2 / Java 21 / Maven / PostgreSQL / Flyway. Package-by-feature under `com.pathwayai.backend`.
 
 ## Read first
+- `docs/product/MVP_SPEC.md`: the permanent product direction (global, program-first, all disciplines, bachelor and master, sourced data, USER/ADMIN server authorization, no invented acceptance probabilities). Read it before any product, schema or API work. The frontend repo keeps a matching copy.
 Before any significant change (schema, dependencies, API contract, test setup), read:
 - `docs/engineering/architecture-decisions.md`
 - `docs/engineering/mistakes-and-fixes.md` (follow the "prevention rules")
@@ -23,3 +24,6 @@ After hitting a real problem, add it to `mistakes-and-fixes.md` (error output, r
 - Frontend contract: documented in README "REST API contract", pinned by `UniversityApiIT.jsonContractFieldNamesAreStable`. Renaming a JSON field is a breaking change: update README + test and tell the frontend.
 - CORS: explicit origins only via `CORS_ALLOWED_ORIGINS` (`config/CorsConfig`); never a wildcard.
 - Do not modify the frontend repo from here. CI (`.github/workflows/ci.yml`) and CD (`docs/deployment.md`) are documented separately; never provision hosting or incur charges without approval.
+- Program-first API (Milestone 3A): `GET /api/v1/programs[/{identifier}]`; identifier is `<university-slug>--<program-slug>` (slugs never contain `--`). Contract is pinned by `ProgramApiIT`. Adding a field is non-breaking; renaming or removing one is breaking.
+- Real reference data lives in `src/main/resources/reference-data/programs.json` and is imported by `ReferenceDataImporter` (idempotent, additive, never deletes). It is NOT a migration. Every fact needs a cited official source; `ReferenceDataFileTest` guards the file. Never add a record you did not read on an official page; unknown stays null.
+- An official application URL is only stored for a VERIFIED program (database CHECK + importer validation). Do not weaken it.

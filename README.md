@@ -2,7 +2,9 @@
 
 REST backend for **Pathway AI**, an international university discovery and education-planning platform. The first release exposes a read-only university discovery API backed by PostgreSQL. The frontend lives in a separate repository: [pathway-ai-frontend](https://github.com/YunisSadig/pathway-ai-frontend).
 
-> No real admission, tuition or university data ships with this repository. Data must come from cited official sources (`source` table).
+> Product direction: [docs/product/MVP_SPEC.md](docs/product/MVP_SPEC.md) (global, program-first, all disciplines, bachelor and master).
+>
+> Real data is **not** in the migrations. A small, source-cited batch (8 programs) ships as reference data and is imported on request: see [docs/reference-data.md](docs/reference-data.md). Every fact cites an official page and the date it was read; unknown stays unknown.
 
 ## Technology stack
 Java 21 · Spring Boot 4.1.2 (Web MVC, Data JPA, Validation, Actuator) · PostgreSQL 17 · Flyway · Maven Wrapper · JUnit 5 + Mockito + Testcontainers · GitHub Actions
@@ -12,7 +14,9 @@ Package-by-feature under `com.pathwayai.backend`:
 
 ```
 university/  controller service repository entity dto mapper   <- public API
-program/     entity repository dto
+program/     controller service repository entity dto mapper    <- public API (program-first)
+program/importer  ReferenceData, validator, idempotent importer   <- reference data, not migrations
+field/       entity repository                                  <- academic-field taxonomy (rows, not enums)
 requirement/ entity repository                                  <- per application cycle, cites a source
 tuition/     entity repository                                  <- per academic year, cites a source
 source/      entity repository                                  <- official source provenance
@@ -46,6 +50,12 @@ Flyway creates the schema automatically when the app starts. The database listen
 ```
 Health: <http://localhost:8080/actuator/health>
 
+## Import the reference data
+```powershell
+$env:IMPORT_REFERENCE_DATA = "true"; .mvnw.cmd spring-boot:run   # idempotent: a second run logs "0 new rows"
+```
+Off by default. Details, rules and the known gaps of the data: [docs/reference-data.md](docs/reference-data.md).
+
 ## Run tests
 ```powershell
 .\mvnw.cmd test            # unit/slice tests, no Docker needed
@@ -57,6 +67,8 @@ Health: <http://localhost:8080/actuator/health>
 |---|---|---|
 | GET | `/api/v1/universities` | Paged list |
 | GET | `/api/v1/universities/{slug}` | University detail with programs |
+| GET | `/api/v1/programs` | Paged, filterable program discovery (program-first) |
+| GET | `/api/v1/programs/{identifier}` | Program detail with intakes, tuition, requirements and official sources |
 
 ## REST API contract (what the frontend consumes)
 Base URL (local): `http://localhost:8080`. Read-only: only `GET` (plus CORS `OPTIONS`/`HEAD`); other methods return `405`. No authentication.
@@ -96,6 +108,53 @@ Response `200` (matches the frontend's `Page<T>`; an empty result is `200` with 
 ```
 `degreeLevel` is one of `BACHELOR | MASTER | DOCTORATE | DIPLOMA | CERTIFICATE` (upper-case). Nullable values are serialised as `null`. The API does **not** yet return an `id`, tuition, admission requirements, or source/verification info; they are not exposed until source-cited data exists.
 
+### `GET /api/v1/programs` (program-first discovery)
+Read-only. Each result is a **program**, with the **university** that offers it.
+
+| Param | Type | Default | Rules |
+|---|---|---|---|
+| `q` | string | – | program name contains, case-insensitive, ≤100 chars; `%`/`_` literal |
+| `field` | string | – | academic-field slug; also matches that field's direct children (e.g. `social-sciences` includes `economics`) |
+| `level` | string | – | one of `bachelor`, `master`, `doctorate`, `diploma`, `certificate` (case-insensitive) |
+| `country` | string | – | 2-letter ISO code of the university's country |
+| `university` | string | – | university slug |
+| `language` | string | – | teaching-language code (`en`, `fi`, ...); a program may have several |
+| `tuitionMax` + `tuitionCurrency` | number + 3-letter code | – | programs with a **known** yearly tuition ≤ the amount in that currency. Both are required together. Unknown tuition is never treated as free; currencies and billing periods are never mixed |
+| `tuitionCategory` | string | – | `domestic` or `international`; only with `tuitionMax` |
+| `page` / `size` | int | `0` / `20` | `page` ≥ 0, `size` 1–100 |
+| `sort` / `direction` | string | `name` / `asc` | `name` \| `university` \| `level`; `asc` \| `desc` |
+
+Response `200` (same `Page` envelope; empty result is `200` with `content: []`):
+```json
+{ "content": [ {
+    "identifier": "aalto-university--architecture-msc", "slug": "architecture-msc",
+    "name": "Architecture, Master of Science in Architecture", "degreeLevel": "MASTER",
+    "field": { "slug": "architecture-and-design", "name": "Architecture and Design" },
+    "studyMode": "FULL_TIME", "durationMonths": 24, "teachingLanguages": ["en"], "campusCity": null,
+    "university": { "slug": "aalto-university", "name": "Aalto University", "city": null,
+                    "countryCode": "FI", "countryName": "Finland" },
+    "officialProgramUrl": "https://...", "officialApplicationUrl": "https://...",
+    "verification": { "status": "VERIFIED", "verifiedOn": "2026-11-11" } } ],
+  "number": 0, "size": 20, "totalElements": 8, "totalPages": 1 }
+```
+`degreeLevel`: `BACHELOR | MASTER | DOCTORATE | DIPLOMA | CERTIFICATE`. `studyMode`: `FULL_TIME | PART_TIME | DISTANCE | BLENDED | null`.
+`field`, `studyMode`, `durationMonths`, `campusCity`, the URLs and `verifiedOn` are `null` when unknown; `teachingLanguages` is `[]`.
+`officialApplicationUrl` is only ever non-null for a `VERIFIED` program (database constraint).
+
+### `GET /api/v1/programs/{identifier}`
+`identifier` is `<university-slug>--<program-slug>` (globally unique and stable; slugs never contain `--`; ≤245 chars). Response `200` is the list item plus the facts, **each with its official source**:
+```json
+{ "...list item fields...": "...",
+  "sources":      [ { "url": "...", "title": "...", "publisher": "...", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" } ],
+  "intakes":      [ { "label": "Autumn 2027 admission", "academicYear": "2027/2028", "startDate": null,
+                      "applicationDeadline": "2027-01-05", "applicantCategory": null, "source": { "...": "..." } } ],
+  "tuition":      [ { "academicYear": "2027/2028", "studentCategory": "INTERNATIONAL", "amount": 20000.00,
+                      "currency": "EUR", "billingPeriod": "PER_YEAR", "source": { "...": "..." } } ],
+  "requirements": [ { "applicationCycle": "2027", "type": "ENTRANCE_EXAM", "description": "...",
+                      "minimumValue": null, "valueUnit": null, "source": { "...": "..." } } ] }
+```
+Empty arrays mean "nothing known", not "none exist". `404` for an unknown program, `400` for a malformed identifier. The `programs` rows inside `GET /api/v1/universities/{slug}` gained an additive `identifier` field.
+
 ### Errors
 Every non-2xx API response: `{ "timestamp": "ISO-8601", "status": 400, "error": "Bad Request", "message": "...", "path": "/api/v1/universities", "violations": [{ "field": "size", "message": "must be between 1 and 100" }] }` (`violations` omitted when empty). `400` invalid/ill-typed parameter or malformed slug, `404` unknown slug or path, `405` wrong method, `500` unexpected. A CORS rejection by Spring returns `403` with plain text `Invalid CORS request`.
 
@@ -114,6 +173,8 @@ Invoke-RestMethod "http://localhost:8080/api/v1/universities?q=tech&country=de&s
 | `DB_PASSWORD` | *(required)* | DB password — never committed |
 | `POSTGRES_DB` / `POSTGRES_PORT` | `pathway_ai` / `5433` | Used by Docker Compose |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:3000` | Comma-separated explicit browser origins allowed to call `/api/**` (no wildcards) |
+| `IMPORT_REFERENCE_DATA` | `false` | `true` runs the idempotent reference-data import at startup |
+| `REFERENCE_DATA_LOCATION` | `classpath:reference-data/programs.json` | Any Spring resource (`file:...`) to import a different file |
 | `PORT` | `8080` | HTTP port (injected by most hosts) |
 
 A git-ignored `.env` in the working directory is read automatically; real environment variables take precedence.
@@ -121,7 +182,27 @@ A git-ignored `.env` in the working directory is read automatically; real enviro
 ## Connecting the frontend locally
 1. `docker compose up -d`, then start the backend (`.\mvnw.cmd spring-boot:run`); backend URL `http://localhost:8080`.
 2. In the frontend repo set `NEXT_PUBLIC_API_BASE_URL=http://localhost:8080` (e.g. git-ignored `.env.local`) and run it on `http://localhost:3000`.
-3. Check `Invoke-RestMethod http://localhost:8080/api/v1/universities`. The database ships empty, so expect `content: []` until real, source-cited data is imported.
+3. Check `Invoke-RestMethod http://localhost:8080/api/v1/universities`. The database ships empty; run the reference-data import (see above) to get 8 real, source-cited programs, then check `Invoke-RestMethod "http://localhost:8080/api/v1/programs"`.
+
+## Performance findings (measured, not assumed)
+Measured on a developer laptop (Windows, PostgreSQL 17 in Docker, JDK 21, local HTTP via curl, median of 10 requests) with **20,008 programs** (8 real + 20,000 temporary synthetic rows, since removed):
+
+| Request | Median | Max |
+|---|---|---|
+| `GET /programs` (default page) | 35 ms | 43 ms |
+| `?level=master` / `?field=social-sciences` / `?language=sv` | 28 / 23 / 28 ms | ≤ 52 ms |
+| `?q=program 12` (contains search) | 16 ms | 22 ms |
+| `?tuitionMax=5000&tuitionCurrency=EUR` | 26 ms | 40 ms |
+| `?country=fi&level=bachelor&language=en&size=50` | 27 ms | 49 ms |
+| `?sort=university&direction=desc` | 29 ms | 30 ms |
+| `?page=500` (offset 10,000) | 87 ms | 107 ms |
+| `GET /programs/{identifier}` | 22 ms | 52 ms |
+
+- **No N+1:** `ProgramQueryCountIT` counts SQL statements with Hibernate statistics. A list page costs **3 statements whether it holds 3 or 25 rows** (page + count + one batched language query); a detail view costs **6** (program with university, country and field in one query, then languages, sources, intakes, tuition, requirements). Both are asserted, so a regression fails the build.
+- **Indexes:** `EXPLAIN ANALYZE` showed the level, field and language filters use `idx_program_degree_level`, `idx_program_academic_field_id` and `idx_program_language_code` (index scans recorded in `pg_stat_user_indexes`).
+- **One change made because of a measurement:** V2 had added `idx_program_name_lower`. It recorded **0 scans**: a btree cannot serve a leading-wildcard `LIKE '%x%'`; the planner uses a sequential scan (about 5.5 ms for 20k rows). V3 drops it. A `pg_trgm` index was **not** added: 5.5 ms does not justify it. Revisit above roughly 10⁵–10⁶ programs.
+- **Not optimised:** deep offset pagination (87 ms at offset 10,000) is acceptable for a UI that pages a few times; keyset pagination would change the contract and is not warranted yet. `idx_program_level_field` (V1) also shows 0 scans; it is immutable history, noted in known issues.
+- Numbers are indicative for one machine and a synthetic distribution; they are not a capacity claim.
 
 ## CI and CD
 - **CI** (implemented): `.github/workflows/ci.yml` runs `./mvnw clean verify` (incl. Testcontainers integration tests) on every push to `main` and every PR. It never deploys.
