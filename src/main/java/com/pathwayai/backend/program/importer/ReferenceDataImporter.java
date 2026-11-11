@@ -164,7 +164,11 @@ public class ReferenceDataImporter {
                         new University(country, u.slug(), u.name(), u.city(), u.websiteUrl(), u.description()));
                 count(created, "universities");
             } else {
-                university.describe(country, u.name(), u.city(), u.websiteUrl(), u.description());
+                // keep identity facts the catalogue import (or an earlier run) already stored when this file has none
+                university.describe(country, u.name(),
+                        u.city() != null ? u.city() : university.getCity(),
+                        u.websiteUrl() != null ? u.websiteUrl() : university.getWebsiteUrl(),
+                        u.description());
             }
             bySlug.put(u.slug(), university);
         }
