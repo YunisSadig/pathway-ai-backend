@@ -171,6 +171,20 @@
           "publisher": "University of Vienna",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://studieren.univie.ac.at/en/",
+          "title": "Studying at the University of Vienna",
+          "publisher": "University of Vienna",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://studieren.univie.ac.at/en/find-your-degree-programme",
+          "title": "Our degree programmes",
+          "publisher": "University of Vienna",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -218,6 +232,20 @@
         {
           "url": "https://www.tuwien.at/en/",
           "title": "TU Wien | TU Wien",
+          "publisher": "TU Wien",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tuwien.at/en/studies/admission",
+          "title": "Admission | TU Wien",
+          "publisher": "TU Wien",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tuwien.at/en/studies/",
+          "title": "TU Wien, TUW. Study. Study at the TU Wien. | TU Wien",
           "publisher": "TU Wien",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
@@ -311,6 +339,13 @@
         {
           "url": "https://www.ugent.be/en",
           "title": "Ghent University",
+          "publisher": "Ghent University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://studiekiezer.ugent.be/en/zoek",
+          "title": "Study guide",
           "publisher": "Ghent University",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
@@ -600,6 +635,20 @@
           "publisher": "University of Copenhagen",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.ku.dk/studies/admission/application-and-tuition-fees",
+          "title": "How Much Are Tuition Fees? Costs for Master’s at UCPH",
+          "publisher": "University of Copenhagen",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.ku.dk/studies",
+          "title": "Studies - University of Copenhagen",
+          "publisher": "University of Copenhagen",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -750,6 +799,13 @@
           "publisher": "Tallinn University of Technology (TalTech)",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://taltech.ee/en/admissions",
+          "title": "Why TalTech | Admissions",
+          "publisher": "Tallinn University of Technology (TalTech)",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -850,6 +906,20 @@
           "publisher": "Aalto University",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.aalto.fi/en/admissions",
+          "title": "Admission Services | Aalto University",
+          "publisher": "Aalto University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.aalto.fi/en/study-options",
+          "title": "Study options | Aalto University",
+          "publisher": "Aalto University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -897,6 +967,13 @@
         {
           "url": "https://www.sorbonne-universite.fr/en",
           "title": "Sorbonne Université| Sorbonne université",
+          "publisher": "Sorbonne University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.sorbonne-universite.fr/en/education",
+          "title": "Education | Sorbonne Université| Sorbonne université",
           "publisher": "Sorbonne University",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
@@ -950,6 +1027,13 @@
           "publisher": "Université Paris-Saclay",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.universite-paris-saclay.fr/en/education",
+          "title": "Choose your programme | Université Paris-Saclay",
+          "publisher": "Université Paris-Saclay",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -997,6 +1081,20 @@
         {
           "url": "https://www.tum.de/en/",
           "title": "Technical University of Munich: The Entrepreneurial University - TUM",
+          "publisher": "Technical University of Munich",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tum.de/en/studies/application",
+          "title": "How to Apply - TUM",
+          "publisher": "Technical University of Munich",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tum.de/en/studies/degree-programs",
+          "title": "Degree Programs and Courses offered by the Technical University of Munich - TUM",
           "publisher": "Technical University of Munich",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
@@ -1150,6 +1248,13 @@
           "publisher": "Eötvös Loránd University",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.elte.hu/en/education",
+          "title": "Education | Eötvös Loránd University",
+          "publisher": "Eötvös Loránd University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -1200,6 +1305,13 @@
           "publisher": "Budapest University of Technology and Economics",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.bme.hu/en/application_and_admission",
+          "title": "Application and admission | BME central site",
+          "publisher": "Budapest University of Technology and Economics",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -1247,6 +1359,20 @@
         {
           "url": "https://www.tcd.ie/",
           "title": "Trinity College Dublin",
+          "publisher": "Trinity College Dublin",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tcd.ie/study/",
+          "title": "Study - Trinity College Dublin",
+          "publisher": "Trinity College Dublin",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tcd.ie/courses/",
+          "title": "Courses - Courses | Trinity College Dublin",
           "publisher": "Trinity College Dublin",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
@@ -1443,6 +1569,20 @@
           "publisher": "University of Latvia",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.lu.lv/en/admission/",
+          "title": "Admission",
+          "publisher": "University of Latvia",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.lu.lv/en/studies/",
+          "title": "Studies",
+          "publisher": "University of Latvia",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -1493,6 +1633,13 @@
           "publisher": "Vilnius University",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.vu.lt/en/admissions",
+          "title": "International Admissions – Apply Now | Vilnius University",
+          "publisher": "Vilnius University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -1540,6 +1687,20 @@
         {
           "url": "https://en.ktu.edu/",
           "title": "Home - Kaunas University of Technology | KTU",
+          "publisher": "Kaunas University of Technology",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://admissions.ktu.edu/",
+          "title": "Home Page - Admissions | KTU",
+          "publisher": "Kaunas University of Technology",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://en.ktu.edu/studies/",
+          "title": "Studies - Kaunas University of Technology | KTU",
           "publisher": "Kaunas University of Technology",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
@@ -1636,6 +1797,20 @@
           "publisher": "University of Malta",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.um.edu.mt/study/",
+          "title": "Study - L-Università ta' Malta",
+          "publisher": "University of Malta",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.um.edu.mt/courses/",
+          "title": "Study at UM - L-Università ta' Malta",
+          "publisher": "University of Malta",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -1686,6 +1861,13 @@
           "publisher": "University of Amsterdam",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.uva.nl/en/education/education.html",
+          "title": "Study at the UvA - University of Amsterdam",
+          "publisher": "University of Amsterdam",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -1733,6 +1915,13 @@
         {
           "url": "https://www.uu.nl/en",
           "title": "Utrecht University | Sharing science, shaping tomorrow",
+          "publisher": "Utrecht University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.uu.nl/en/education",
+          "title": "Education - Utrecht University",
           "publisher": "Utrecht University",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
@@ -2122,6 +2311,13 @@
           "publisher": "University of Ljubljana",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.uni-lj.si/en/study",
+          "title": "Study &vert; University of Ljubljana",
+          "publisher": "University of Ljubljana",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -2265,6 +2461,13 @@
           "publisher": "Lund University",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.lunduniversity.lu.se/study",
+          "title": "Study | Lund University",
+          "publisher": "Lund University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -2331,6 +2534,13 @@
           "publisher": "Peking University",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://isd.pku.edu.cn/cn/",
+          "title": "北京大学国际合作部留学生办公室_北京大学国际合作部留学生办公室,北大留办",
+          "publisher": "Peking University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
         }
       ]
     },
@@ -2374,6 +2584,13 @@
         {
           "url": "https://en.snu.ac.kr/index.html",
           "title": "Seoul National University",
+          "publisher": "Seoul National University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://en.snu.ac.kr/admission",
+          "title": "Admissions Home - Admissions - Seoul National University",
           "publisher": "Seoul National University",
           "type": "UNIVERSITY_WEBSITE",
           "retrievedOn": "2026-11-11"
