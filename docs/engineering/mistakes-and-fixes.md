@@ -66,3 +66,21 @@ Only problems that actually happened during development. Each entry was verified
 - Generated `.gitignore` did not ignore `.env`; added `.env`, `.env.local` etc.
 - The current Initializr UI has no Name/Description fields (name defaults to the artifact); the pom `name`/`description` were set manually.
 - **Status:** all fixed.
+
+## 8. Page envelope field names did not match the frontend contract (`page` vs `number`)
+
+- **Evidence:** read-only comparison with `pathway-ai-frontend/src/types/api.ts`: `Page<T>` expects `{content, number, size, totalElements, totalPages}`; the backend `PageResponse` returned `page`, so a client reading `number` would get `undefined`.
+- **Root cause:** the envelope was designed before the frontend contract was compared; no contract test existed.
+- **Affected files:** `common/response/PageResponse.java`, `UniversityControllerTest`, `UniversityServiceTest`.
+- **Fix:** renamed to `number` (same as Spring Data's `Page`); added `UniversityApiIT.jsonContractFieldNamesAreStable` pinning exact key sets for list, detail and program items.
+- **Verification:** `mvnw clean verify`: 55 tests (18 unit + 37 IT), 0 failures; live jar `GET /api/v1/universities?size=2` returned `"number":0`.
+- **Prevention rule:** compare DTOs with the consumer's types before shipping an endpoint, and pin JSON key sets in a test.
+- **Status:** fixed. Remaining mismatches are frontend-side or data-dependent: known-issues #8.
+
+## 9. CI ran the test suite twice and used outdated action majors
+
+- **Evidence:** `ci.yml` ran `test` and then `clean verify` (which re-runs unit tests); actions were `checkout@v4`, `setup-java@v4`, `upload-artifact@v4` while the latest releases are v7, v6, v7 (`gh api repos/<action>/releases/latest`).
+- **Fix:** single `clean verify` step, actions bumped, concurrency group added. The old workflow had passed on `main` (run 42888019048): outdated, not broken.
+- **Verification:** pending the PR's CI run (result recorded in the PR description).
+- **Prevention rule:** check latest action majors whenever CI is touched.
+- **Status:** changed; not considered verified until the PR CI run is green.

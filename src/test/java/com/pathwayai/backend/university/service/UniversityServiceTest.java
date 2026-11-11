@@ -42,7 +42,7 @@ class UniversityServiceTest {
 
         PageResponse<UniversitySummaryResponse> result = service.search("synth", "xa", pageable);
 
-        assertThat(result.page()).isEqualTo(1);
+        assertThat(result.number()).isEqualTo(1);
         assertThat(result.size()).isEqualTo(5);
         assertThat(result.totalElements()).isEqualTo(6);
         assertThat(result.totalPages()).isEqualTo(2);
