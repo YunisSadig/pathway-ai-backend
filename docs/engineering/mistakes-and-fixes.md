@@ -151,3 +151,54 @@ Only problems that actually happened during development. Each entry was verified
 - **Root cause:** incremental compilation did not recompile the dependent test sources.
 - **Prevention rule:** use `clean verify` after signature changes, as the project rules already require.
 - **Status:** fixed (process).
+
+## 18. Live crawl: the EU HEI registry was rejected as "unsupported content type"
+
+- **Evidence:** the first real run recorded 45 FAILED checks, all `unsupported content type: application/vnd.api+json`.
+- **Root cause:** the fetcher's content-type allow-list had `application/json` but not JSON:API, which the registry returns. Fixture tests never used that header.
+- **Fix:** `application/vnd.api+json` added; `PageFetcherTest.jsonApiResponsesAreAccepted`. The 45 sources were reset and re-checked.
+- **Prevention rule:** when a crawler depends on an external service, run it once against the real service before trusting fixtures, and copy the real headers into the fixture.
+- **Status:** fixed.
+
+## 19. A transient robots.txt error permanently marked sources UNSUPPORTED
+
+- **Evidence:** two ELTE sources became `UNSUPPORTED` ("robots.txt unavailable (server error)") and would never have been retried.
+- **Root cause:** a robots.txt fetch failure (5xx) was reported as BLOCKED, the same outcome as a real disallow, and BLOCKED is terminal.
+- **Fix:** `RobotsPolicy.Decision.temporary`; the fetcher reports a temporary one as FAILED (retried with back-off). Added `app.refresh.command=reactivate` for sources a defect wrongly parked. `PageFetcherTest.anUnreachableRobotsTxtIsATemporaryFailureNotAPermanentBlock`.
+- **Prevention rule:** terminal states are only for conditions that are provably not transient.
+- **Status:** fixed. ELTE's robots.txt still errors, so those two sources show FAILING and are retried.
+
+## 20. A validator crashed on a missing field instead of rejecting it
+
+- **Evidence:** `NullPointerException` in `FactValidationTest` for a tuition fact without a billing period.
+- **Root cause:** `Set.of(...).contains(null)` throws; the missing value was never checked.
+- **Fix:** null checks before the set lookups; test covers missing and wrong units.
+- **Prevention rule:** never call `contains` on an immutable `Set.of`/`Map.of` with an untrusted value that may be null.
+- **Status:** fixed.
+
+## 21. Watching home pages produced a review item within minutes
+
+- **Evidence:** a second pass 13 minutes after the baseline reported KTU's home page as changed (news).
+- **Root cause:** home pages change constantly without any fact changing; hashing them for review would flood the queue (about 1 in 128 sources within minutes).
+- **Fix:** the `content-watch` adapter records the change in the audit trail and report but raises no review item; identity is watched through the registry record. `RefreshServiceIT.aHomePageThatChangesIsRecordedButRaisesNoReviewItem`.
+- **Prevention rule:** monitor the pages that carry facts; a page that churns by design needs an audit-only adapter.
+- **Status:** fixed.
+
+## 22. A 2.03 MB home page exceeded the 2 MB response cap
+
+- **Evidence:** `response larger than 2000000 bytes` for unipd.it.
+- **Fix:** default cap raised to 4 MB (still bounded; oversized responses are rejected, never truncated).
+- **Status:** fixed.
+
+## 23. `mvnw package` failed because the running backend locked its jar (Windows)
+
+- **Evidence:** `Unable to rename ...jar to ...jar.original` during `verify`/`package` while the API ran from `target/*.jar`.
+- **Fix:** stop the API process first, build, restart it. For integration tests alone, `mvnw test-compile failsafe:integration-test failsafe:verify -Dit.test=...` does not touch the jar.
+- **Prevention rule:** on Windows stop the API before `clean verify`.
+- **Status:** fixed (process).
+
+## 24. Maven used JDK 25 although `java` was JDK 21
+
+- **Evidence:** `JAVA_HOME` pointed at `jdk-25.0.2` while `java -version` reported 21.
+- **Fix:** set `JAVA_HOME` to the JDK 21 directory for every Maven call (CLAUDE.md rule already says so).
+- **Status:** fixed (process).

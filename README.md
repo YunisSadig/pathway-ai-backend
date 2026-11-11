@@ -217,3 +217,7 @@ Measured on a developer laptop (Windows, PostgreSQL 17 in Docker, JDK 21, local 
 - **Wrong Java version** — set `JAVA_HOME` to JDK 21 (see above).
 - **`clean` cannot delete `target`** — don't run Maven from inside `target\`.
 - More: [known issues](docs/engineering/known-issues.md), [mistakes and fixes](docs/engineering/mistakes-and-fixes.md).
+
+## University catalogue and automated source monitoring
+
+The database holds 48 institutions (all 27 EU member states plus China, Japan and South Korea; 39 verified, 9 registry-only) and an automated, source-aware monitoring pipeline that checks the official pages the platform cites and routes changes to a review queue. Coverage, sources, the import process, the refresh architecture and the review workflow are documented in [docs/data/](docs/data/): `catalogue-coverage.md`, `official-sources.md`, `import-process.md`, `automated-refresh.md`, `change-review.md`. Monitoring is operated from the command line (`--app.refresh.command=register|run|report|reactivate|review-list|review-approve|review-reject`); there is no public control endpoint.
