@@ -27,8 +27,8 @@ class FlywayMigrationIT {
         assertThat(flyway.info().pending()).isEmpty();
         MigrationInfo current = flyway.info().current();
         assertThat(current).isNotNull();
-        assertThat(current.getVersion().getVersion()).isEqualTo("3");
-        assertThat(flyway.info().applied()).extracting(m -> m.getVersion().getVersion()).containsExactly("1", "2", "3");
+        assertThat(current.getVersion().getVersion()).isEqualTo("4");
+        assertThat(flyway.info().applied()).extracting(m -> m.getVersion().getVersion()).containsExactly("1", "2", "3", "4");
         assertThat(current.getState().isApplied()).isTrue();
     }
 
@@ -49,7 +49,7 @@ class FlywayMigrationIT {
                 "idx_program_university_id", "idx_requirement_program_cycle", "uq_university_slug",
                 "uq_tuition_program_year_category", "idx_program_academic_field_id", "idx_program_degree_level",
                 "idx_program_language_code", "uq_intake_natural",
-                "uq_academic_field_slug");
+                "uq_academic_field_slug", "uq_tuition_without_year");
         // V3 removed an index that measurement showed is never used by the contains-style name search.
         assertThat(indexes).doesNotContain("idx_program_name_lower");
     }

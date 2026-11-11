@@ -46,7 +46,7 @@ class ProgramSchemaConstraintsIT {
 
     @Test
     void anApplicationUrlRequiresAVerifiedProgram() {
-        assertThatThrownBy(() -> program("p", ", official_application_url", ", 'https://example.invalid/apply'"))
+        assertThatThrownBy(() -> program("p", ", official_application_url, official_application_cycle", ", 'https://example.invalid/apply', '2027'"))
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasMessageContaining("ck_program_application_url_verified");
     }
@@ -60,8 +60,8 @@ class ProgramSchemaConstraintsIT {
 
     @Test
     void verifiedProgramWithDateAndApplicationUrlIsAccepted() {
-        program("p", ", verification_status, verified_on, official_application_url",
-                ", 'VERIFIED', date '2026-01-01', 'https://example.invalid/apply'");
+        program("p", ", verification_status, verified_on, official_application_url, official_application_cycle",
+                ", 'VERIFIED', date '2026-01-01', 'https://example.invalid/apply', '2027'");
         assertThat(jdbc.queryForObject("select count(*) from degree_program", Integer.class)).isEqualTo(1);
     }
 
@@ -161,5 +161,88 @@ class ProgramSchemaConstraintsIT {
         assertThat(jdbc.queryForObject("select count(*) from program_intake", Integer.class)).isZero();
         // The shared source itself stays.
         assertThat(jdbc.queryForObject("select count(*) from source", Integer.class)).isEqualTo(1);
+    }
+
+    // ---------- V4: year-specific facts ----------
+
+    private static final String FEE_NO_YEAR = "insert into tuition_fee(program_id, source_id, student_category, "
+            + "amount, currency, billing_period%s) select p.id, s.id, 'INTERNATIONAL', 100, 'EUR', 'PER_YEAR'%s "
+            + "from degree_program p, source s";
+
+    private void feeWithoutYear(String extraColumns, String extraValues) {
+        jdbc.update(String.format(FEE_NO_YEAR, extraColumns, extraValues));
+    }
+
+    @Test
+    void tuitionWithoutAStatedYearIsAccepted() {
+        program("p", "", "");
+        feeWithoutYear("", "");
+        assertThat(jdbc.queryForObject("select count(*) from tuition_fee where academic_year is null",
+                Integer.class)).isEqualTo(1);
+    }
+
+    @Test
+    void duplicateFeesWithoutAYearAndWithTheSameRangeAreRejected() {
+        program("p", "", "");
+        feeWithoutYear("", "");
+        assertThatThrownBy(() -> feeWithoutYear("", ""))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("uq_tuition_without_year");
+    }
+
+    @Test
+    void feesWithoutAYearButDifferentRangesAreDistinctFacts() {
+        program("p", "", "");
+        feeWithoutYear(", effective_to", ", date '2024-08-01'");
+        feeWithoutYear(", effective_from", ", date '2025-08-01'");
+        assertThat(jdbc.queryForObject("select count(*) from tuition_fee", Integer.class)).isEqualTo(2);
+    }
+
+    @Test
+    void aFeeRangeCannotEndBeforeItStarts() {
+        program("p", "", "");
+        assertThatThrownBy(() -> feeWithoutYear(", effective_from, effective_to",
+                ", date '2025-08-01', date '2024-08-01'"))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("ck_tuition_effective_range");
+    }
+
+    @Test
+    void feesForDifferentYearsOfTheSameProgramCoexistAndEachYearIsUnique() {
+        program("p", "", "");
+        String insert = "insert into tuition_fee(program_id, source_id, academic_year, student_category, amount, "
+                + "currency, billing_period) select p.id, s.id, '%s', 'INTERNATIONAL', 100, 'EUR', 'PER_YEAR' "
+                + "from degree_program p, source s";
+        jdbc.update(String.format(insert, "2025/2026"));
+        jdbc.update(String.format(insert, "2026/2027"));
+        assertThat(jdbc.queryForObject("select count(*) from tuition_fee", Integer.class)).isEqualTo(2);
+        assertThatThrownBy(() -> jdbc.update(String.format(insert, "2026/2027")))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("uq_tuition_program_year_category");
+    }
+
+    @Test
+    void anApplicationUrlMustSayWhichCycleItWasVerifiedFor() {
+        assertThatThrownBy(() -> program("p",
+                ", verification_status, verified_on, official_application_url",
+                ", 'VERIFIED', date '2026-01-01', 'https://example.invalid/apply'"))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("ck_program_application_url_has_cycle");
+    }
+
+    @Test
+    void anApplicationUrlWithItsCycleIsAccepted() {
+        program("p", ", verification_status, verified_on, official_application_url, official_application_cycle",
+                ", 'VERIFIED', date '2026-01-01', 'https://example.invalid/apply', '2027'");
+        assertThat(jdbc.queryForObject("select official_application_cycle from degree_program", String.class))
+                .isEqualTo("2027");
+    }
+
+    @Test
+    void anAdmissionsPageNeedsNoVerificationButMustBeAWebAddress() {
+        program("ok", ", official_admissions_url", ", 'https://example.invalid/admissions'");
+        assertThatThrownBy(() -> program("bad", ", official_admissions_url", ", 'ftp://example.invalid/x'"))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("ck_program_admissions_url_scheme");
     }
 }

@@ -18,6 +18,9 @@ public final class ReferenceDataValidator {
     private static final Pattern SLUG = Pattern.compile("[a-z0-9]+(-[a-z0-9]+)*");
     private static final Pattern HTTP_URL = Pattern.compile("https?://\\S+");
     private static final Pattern LANGUAGE = Pattern.compile("[a-z]{2,3}");
+    private static final Pattern ACADEMIC_YEAR = Pattern.compile("(\\d{4})/(\\d{4})");
+    private static final Pattern IDENTIFIER =
+            Pattern.compile("[a-z0-9]+(-[a-z0-9]+)*--[a-z0-9]+(-[a-z0-9]+)*");
 
     private ReferenceDataValidator() {
     }
@@ -71,6 +74,20 @@ public final class ReferenceDataValidator {
                 errors.add("duplicate program: " + p.university() + "--" + p.slug());
             }
         }
+        for (var r : data.retractions()) {
+            if (r.type() == null) errors.add("retraction type missing");
+            if (r.program() == null || !IDENTIFIER.matcher(r.program()).matches()) {
+                errors.add("retraction program identifier invalid: " + r.program());
+            }
+            if (blank(r.reason())) errors.add("retraction of " + r.program() + " needs a reason");
+            if (r.type() == ReferenceData.RetractionType.TUITION
+                    && (r.academicYear() == null || r.studentCategory() == null)) {
+                errors.add("tuition retraction of " + r.program() + " needs academicYear and studentCategory");
+            }
+            if (r.type() == ReferenceData.RetractionType.INTAKE && blank(r.label())) {
+                errors.add("intake retraction of " + r.program() + " needs a label");
+            }
+        }
         return errors;
     }
 
@@ -86,8 +103,15 @@ public final class ReferenceDataValidator {
         for (String l : orEmpty(p.languages())) {
             if (!LANGUAGE.matcher(l).matches()) errors.add(id + ": language code invalid: " + l);
         }
-        for (String url : new String[] {p.officialProgramUrl(), p.officialApplicationUrl()}) {
+        for (String url : new String[] {p.officialProgramUrl(), p.officialAdmissionsUrl(),
+                p.officialApplicationUrl()}) {
             if (url != null && !HTTP_URL.matcher(url).matches()) errors.add(id + ": url invalid: " + url);
+        }
+        if (p.officialApplicationUrl() != null && blank(p.officialApplicationCycle())) {
+            errors.add(id + ": an application URL requires officialApplicationCycle");
+        }
+        if (p.officialApplicationUrl() == null && p.officialApplicationCycle() != null) {
+            errors.add(id + ": officialApplicationCycle without an application URL");
         }
         var v = p.verification();
         boolean verified = v != null && v.status() == VerificationStatus.VERIFIED;
@@ -99,15 +123,35 @@ public final class ReferenceDataValidator {
         for (String s : orEmpty(p.sources())) {
             if (!sources.contains(s)) errors.add(id + ": unknown source " + s);
         }
+        for (String url : new String[] {p.officialAdmissionsUrl(), p.officialApplicationUrl()}) {
+            if (url != null && !orEmpty(p.sources()).contains(url)) {
+                errors.add(id + ": " + url + " must be one of the program sources (a page that was actually read)");
+            }
+        }
         for (var i : orEmpty(p.intakes())) {
             if (blank(i.label())) errors.add(id + ": intake label missing");
+            if (i.academicYear() != null && !ACADEMIC_YEAR.matcher(i.academicYear()).matches()) {
+                errors.add(id + ": intake academicYear must look like 2026/2027: " + i.academicYear());
+            }
             requireSource(id + " intake", i.source(), sources, errors);
         }
         for (var t : orEmpty(p.tuition())) {
             if (t.amount() == null || t.amount().signum() < 0) errors.add(id + ": tuition amount invalid");
             if (t.currency() == null || !t.currency().matches("[A-Z]{3}")) errors.add(id + ": tuition currency invalid");
-            if (t.academicYear() == null || t.studentCategory() == null || t.billingPeriod() == null) {
-                errors.add(id + ": tuition needs academicYear, studentCategory and billingPeriod");
+            if (t.studentCategory() == null || t.billingPeriod() == null) {
+                errors.add(id + ": tuition needs studentCategory and billingPeriod");
+            }
+            if (t.academicYear() != null) {
+                var m = ACADEMIC_YEAR.matcher(t.academicYear());
+                if (!m.matches() || Integer.parseInt(m.group(2)) != Integer.parseInt(m.group(1)) + 1) {
+                    errors.add(id + ": tuition academicYear must look like 2026/2027: " + t.academicYear());
+                }
+                if (t.effectiveFrom() != null || t.effectiveTo() != null) {
+                    errors.add(id + ": tuition has both academicYear and an effective range; state the one the source gives");
+                }
+            }
+            if (t.effectiveFrom() != null && t.effectiveTo() != null && t.effectiveFrom().isAfter(t.effectiveTo())) {
+                errors.add(id + ": tuition effectiveFrom is after effectiveTo");
             }
             requireSource(id + " tuition", t.source(), sources, errors);
         }

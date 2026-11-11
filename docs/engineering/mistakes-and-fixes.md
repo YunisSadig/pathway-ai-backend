@@ -119,3 +119,35 @@ Only problems that actually happened during development. Each entry was verified
 - **Fix:** those programs were not added (ETH, TU Delft, Oxford) or were added without an application URL (Helsinki Economics and Data Science). No fact was taken from search snippets or memory.
 - **Prevention rule:** record a fact only from a page that was actually read; omit the application URL when the apply page was not read.
 - **Status:** fixed (limitation recorded in known issue 14).
+
+## 14. Academic years were inferred and stored as if the sources had stated them
+
+- **Evidence:** the first import stored academic year `2027/2028` on six tuition figures and four intakes. The pages printed a fee and, separately, an application round; none printed "2027/2028".
+- **Root cause:** the schema required an academic year on every tuition row, and I filled it from the admission round shown beside the fee.
+- **Affected:** `reference-data/programs.json` and the dev database, plus `tuition_fee.academic_year NOT NULL`.
+- **Fix:** V4 made the year optional and added `effective_from` / `effective_to` / `scope_note`; the importer gained audited `retractions`; the ten wrong rows were retracted and stored again without a year (or with the exact start-date range the source stated); the API now reports `temporalStatus`. A pre-change backup of the database was taken.
+- **Verification:** two imports against the real database (first run: 10 retracted, new facts added; second run: 0 new rows); `ReferenceDataFileTest` and `ProgramApiIT` cover it.
+- **Prevention rule:** a field that must be known should never be satisfied by guessing; make the schema allow "unknown" and test that unknown is not relabelled.
+- **Status:** fixed.
+
+## 15. "Application URLs" were admissions-information pages
+
+- **Evidence:** the five stored `officialApplicationUrl` values pointed at university admissions/how-to-apply pages; the actual forms are on national portals that were never opened.
+- **Fix:** V4 added `official_admissions_url` and `official_application_cycle`; the pages moved to the admissions field; the application field is now empty. The API only exposes an Apply link for a verified link in a current or upcoming cycle.
+- **Prevention rule:** an Apply link must be a page that was read and is the application itself.
+- **Status:** fixed.
+
+## 16. `? IS NULL OR column = ?` with a null date failed on PostgreSQL
+
+- **Evidence:** `ERROR: could not determine data type of parameter $4` in the importer's tuition lookup.
+- **Root cause:** a typed JPQL parameter bound as null has no inferable type in `:p is null`.
+- **Fix:** derived query for the stable columns and the null-safe comparison done in Java (`TuitionFeeRepository.findWithoutYear`).
+- **Prevention rule:** avoid `:param is null` for non-string parameters; compare in Java or use derived queries.
+- **Status:** fixed.
+
+## 17. Maven reported `BUILD SUCCESS` against stale test classes
+
+- **Evidence:** after changing entity and DTO signatures, `mvnw -o test-compile` succeeded although test sources no longer matched; `clean test-compile` revealed 11 compile errors.
+- **Root cause:** incremental compilation did not recompile the dependent test sources.
+- **Prevention rule:** use `clean verify` after signature changes, as the project rules already require.
+- **Status:** fixed (process).

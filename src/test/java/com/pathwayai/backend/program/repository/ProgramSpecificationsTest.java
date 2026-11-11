@@ -22,6 +22,6 @@ class ProgramSpecificationsTest {
         assertThat(ProgramSpecifications.inCountry(null)).isNotNull();
         assertThat(ProgramSpecifications.atUniversity(null)).isNotNull();
         assertThat(ProgramSpecifications.taughtIn(null)).isNotNull();
-        assertThat(ProgramSpecifications.tuitionAtMost(null, null, null)).isNotNull();
+        assertThat(ProgramSpecifications.tuitionAtMost(null, null, null, 2026, java.time.LocalDate.of(2026, 11, 11))).isNotNull();
     }
 }

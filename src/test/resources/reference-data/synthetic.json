@@ -7,7 +7,8 @@
   ],
   "sources": [
     { "url": "https://example.invalid/import/program", "title": "Synthetic program page", "publisher": "Synthetic University", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-01-02" },
-    { "url": "https://example.invalid/import/apply", "title": "Synthetic apply page", "publisher": "Synthetic University", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-01-02" }
+    { "url": "https://example.invalid/import/apply", "title": "Synthetic apply page", "publisher": "Synthetic University", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-01-02" },
+    { "url": "https://example.invalid/import/admissions", "title": "Synthetic admissions page", "publisher": "Synthetic University", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-01-02" }
   ],
   "universities": [
     { "slug": "synthetic-import-university", "country": "XA", "name": "Synthetic Import University", "websiteUrl": "https://example.invalid/import" }
@@ -24,18 +25,26 @@
       "teachingLanguage": "English",
       "languages": ["en", "de"],
       "officialProgramUrl": "https://example.invalid/import/program",
+      "officialAdmissionsUrl": "https://example.invalid/import/admissions",
       "officialApplicationUrl": "https://example.invalid/import/apply",
+      "officialApplicationCycle": "2099",
       "verification": { "status": "VERIFIED", "verifiedOn": "2026-01-02" },
-      "sources": ["https://example.invalid/import/program", "https://example.invalid/import/apply"],
+      "sources": [
+        "https://example.invalid/import/program",
+        "https://example.invalid/import/apply",
+        "https://example.invalid/import/admissions"
+      ],
       "intakes": [
-        { "label": "Autumn", "academicYear": "2027/2028", "applicationDeadline": "2027-01-15", "source": "https://example.invalid/import/apply" },
-        { "label": "Autumn", "academicYear": "2027/2028", "applicationDeadline": "2027-03-01", "applicantCategory": "DOMESTIC", "source": "https://example.invalid/import/apply" }
+        { "label": "Autumn", "academicYear": "2099/2100", "applicationDeadline": "2099-01-15", "source": "https://example.invalid/import/apply" },
+        { "label": "Autumn", "academicYear": "2099/2100", "applicationDeadline": "2099-03-01", "applicantCategory": "DOMESTIC", "source": "https://example.invalid/import/apply" }
       ],
       "tuition": [
-        { "academicYear": "2027/2028", "studentCategory": "INTERNATIONAL", "amount": 1234.50, "currency": "EUR", "billingPeriod": "PER_YEAR", "source": "https://example.invalid/import/program" }
+        { "academicYear": "2099/2100", "studentCategory": "INTERNATIONAL", "amount": 1234.50, "currency": "EUR", "billingPeriod": "PER_YEAR", "source": "https://example.invalid/import/program" },
+        { "studentCategory": "DOMESTIC", "amount": 500, "currency": "EUR", "billingPeriod": "PER_YEAR", "effectiveFrom": "2000-08-01", "effectiveTo": "2001-07-31", "scopeNote": "Synthetic: rights started 2000-08-01 to 2001-07-31", "source": "https://example.invalid/import/program" },
+        { "studentCategory": "INTERNATIONAL", "amount": 100, "currency": "EUR", "billingPeriod": "PER_SEMESTER", "scopeNote": "Synthetic: the source states no period", "source": "https://example.invalid/import/program" }
       ],
       "requirements": [
-        { "applicationCycle": "2027", "type": "LANGUAGE_TEST", "description": "Synthetic language test requirement", "minimumValue": 6.5, "valueUnit": "IELTS overall", "source": "https://example.invalid/import/program" }
+        { "applicationCycle": "2099", "type": "LANGUAGE_TEST", "description": "Synthetic language test requirement", "minimumValue": 6.5, "valueUnit": "IELTS overall", "source": "https://example.invalid/import/program" }
       ]
     },
     {

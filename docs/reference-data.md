@@ -35,40 +35,93 @@ $env:IMPORT_REFERENCE_DATA = "true"          # off by default
 - **Safe on conflicts:** a tuition figure that differs from an existing one for the same program, year and category is
   refused rather than overwritten.
 
-## How the current batch was gathered (2026-11-11)
+## The year rule (applies to every year-specific fact)
 
-Each page was fetched and only statements the page makes were recorded. Items a page did not state were left out.
-All programs are `VERIFIED` as of 2026-11-11, meaning "read on that date"; they are not a statement that the university
-guarantees the data stays current. Re-check before relying on any date or fee.
+An academic year, application cycle or date range is stored **only when the cited source states it**.
 
-| Program                                    | Source pages read                                                |
-| ------------------------------------------ | ---------------------------------------------------------------- |
-| University of Helsinki: BSc Science        | programme page, admissions page                                  |
-| University of Helsinki: BA Liberal Arts and Sciences | programme page, admissions page                        |
-| University of Helsinki: MSc Economics      | programme page                                                   |
-| University of Helsinki: MSc Data Science   | programme page                                                   |
-| University of Helsinki: MA English Studies | programme page, admissions page                                  |
-| University of Amsterdam: MSc Cultural Psychology | programme page, application and admission page             |
-| Aalto University: MSc Architecture         | study-option page, "Apply to master's programmes" page           |
-| Aalto University: MSc Mechanical Engineering | programme page (only name, degree and a tuition rule stated)   |
+- Never take a year from the date a page was read.
+- Never take a year from a neighbouring heading, an admission round shown beside a fee, or wording such as
+  "autumn 2027". Such wording stays in the intake `label` verbatim; the `academic_year` column stays empty.
+- A tuition fee records what the source said: a printed academic year (`academic_year`), or a start-date range
+  (`effective_from` / `effective_to`, for example "rights to study beginning on or after 1 August 2025"), or neither
+  (period unknown). `scope_note` keeps the source's own wording.
+- A newer year is a **new row**. Older rows are never overwritten (tuition is keyed by program, year and category, or by
+  its start-date range).
+- The API derives `temporalStatus` from the stated period and today's date (an academic year is taken to start on
+  1 August): `CURRENT`, `HISTORICAL` or `UNKNOWN_YEAR`. Nothing stored says "current", so facts age correctly.
 
-### Judgement calls and known gaps (be skeptical of these)
+### Application links versus admissions links
 
-- **Tuition year.** Pages state a yearly fee "for non-EU/EEA citizens" next to the admission round for autumn 2027
-  (Aalto and the Helsinki English Studies and Liberal Arts pages say "autumn 2027" explicitly; the other Helsinki pages show
-  the January 2027 application period beside the fee). The fee is stored as academic year `2027/2028`, because the schema
-  needs a year. The page itself does not print "2027/2028".
-- **Applicant category.** `INTERNATIONAL` here means "the group the university charges": non-EU/EEA citizens. It is not a
-  legal definition.
-- **Application links.** For several programs the page only names the national portal (Studyinfo) and gives no direct form
-  URL. `officialApplicationUrl` is therefore the university's own official how-to-apply or admissions page that was read
-  (and, for Helsinki, not the Studyinfo form). Programs whose admissions page could not be fetched (HTTP 403 to automated
-  clients: Helsinki Economics and Data Science; Aalto Mechanical Engineering, no verified apply page) have **no**
-  application URL.
-- **University of Amsterdam deadline.** The page gives "1 October to 1 March" without a year, so the intake keeps that
-  text in its label and no deadline date.
-- **Aalto University city, campus cities, study mode (most programs), requirements (all but one):** not stated on the pages
-  read, so left unknown.
-- **Mechanical Engineering (Aalto):** the page states only the name, degree and a fee rule keyed to study-right start
-  dates, so duration, language, intake and tuition are unknown. It is included to show unknown data staying unknown.
-- Not researched: scholarships (none are created; none are independently verified).
+- `officialAdmissionsUrl`: an official page that **explains** admission. Informational only.
+- `officialApplicationUrl` + `officialApplicationCycle`: an official page where one **applies**, verified for that
+  cycle. The API only returns it as an active Apply link while that cycle is current or upcoming.
+- The pages read so far are admissions-information pages. The actual application forms live on national portals
+  (Studyinfo.fi, Studielink) that were **not** opened, so **no program currently has an active Apply link**.
+
+### Correcting a published error: retractions
+
+The importer never deletes, except for an explicit, reasoned `retractions` entry in the file (tuition or intake, with
+`reason`). Retracting something already gone does nothing, so re-running stays safe. The first batch stored academic year
+`2027/2028` on six tuition figures and four intakes. That year was **inferred**, not printed by the sources. They were
+retracted (10 retractions, reasons in `programs.json`) and stored again without a year.
+
+## How the current batch was gathered (read 2026-11-11)
+
+Each page was fetched and only statements the page makes were recorded. Unstated items were left out. "VERIFIED" means
+read on that date; it is not a guarantee the data stays current.
+
+| Program | Source pages read |
+| --- | --- |
+| University of Helsinki: BSc Science | programme page, admissions page |
+| University of Helsinki: Liberal Arts and Sciences (BSc) | programme page, admissions page |
+| University of Helsinki: MSc Economics | programme page |
+| University of Helsinki: MSc Data Science | programme page |
+| University of Helsinki: English Studies (MA) | programme page, admissions page |
+| University of Amsterdam: Cultural Psychology (MSc) | programme page, application and admission page |
+| Aalto University: Architecture (MSc) | study-option page, "Apply to master's programmes", "Scholarships and tuition fees" |
+| Aalto University: Mechanical Engineering (MSc) | programme page, "Scholarships and tuition fees" |
+
+## Which periods could actually be verified
+
+| Program | Facts stored | Period stated by the source | Historical evidence |
+| --- | --- | --- | --- |
+| Helsinki BSc Science | deadlines 2027-01-19 and 2027-03-23; fee 13,000 EUR (non-EU/EEA); SAT/ACT admission rule | deadlines carry their own year; **fee: none stated** | none |
+| Helsinki Liberal Arts and Sciences | deadlines 2027-01-19, 2027-03-23 ("autumn 2027 starts" kept in the label); fee 13,000 EUR | fee: none stated | none |
+| Helsinki MSc Economics | deadline 2027-01-19; fee 18,000 EUR | fee: none stated | none |
+| Helsinki MSc Data Science | deadline 2027-01-19; fee 15,000 EUR | fee: none stated | none |
+| Helsinki English Studies | deadline 2027-01-19 ("autumn 2027"); fee 13,000 EUR | fee: none stated | none |
+| Amsterdam Cultural Psychology | intake text "1 October to 1 March" | **no year printed**, so no deadline date | none (see below) |
+| Aalto Architecture | deadline 2027-01-05 ("autumn 2027"); fee 20,000 EUR | fee: rights beginning on or after **2025-08-01** | only the current era |
+| Aalto Mechanical Engineering | fee 17,000 EUR from **2025-08-01**; fee 15,000 EUR up to **2024-08-01** | both stated explicitly | **two eras** |
+
+Academic years **2022/2023 to 2026/2027 and 2027/2028 could not be verified as separate cycles for any program.** Why:
+
+- Wayback Machine access is blocked for the tools used (`web.archive.org` refused), and none of the three universities
+  exposes an official archive of earlier programme pages that could be fetched.
+- Aalto publishes an official PDF, "Tuition fees at Aalto University" (Oct 2024); it downloaded but its text could not be
+  extracted with the available tools, so nothing was taken from it.
+- Helsinki and Amsterdam programme pages show only the upcoming round.
+- The University of Amsterdam fee page prints explicit years ("2026-2027" statutory fee 2,694 EUR for EU/EEA students;
+  a "2027-2028 institutional fee per faculty" table whose Social and Behavioural Sciences master's fee for non-EEA
+  students is 23,455 EUR). Those are **faculty-level** figures; the page does not say they apply to Cultural Psychology, so
+  they are **not** stored for it.
+
+### Did the admissions process change? (classification of the verified comparisons)
+
+| Program / criterion | Classification |
+| --- | --- |
+| Aalto Mechanical Engineering: tuition for tuition-fee students | **Significant documented change** in the checked criterion: 15,000 EUR (study rights up to 2024-08-01) to 17,000 EUR (from 2025-08-01), +13.3%. Nothing is stated for study rights started between 2024-08-02 and 2025-07-31. Two eras are not enough to compute a change frequency, so none is given. |
+| Aalto Architecture: tuition | Insufficient historical evidence (only the era from 2025-08-01 is stated) |
+| Every other program, every other criterion (eligibility, language requirements, qualifications, documents, opening dates, deadlines, selection, platform) | **Insufficient historical evidence.** Absence of an archive is not evidence that nothing changed, so none is called "unchanged". |
+
+## Judgement calls and known gaps (be skeptical of these)
+
+- **Tuition period.** Helsinki fees have no stated period (UNKNOWN_YEAR). They are shown to users as the figure printed
+  on the programme page, but are excluded from tuition price filters because their period is unknown.
+- **Applicant category.** `INTERNATIONAL` means the group the university charges: non-EU/EEA citizens.
+- **Aalto city, campus cities, study mode (most programs), requirements (all but one):** not stated, so unknown.
+- **Mechanical Engineering (Aalto):** the programme page gives only the name, degree and dated fee rules. It states no
+  language, duration or intake, so those are unknown.
+- **Pages that block automated clients (HTTP 403):** Helsinki Economics and Data Science admissions pages, Aalto
+  Architecture programme page; those facts are not stored.
+- Scholarships were not researched and none are stored.

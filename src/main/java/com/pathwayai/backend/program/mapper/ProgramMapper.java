@@ -1,5 +1,6 @@
 package com.pathwayai.backend.program.mapper;
 
+import com.pathwayai.backend.program.calendar.AcademicCalendar;
 import com.pathwayai.backend.program.dto.ProgramDetailResponse;
 import com.pathwayai.backend.program.dto.ProgramDetailResponse.Intake;
 import com.pathwayai.backend.program.dto.ProgramDetailResponse.Requirement;
@@ -22,11 +23,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProgramMapper {
 
+    private final AcademicCalendar calendar;
+
+    public ProgramMapper(AcademicCalendar calendar) {
+        this.calendar = calendar;
+    }
+
     public ProgramListItemResponse toListItem(DegreeProgram p) {
         return new ProgramListItemResponse(
                 p.getIdentifier(), p.getSlug(), p.getName(), p.getDegreeLevel(), field(p), p.getStudyMode(),
                 p.getDurationMonths(), languages(p), p.getCampusCity(), university(p.getUniversity()),
-                p.getOfficialProgramUrl(), p.getOfficialApplicationUrl(),
+                p.getOfficialProgramUrl(), p.getOfficialAdmissionsUrl(), activeApplicationUrl(p),
                 new Verification(p.getVerificationStatus(), p.getVerifiedOn()));
     }
 
@@ -35,16 +42,35 @@ public class ProgramMapper {
         return new ProgramDetailResponse(
                 p.getIdentifier(), p.getSlug(), p.getName(), p.getDegreeLevel(), field(p), p.getStudyMode(),
                 p.getDurationMonths(), languages(p), p.getCampusCity(), university(p.getUniversity()),
-                p.getOfficialProgramUrl(), p.getOfficialApplicationUrl(),
+                p.getOfficialProgramUrl(), p.getOfficialAdmissionsUrl(), activeApplicationUrl(p),
                 new Verification(p.getVerificationStatus(), p.getVerifiedOn()),
                 p.getSources().stream().map(this::source)
                         .sorted(Comparator.comparing(SourceRef::url)).toList(),
                 intakes.stream().map(i -> new Intake(i.getLabel(), i.getAcademicYear(), i.getStartDate(),
-                        i.getApplicationDeadline(), i.getApplicantCategory(), source(i.getSource()))).toList(),
-                tuition.stream().map(t -> new Tuition(t.getAcademicYear(), t.getStudentCategory(), t.getAmount(),
-                        t.getCurrency(), t.getBillingPeriod(), source(t.getSource()))).toList(),
+                        i.getApplicationDeadline(), i.getApplicantCategory(),
+                        calendar.intake(i.getAcademicYear(), i.getApplicationDeadline(), i.getStartDate()),
+                        source(i.getSource()))).toList(),
+                tuition.stream().map(t -> new Tuition(t.getAcademicYear(), t.getEffectiveFrom(), t.getEffectiveTo(),
+                        t.getScopeNote(), t.getStudentCategory(), t.getAmount(), t.getCurrency(),
+                        t.getBillingPeriod(),
+                        calendar.tuition(t.getAcademicYear(), t.getEffectiveFrom(), t.getEffectiveTo()),
+                        source(t.getSource()))).toList(),
                 requirements.stream().map(r -> new Requirement(r.getApplicationCycle(), r.getRequirementType(),
-                        r.getDescription(), r.getMinimumValue(), r.getValueUnit(), source(r.getSource()))).toList());
+                        r.getDescription(), r.getMinimumValue(), r.getValueUnit(),
+                        calendar.requirement(r.getApplicationCycle()), source(r.getSource()))).toList());
+    }
+
+    /**
+     * An Apply link is only active for a VERIFIED program whose link was verified for a current or upcoming
+     * cycle. Anything older is withheld here, so a stale link can never be presented as an active Apply button.
+     */
+    private String activeApplicationUrl(DegreeProgram p) {
+        if (p.getOfficialApplicationUrl() == null
+                || p.getVerificationStatus() != com.pathwayai.backend.program.entity.VerificationStatus.VERIFIED
+                || !calendar.isActiveCycle(p.getOfficialApplicationCycle())) {
+            return null;
+        }
+        return p.getOfficialApplicationUrl();
     }
 
     private static FieldRef field(DegreeProgram p) {

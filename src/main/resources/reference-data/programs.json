@@ -1,42 +1,190 @@
 {
   "schemaVersion": 1,
   "countries": [
-    { "iso2": "FI", "name": "Finland" },
-    { "iso2": "NL", "name": "Netherlands" }
+    {
+      "iso2": "FI",
+      "name": "Finland"
+    },
+    {
+      "iso2": "NL",
+      "name": "Netherlands"
+    }
   ],
   "fields": [
-    { "slug": "natural-sciences", "name": "Natural Sciences" },
-    { "slug": "mathematics-and-statistics", "name": "Mathematics and Statistics" },
-    { "slug": "computer-and-data-science", "name": "Computer and Data Science" },
-    { "slug": "engineering-and-technology", "name": "Engineering and Technology" },
-    { "slug": "mechanical-engineering", "name": "Mechanical Engineering", "parent": "engineering-and-technology" },
-    { "slug": "architecture-and-design", "name": "Architecture and Design" },
-    { "slug": "social-sciences", "name": "Social Sciences" },
-    { "slug": "economics", "name": "Economics", "parent": "social-sciences" },
-    { "slug": "psychology", "name": "Psychology", "parent": "social-sciences" },
-    { "slug": "humanities", "name": "Humanities" },
-    { "slug": "languages-and-literature", "name": "Languages and Literature", "parent": "humanities" },
-    { "slug": "interdisciplinary-studies", "name": "Interdisciplinary Studies" }
+    {
+      "slug": "natural-sciences",
+      "name": "Natural Sciences"
+    },
+    {
+      "slug": "mathematics-and-statistics",
+      "name": "Mathematics and Statistics"
+    },
+    {
+      "slug": "computer-and-data-science",
+      "name": "Computer and Data Science"
+    },
+    {
+      "slug": "engineering-and-technology",
+      "name": "Engineering and Technology"
+    },
+    {
+      "slug": "mechanical-engineering",
+      "name": "Mechanical Engineering",
+      "parent": "engineering-and-technology"
+    },
+    {
+      "slug": "architecture-and-design",
+      "name": "Architecture and Design"
+    },
+    {
+      "slug": "social-sciences",
+      "name": "Social Sciences"
+    },
+    {
+      "slug": "economics",
+      "name": "Economics",
+      "parent": "social-sciences"
+    },
+    {
+      "slug": "psychology",
+      "name": "Psychology",
+      "parent": "social-sciences"
+    },
+    {
+      "slug": "humanities",
+      "name": "Humanities"
+    },
+    {
+      "slug": "languages-and-literature",
+      "name": "Languages and Literature",
+      "parent": "humanities"
+    },
+    {
+      "slug": "interdisciplinary-studies",
+      "name": "Interdisciplinary Studies"
+    }
   ],
   "sources": [
-    { "url": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme", "title": "Science | Bachelor's programme", "publisher": "University of Helsinki", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" },
-    { "url": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme/admissions", "title": "Admissions | Science | Bachelor's programme", "publisher": "University of Helsinki", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" },
-    { "url": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme", "title": "Liberal Arts and Sciences | Bachelor's Programme", "publisher": "University of Helsinki", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" },
-    { "url": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme/admissions", "title": "Admissions | Liberal Arts and Sciences | Bachelor's Programme", "publisher": "University of Helsinki", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" },
-    { "url": "https://www.helsinki.fi/en/degree-programmes/economics-masters-programme", "title": "Economics | Master's programme", "publisher": "University of Helsinki", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" },
-    { "url": "https://www.helsinki.fi/en/degree-programmes/data-science-masters-programme", "title": "Data Science | Master's programme", "publisher": "University of Helsinki", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" },
-    { "url": "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme", "title": "English Studies | Master's programme", "publisher": "University of Helsinki", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" },
-    { "url": "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme/admissions", "title": "Admissions | English Studies | Master's programme", "publisher": "University of Helsinki", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" },
-    { "url": "https://www.uva.nl/en/programmes/masters/psychology-cultural-psychology/psychology-cultural-psychology.html", "title": "Cultural Psychology (Psychology)", "publisher": "University of Amsterdam", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" },
-    { "url": "https://www.uva.nl/shared-content/programmas/en/masters/psychology-cultural-psychology/application-and-admission/application-and-admission.html", "title": "Application and admission - Master Cultural Psychology (Psychology)", "publisher": "University of Amsterdam", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" },
-    { "url": "https://www.aalto.fi/en/study-options/architecture-master-of-science-in-architecture", "title": "Master's in Architecture", "publisher": "Aalto University", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" },
-    { "url": "https://www.aalto.fi/en/admission-services/apply-to-masters-programmes", "title": "Apply to master's programmes", "publisher": "Aalto University", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" },
-    { "url": "https://www.aalto.fi/en/programmes/masters-programme-in-mechanical-engineering", "title": "Master's Programme in Mechanical Engineering", "publisher": "Aalto University", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-11-11" }
+    {
+      "url": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme",
+      "title": "Science | Bachelor's programme",
+      "publisher": "University of Helsinki",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme/admissions",
+      "title": "Admissions | Science | Bachelor's programme",
+      "publisher": "University of Helsinki",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme",
+      "title": "Liberal Arts and Sciences | Bachelor's Programme",
+      "publisher": "University of Helsinki",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme/admissions",
+      "title": "Admissions | Liberal Arts and Sciences | Bachelor's Programme",
+      "publisher": "University of Helsinki",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.helsinki.fi/en/degree-programmes/economics-masters-programme",
+      "title": "Economics | Master's programme",
+      "publisher": "University of Helsinki",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.helsinki.fi/en/degree-programmes/data-science-masters-programme",
+      "title": "Data Science | Master's programme",
+      "publisher": "University of Helsinki",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme",
+      "title": "English Studies | Master's programme",
+      "publisher": "University of Helsinki",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme/admissions",
+      "title": "Admissions | English Studies | Master's programme",
+      "publisher": "University of Helsinki",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.uva.nl/en/programmes/masters/psychology-cultural-psychology/psychology-cultural-psychology.html",
+      "title": "Cultural Psychology (Psychology)",
+      "publisher": "University of Amsterdam",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.uva.nl/shared-content/programmas/en/masters/psychology-cultural-psychology/application-and-admission/application-and-admission.html",
+      "title": "Application and admission - Master Cultural Psychology (Psychology)",
+      "publisher": "University of Amsterdam",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.aalto.fi/en/study-options/architecture-master-of-science-in-architecture",
+      "title": "Master's in Architecture",
+      "publisher": "Aalto University",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.aalto.fi/en/admission-services/apply-to-masters-programmes",
+      "title": "Apply to master's programmes",
+      "publisher": "Aalto University",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.aalto.fi/en/programmes/masters-programme-in-mechanical-engineering",
+      "title": "Master's Programme in Mechanical Engineering",
+      "publisher": "Aalto University",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.aalto.fi/en/admission-services/scholarships-and-tuition-fees",
+      "title": "Scholarships and tuition fees",
+      "publisher": "Aalto University",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    }
   ],
   "universities": [
-    { "slug": "university-of-helsinki", "country": "FI", "name": "University of Helsinki", "city": "Helsinki", "websiteUrl": "https://www.helsinki.fi" },
-    { "slug": "university-of-amsterdam", "country": "NL", "name": "University of Amsterdam", "city": "Amsterdam", "websiteUrl": "https://www.uva.nl" },
-    { "slug": "aalto-university", "country": "FI", "name": "Aalto University", "websiteUrl": "https://www.aalto.fi" }
+    {
+      "slug": "university-of-helsinki",
+      "country": "FI",
+      "name": "University of Helsinki",
+      "city": "Helsinki",
+      "websiteUrl": "https://www.helsinki.fi"
+    },
+    {
+      "slug": "university-of-amsterdam",
+      "country": "NL",
+      "name": "University of Amsterdam",
+      "city": "Amsterdam",
+      "websiteUrl": "https://www.uva.nl"
+    },
+    {
+      "slug": "aalto-university",
+      "country": "FI",
+      "name": "Aalto University",
+      "websiteUrl": "https://www.aalto.fi"
+    }
   ],
   "programs": [
     {
@@ -47,24 +195,49 @@
       "field": "natural-sciences",
       "durationMonths": 36,
       "teachingLanguage": "English",
-      "languages": ["en"],
+      "languages": [
+        "en"
+      ],
       "officialProgramUrl": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme",
-      "officialApplicationUrl": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme/admissions",
-      "verification": { "status": "VERIFIED", "verifiedOn": "2026-11-11" },
+      "verification": {
+        "status": "VERIFIED",
+        "verifiedOn": "2026-11-11"
+      },
       "sources": [
         "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme",
         "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme/admissions"
       ],
       "intakes": [
-        { "label": "Admission group 1", "applicationDeadline": "2027-01-19", "source": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme/admissions" },
-        { "label": "Admission group 2", "applicationDeadline": "2027-03-23", "source": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme/admissions" }
+        {
+          "label": "Admission group 1",
+          "applicationDeadline": "2027-01-19",
+          "source": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme/admissions"
+        },
+        {
+          "label": "Admission group 2",
+          "applicationDeadline": "2027-03-23",
+          "source": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme/admissions"
+        }
       ],
       "tuition": [
-        { "academicYear": "2027/2028", "studentCategory": "INTERNATIONAL", "amount": 13000, "currency": "EUR", "billingPeriod": "PER_YEAR", "source": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme" }
+        {
+          "studentCategory": "INTERNATIONAL",
+          "amount": 13000,
+          "currency": "EUR",
+          "billingPeriod": "PER_YEAR",
+          "source": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme",
+          "scopeNote": "Tuition fee per year (only non-EU/EEA citizens), as printed on the programme page. The page states no academic year."
+        }
       ],
       "requirements": [
-        { "applicationCycle": "2027", "type": "ENTRANCE_EXAM", "description": "Admission group 1 (applicants without a Finnish matriculation examination, IB, European Baccalaureate or equivalent diploma): admission is based on SAT or ACT scores.", "source": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme/admissions" }
-      ]
+        {
+          "applicationCycle": "2027",
+          "type": "ENTRANCE_EXAM",
+          "description": "Admission group 1 (applicants without a Finnish matriculation examination, IB, European Baccalaureate or equivalent diploma): admission is based on SAT or ACT scores.",
+          "source": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme/admissions"
+        }
+      ],
+      "officialAdmissionsUrl": "https://www.helsinki.fi/en/degree-programmes/science-bachelors-programme/admissions"
     },
     {
       "university": "university-of-helsinki",
@@ -74,21 +247,41 @@
       "field": "interdisciplinary-studies",
       "durationMonths": 36,
       "teachingLanguage": "English",
-      "languages": ["en"],
+      "languages": [
+        "en"
+      ],
       "officialProgramUrl": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme",
-      "officialApplicationUrl": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme/admissions",
-      "verification": { "status": "VERIFIED", "verifiedOn": "2026-11-11" },
+      "verification": {
+        "status": "VERIFIED",
+        "verifiedOn": "2026-11-11"
+      },
       "sources": [
         "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme",
         "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme/admissions"
       ],
       "intakes": [
-        { "label": "Admission group 1", "academicYear": "2027/2028", "applicationDeadline": "2027-01-19", "source": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme" },
-        { "label": "Admission group 2", "academicYear": "2027/2028", "applicationDeadline": "2027-03-23", "source": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme" }
+        {
+          "label": "Admission group 1 (autumn 2027 starts)",
+          "applicationDeadline": "2027-01-19",
+          "source": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme/admissions"
+        },
+        {
+          "label": "Admission group 2 (autumn 2027 starts)",
+          "applicationDeadline": "2027-03-23",
+          "source": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme/admissions"
+        }
       ],
       "tuition": [
-        { "academicYear": "2027/2028", "studentCategory": "INTERNATIONAL", "amount": 13000, "currency": "EUR", "billingPeriod": "PER_YEAR", "source": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme" }
-      ]
+        {
+          "studentCategory": "INTERNATIONAL",
+          "amount": 13000,
+          "currency": "EUR",
+          "billingPeriod": "PER_YEAR",
+          "source": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme",
+          "scopeNote": "Tuition fee per year (only non-EU/EEA citizens), as printed on the programme page. The page states no academic year."
+        }
+      ],
+      "officialAdmissionsUrl": "https://www.helsinki.fi/en/degree-programmes/liberal-arts-and-sciences-bachelors-programme/admissions"
     },
     {
       "university": "university-of-helsinki",
@@ -98,15 +291,35 @@
       "field": "economics",
       "durationMonths": 24,
       "teachingLanguage": "Finnish, English, Swedish",
-      "languages": ["fi", "en", "sv"],
+      "languages": [
+        "fi",
+        "en",
+        "sv"
+      ],
       "officialProgramUrl": "https://www.helsinki.fi/en/degree-programmes/economics-masters-programme",
-      "verification": { "status": "VERIFIED", "verifiedOn": "2026-11-11" },
-      "sources": ["https://www.helsinki.fi/en/degree-programmes/economics-masters-programme"],
+      "verification": {
+        "status": "VERIFIED",
+        "verifiedOn": "2026-11-11"
+      },
+      "sources": [
+        "https://www.helsinki.fi/en/degree-programmes/economics-masters-programme"
+      ],
       "intakes": [
-        { "label": "Annual admission (one intake per academic year)", "applicationDeadline": "2027-01-19", "source": "https://www.helsinki.fi/en/degree-programmes/economics-masters-programme" }
+        {
+          "label": "Annual admission (one intake per academic year)",
+          "applicationDeadline": "2027-01-19",
+          "source": "https://www.helsinki.fi/en/degree-programmes/economics-masters-programme"
+        }
       ],
       "tuition": [
-        { "academicYear": "2027/2028", "studentCategory": "INTERNATIONAL", "amount": 18000, "currency": "EUR", "billingPeriod": "PER_YEAR", "source": "https://www.helsinki.fi/en/degree-programmes/economics-masters-programme" }
+        {
+          "studentCategory": "INTERNATIONAL",
+          "amount": 18000,
+          "currency": "EUR",
+          "billingPeriod": "PER_YEAR",
+          "source": "https://www.helsinki.fi/en/degree-programmes/economics-masters-programme",
+          "scopeNote": "Tuition fee per year (only non-EU/EEA citizens), as printed on the programme page. The page states no academic year."
+        }
       ]
     },
     {
@@ -117,15 +330,35 @@
       "field": "computer-and-data-science",
       "durationMonths": 24,
       "teachingLanguage": "Finnish, English, Swedish",
-      "languages": ["fi", "en", "sv"],
+      "languages": [
+        "fi",
+        "en",
+        "sv"
+      ],
       "officialProgramUrl": "https://www.helsinki.fi/en/degree-programmes/data-science-masters-programme",
-      "verification": { "status": "VERIFIED", "verifiedOn": "2026-11-11" },
-      "sources": ["https://www.helsinki.fi/en/degree-programmes/data-science-masters-programme"],
+      "verification": {
+        "status": "VERIFIED",
+        "verifiedOn": "2026-11-11"
+      },
+      "sources": [
+        "https://www.helsinki.fi/en/degree-programmes/data-science-masters-programme"
+      ],
       "intakes": [
-        { "label": "Annual admission (one intake per academic year)", "applicationDeadline": "2027-01-19", "source": "https://www.helsinki.fi/en/degree-programmes/data-science-masters-programme" }
+        {
+          "label": "Annual admission (one intake per academic year)",
+          "applicationDeadline": "2027-01-19",
+          "source": "https://www.helsinki.fi/en/degree-programmes/data-science-masters-programme"
+        }
       ],
       "tuition": [
-        { "academicYear": "2027/2028", "studentCategory": "INTERNATIONAL", "amount": 15000, "currency": "EUR", "billingPeriod": "PER_YEAR", "source": "https://www.helsinki.fi/en/degree-programmes/data-science-masters-programme" }
+        {
+          "studentCategory": "INTERNATIONAL",
+          "amount": 15000,
+          "currency": "EUR",
+          "billingPeriod": "PER_YEAR",
+          "source": "https://www.helsinki.fi/en/degree-programmes/data-science-masters-programme",
+          "scopeNote": "Tuition fee per year (only non-EU/EEA citizens), as printed on the programme page. The page states no academic year."
+        }
       ]
     },
     {
@@ -136,20 +369,38 @@
       "field": "languages-and-literature",
       "durationMonths": 24,
       "teachingLanguage": "Finnish, English, Swedish",
-      "languages": ["fi", "en", "sv"],
+      "languages": [
+        "fi",
+        "en",
+        "sv"
+      ],
       "officialProgramUrl": "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme",
-      "officialApplicationUrl": "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme/admissions",
-      "verification": { "status": "VERIFIED", "verifiedOn": "2026-11-11" },
+      "verification": {
+        "status": "VERIFIED",
+        "verifiedOn": "2026-11-11"
+      },
       "sources": [
         "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme",
         "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme/admissions"
       ],
       "intakes": [
-        { "label": "Autumn 2027 admission", "academicYear": "2027/2028", "applicationDeadline": "2027-01-19", "source": "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme/admissions" }
+        {
+          "label": "Autumn 2027 admission",
+          "applicationDeadline": "2027-01-19",
+          "source": "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme/admissions"
+        }
       ],
       "tuition": [
-        { "academicYear": "2027/2028", "studentCategory": "INTERNATIONAL", "amount": 13000, "currency": "EUR", "billingPeriod": "PER_YEAR", "source": "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme" }
-      ]
+        {
+          "studentCategory": "INTERNATIONAL",
+          "amount": 13000,
+          "currency": "EUR",
+          "billingPeriod": "PER_YEAR",
+          "source": "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme",
+          "scopeNote": "Tuition fee per year (only non-EU/EEA citizens), as printed on the programme page. The page states no academic year."
+        }
+      ],
+      "officialAdmissionsUrl": "https://www.helsinki.fi/en/degree-programmes/english-studies-masters-programme/admissions"
     },
     {
       "university": "university-of-amsterdam",
@@ -160,17 +411,25 @@
       "studyMode": "FULL_TIME",
       "durationMonths": 12,
       "teachingLanguage": "English",
-      "languages": ["en"],
+      "languages": [
+        "en"
+      ],
       "officialProgramUrl": "https://www.uva.nl/en/programmes/masters/psychology-cultural-psychology/psychology-cultural-psychology.html",
-      "officialApplicationUrl": "https://www.uva.nl/shared-content/programmas/en/masters/psychology-cultural-psychology/application-and-admission/application-and-admission.html",
-      "verification": { "status": "VERIFIED", "verifiedOn": "2026-11-11" },
+      "verification": {
+        "status": "VERIFIED",
+        "verifiedOn": "2026-11-11"
+      },
       "sources": [
         "https://www.uva.nl/en/programmes/masters/psychology-cultural-psychology/psychology-cultural-psychology.html",
         "https://www.uva.nl/shared-content/programmas/en/masters/psychology-cultural-psychology/application-and-admission/application-and-admission.html"
       ],
       "intakes": [
-        { "label": "September intake: regular applications 1 October to 1 March", "source": "https://www.uva.nl/shared-content/programmas/en/masters/psychology-cultural-psychology/application-and-admission/application-and-admission.html" }
-      ]
+        {
+          "label": "September intake: regular applications 1 October to 1 March",
+          "source": "https://www.uva.nl/shared-content/programmas/en/masters/psychology-cultural-psychology/application-and-admission/application-and-admission.html"
+        }
+      ],
+      "officialAdmissionsUrl": "https://www.uva.nl/shared-content/programmas/en/masters/psychology-cultural-psychology/application-and-admission/application-and-admission.html"
     },
     {
       "university": "aalto-university",
@@ -181,20 +440,38 @@
       "studyMode": "FULL_TIME",
       "durationMonths": 24,
       "teachingLanguage": "English",
-      "languages": ["en"],
+      "languages": [
+        "en"
+      ],
       "officialProgramUrl": "https://www.aalto.fi/en/study-options/architecture-master-of-science-in-architecture",
-      "officialApplicationUrl": "https://www.aalto.fi/en/admission-services/apply-to-masters-programmes",
-      "verification": { "status": "VERIFIED", "verifiedOn": "2026-11-11" },
+      "verification": {
+        "status": "VERIFIED",
+        "verifiedOn": "2026-11-11"
+      },
       "sources": [
         "https://www.aalto.fi/en/study-options/architecture-master-of-science-in-architecture",
-        "https://www.aalto.fi/en/admission-services/apply-to-masters-programmes"
+        "https://www.aalto.fi/en/admission-services/apply-to-masters-programmes",
+        "https://www.aalto.fi/en/admission-services/scholarships-and-tuition-fees"
       ],
       "intakes": [
-        { "label": "Autumn 2027 admission", "academicYear": "2027/2028", "applicationDeadline": "2027-01-05", "source": "https://www.aalto.fi/en/admission-services/apply-to-masters-programmes" }
+        {
+          "label": "Autumn 2027 admission",
+          "applicationDeadline": "2027-01-05",
+          "source": "https://www.aalto.fi/en/admission-services/apply-to-masters-programmes"
+        }
       ],
       "tuition": [
-        { "academicYear": "2027/2028", "studentCategory": "INTERNATIONAL", "amount": 20000, "currency": "EUR", "billingPeriod": "PER_YEAR", "source": "https://www.aalto.fi/en/study-options/architecture-master-of-science-in-architecture" }
-      ]
+        {
+          "studentCategory": "INTERNATIONAL",
+          "amount": 20000,
+          "currency": "EUR",
+          "billingPeriod": "PER_YEAR",
+          "effectiveFrom": "2025-08-01",
+          "scopeNote": "Tuition fees for rights to study beginning on or after 1 August 2025. Fields of Art and Architecture, master's programmes: EUR 20 000 per academic year.",
+          "source": "https://www.aalto.fi/en/admission-services/scholarships-and-tuition-fees"
+        }
+      ],
+      "officialAdmissionsUrl": "https://www.aalto.fi/en/admission-services/apply-to-masters-programmes"
     },
     {
       "university": "aalto-university",
@@ -203,8 +480,106 @@
       "degreeLevel": "MASTER",
       "field": "mechanical-engineering",
       "officialProgramUrl": "https://www.aalto.fi/en/programmes/masters-programme-in-mechanical-engineering",
-      "verification": { "status": "VERIFIED", "verifiedOn": "2026-11-11" },
-      "sources": ["https://www.aalto.fi/en/programmes/masters-programme-in-mechanical-engineering"]
+      "verification": {
+        "status": "VERIFIED",
+        "verifiedOn": "2026-11-11"
+      },
+      "sources": [
+        "https://www.aalto.fi/en/programmes/masters-programme-in-mechanical-engineering",
+        "https://www.aalto.fi/en/admission-services/scholarships-and-tuition-fees"
+      ],
+      "tuition": [
+        {
+          "studentCategory": "INTERNATIONAL",
+          "amount": 17000,
+          "currency": "EUR",
+          "billingPeriod": "PER_YEAR",
+          "effectiveFrom": "2025-08-01",
+          "scopeNote": "Study right started on or after 1 August 2025: 17,000 EUR / academic year. Tuition-fee students.",
+          "source": "https://www.aalto.fi/en/programmes/masters-programme-in-mechanical-engineering"
+        },
+        {
+          "studentCategory": "INTERNATIONAL",
+          "amount": 15000,
+          "currency": "EUR",
+          "billingPeriod": "PER_YEAR",
+          "effectiveTo": "2024-08-01",
+          "scopeNote": "Study right started on or before 1 August 2024: 15,000 EUR / academic year. Tuition-fee students. The page states nothing for study rights started between 2 August 2024 and 31 July 2025.",
+          "source": "https://www.aalto.fi/en/programmes/masters-programme-in-mechanical-engineering"
+        }
+      ]
+    }
+  ],
+  "retractions": [
+    {
+      "type": "TUITION",
+      "program": "university-of-helsinki--science-bachelors-programme",
+      "academicYear": "2027/2028",
+      "studentCategory": "INTERNATIONAL",
+      "reason": "The academic year 2027/2028 was inferred from the admission round shown beside the fee; the source prints no academic year for the fee."
+    },
+    {
+      "type": "TUITION",
+      "program": "university-of-helsinki--liberal-arts-and-sciences-bachelors-programme",
+      "academicYear": "2027/2028",
+      "studentCategory": "INTERNATIONAL",
+      "reason": "The academic year 2027/2028 was inferred from the admission round shown beside the fee; the source prints no academic year for the fee."
+    },
+    {
+      "type": "INTAKE",
+      "program": "university-of-helsinki--liberal-arts-and-sciences-bachelors-programme",
+      "academicYear": "2027/2028",
+      "label": "Admission group 1",
+      "reason": "The academic year 2027/2028 was derived from wording such as autumn 2027; an academic year is only stored when the source prints one."
+    },
+    {
+      "type": "INTAKE",
+      "program": "university-of-helsinki--liberal-arts-and-sciences-bachelors-programme",
+      "academicYear": "2027/2028",
+      "label": "Admission group 2",
+      "reason": "The academic year 2027/2028 was derived from wording such as autumn 2027; an academic year is only stored when the source prints one."
+    },
+    {
+      "type": "TUITION",
+      "program": "university-of-helsinki--economics-masters-programme",
+      "academicYear": "2027/2028",
+      "studentCategory": "INTERNATIONAL",
+      "reason": "The academic year 2027/2028 was inferred from the admission round shown beside the fee; the source prints no academic year for the fee."
+    },
+    {
+      "type": "TUITION",
+      "program": "university-of-helsinki--data-science-masters-programme",
+      "academicYear": "2027/2028",
+      "studentCategory": "INTERNATIONAL",
+      "reason": "The academic year 2027/2028 was inferred from the admission round shown beside the fee; the source prints no academic year for the fee."
+    },
+    {
+      "type": "TUITION",
+      "program": "university-of-helsinki--english-studies-masters-programme",
+      "academicYear": "2027/2028",
+      "studentCategory": "INTERNATIONAL",
+      "reason": "The academic year 2027/2028 was inferred from the admission round shown beside the fee; the source prints no academic year for the fee."
+    },
+    {
+      "type": "INTAKE",
+      "program": "university-of-helsinki--english-studies-masters-programme",
+      "academicYear": "2027/2028",
+      "label": "Autumn 2027 admission",
+      "reason": "The academic year 2027/2028 was derived from wording such as autumn 2027; an academic year is only stored when the source prints one."
+    },
+    {
+      "type": "INTAKE",
+      "program": "aalto-university--architecture-msc",
+      "academicYear": "2027/2028",
+      "label": "Autumn 2027 admission",
+      "reason": "The academic year 2027/2028 was derived from wording such as autumn 2027; an academic year is only stored when the source prints one."
+    },
+    {
+      "type": "TUITION",
+      "program": "aalto-university--architecture-msc",
+      "academicYear": "2027/2028",
+      "studentCategory": "INTERNATIONAL",
+      "reason": "The academic year 2027/2028 was inferred from the admission round shown beside the fee; the source prints no academic year for the fee."
     }
   ]
 }
