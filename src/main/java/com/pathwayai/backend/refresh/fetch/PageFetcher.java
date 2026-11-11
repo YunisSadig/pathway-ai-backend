@@ -42,7 +42,7 @@ public class PageFetcher {
     }
 
     private static final Set<String> TEXT_TYPES = Set.of("text/html", "application/xhtml+xml", "application/json",
-            "application/ld+json", "text/plain", "application/xml", "text/xml");
+            "application/ld+json", "application/vnd.api+json", "text/plain", "application/xml", "text/xml");
     private static final Pattern CHALLENGE = Pattern.compile(
             "(?i)<title[^>]*>\\s*(just a moment|attention required|one moment, please|access denied|please wait|"
                     + "checking your browser|are you a robot|verify you are human)");
@@ -79,7 +79,8 @@ public class PageFetcher {
                 }
                 var decision = robots.check(uri);
                 if (!decision.allowed()) {
-                    return Result.of(Kind.BLOCKED, 0, decision.reason(), ms(start));
+                    // an unreachable robots.txt is temporary: retry later, never mark the source unsupported for it
+                    return Result.of(decision.temporary() ? Kind.FAILED : Kind.BLOCKED, 0, decision.reason(), ms(start));
                 }
                 Result outcome = requestWithRetries(uri, hop == 0 ? etag : null, hop == 0 ? lastModified : null, start, redirect);
                 if (outcome != null) {

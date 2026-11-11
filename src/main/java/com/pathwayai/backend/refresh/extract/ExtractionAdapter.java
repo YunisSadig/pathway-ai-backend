@@ -18,4 +18,13 @@ public interface ExtractionAdapter {
     String version();
 
     List<ExtractedFact> extract(CanonicalPage page);
+
+    /**
+     * Whether a changed page from which this adapter extracts nothing should raise a human review item. True for
+     * sources where any change may matter (admissions, tuition, programme pages); false for pages that change
+     * constantly without a fact changing.
+     */
+    default boolean raisesReviewItems() {
+        return true;
+    }
 }

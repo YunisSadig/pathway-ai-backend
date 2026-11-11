@@ -203,6 +203,25 @@ class PageFetcherTest {
     }
 
     @Test
+    void anUnreachableRobotsTxtIsATemporaryFailureNotAPermanentBlock() {
+        // seen against live sites: a transient robots.txt 5xx must be retried later, never mark the source unsupported
+        transport.on("https://www.uni.example/robots.txt", FakeTransport.status(503));
+        var r = fetcher.fetch(PAGE, null, null);
+        assertThat(r.kind()).isEqualTo(Kind.FAILED);
+        assertThat(r.error()).contains("robots.txt unavailable");
+        assertThat(transport.countFor(PAGE)).isZero();
+    }
+
+    @Test
+    void jsonApiResponsesAreAccepted() {
+        // the EU HEI registry answers with application/vnd.api+json
+        transport.on(PAGE, FakeTransport.text("application/vnd.api+json", "{\"data\":[]}"));
+        var r = fetcher.fetch(PAGE, null, null);
+        assertThat(r.kind()).isEqualTo(Kind.OK);
+        assertThat(r.contentType()).isEqualTo("application/vnd.api+json");
+    }
+
+    @Test
     void anUnsafeStartingUrlIsBlockedBeforeAnyRequest() {
         var r = fetcher.fetch("http://www.uni.example/plain", null, null);
         assertThat(r.kind()).isEqualTo(Kind.BLOCKED);

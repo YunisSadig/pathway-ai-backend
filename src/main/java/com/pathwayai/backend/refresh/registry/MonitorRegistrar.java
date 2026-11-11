@@ -53,16 +53,16 @@ public class MonitorRegistrar {
                 where verification_status = 'VERIFIED'""").query().listOfRows();
         for (Map<String, Object> u : universities) {
             long id = ((Number) u.get("id")).longValue();
-            add(id, null, (String) u.get("website_url"), "UNIVERSITY_INFO", "VERIFIED", now, report);
-            add(id, null, (String) u.get("admissions_url"), "ADMISSIONS", "VERIFIED", now, report);
-            add(id, null, (String) u.get("programme_catalogue_url"), "PROGRAM_CATALOGUE", "VERIFIED", now, report);
+            add(id, null, (String) u.get("website_url"), "UNIVERSITY_INFO", "VERIFIED", now, report, true);
+            add(id, null, (String) u.get("admissions_url"), "ADMISSIONS", "VERIFIED", now, report, false);
+            add(id, null, (String) u.get("programme_catalogue_url"), "PROGRAM_CATALOGUE", "VERIFIED", now, report, false);
         }
         // the registry record behind each identity (changes to an institution's registered facts)
         for (Map<String, Object> r : jdbc.sql("""
                 select us.university_id, s.id source_id, s.url from university_source us join source s on s.id = us.source_id
                 where s.url like 'https://hei.api.uni-foundation.eu/%'""").query().listOfRows()) {
             registerExisting(((Number) r.get("source_id")).longValue(), (String) r.get("url"),
-                    ((Number) r.get("university_id")).longValue(), null, "UNIVERSITY_INFO", "VERIFIED", now, report);
+                    ((Number) r.get("university_id")).longValue(), null, "UNIVERSITY_INFO", "VERIFIED", now, report, false);
         }
     }
 
@@ -84,12 +84,12 @@ public class MonitorRegistrar {
             registerExisting(((Number) r.get("source_id")).longValue(), url,
                     single ? ((Number) r.get("university_id")).longValue() : null,
                     single ? ((Number) r.get("program_id")).longValue() : null, kindOf(url),
-                    Boolean.TRUE.equals(r.get("verified")) ? "VERIFIED" : "UNVERIFIED", now, report);
+                    Boolean.TRUE.equals(r.get("verified")) ? "VERIFIED" : "UNVERIFIED", now, report, false);
         }
     }
 
     private void add(long universityId, Long programId, String url, String kind, String verification, Instant now,
-                     Map<String, Integer> report) {
+                     Map<String, Integer> report, boolean homePage) {
         if (url == null) {
             return;
         }
@@ -101,16 +101,18 @@ public class MonitorRegistrar {
             bump(report, "skippedNoSourceRow");
             return;
         }
-        registerExisting(source.get(), url, universityId, programId, kind, verification, now, report);
+        registerExisting(source.get(), url, universityId, programId, kind, verification, now, report, homePage);
     }
 
     private void registerExisting(long sourceId, String url, Long universityId, Long programId, String kind,
-                                  String verification, Instant now, Map<String, Integer> report) {
+                                  String verification, Instant now, Map<String, Integer> report, boolean homePage) {
         if (!url.startsWith("https://")) {
             bump(report, "skippedNotHttps");
             return;
         }
-        var spec = SourceMonitor.Spec.hashOnly(url, universityId, programId, kind, props.generalIntervalDays());
+        var spec = homePage
+                ? new SourceMonitor.Spec(url, universityId, programId, kind, "", "CONTENT_HASH", "content-watch", "1", props.generalIntervalDays())
+                : SourceMonitor.Spec.hashOnly(url, universityId, programId, kind, props.generalIntervalDays());
         bump(report, monitors.register(sourceId, spec, verification, now) ? "registered" : "alreadyRegistered");
     }
 

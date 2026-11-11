@@ -27,8 +27,9 @@ class FlywayMigrationIT {
         assertThat(flyway.info().pending()).isEmpty();
         MigrationInfo current = flyway.info().current();
         assertThat(current).isNotNull();
-        assertThat(current.getVersion().getVersion()).isEqualTo("4");
-        assertThat(flyway.info().applied()).extracting(m -> m.getVersion().getVersion()).containsExactly("1", "2", "3", "4");
+        assertThat(current.getVersion().getVersion()).isEqualTo("6");
+        assertThat(flyway.info().applied()).extracting(m -> m.getVersion().getVersion())
+                .containsExactly("1", "2", "3", "4", "5", "6");
         assertThat(current.getState().isApplied()).isTrue();
     }
 
@@ -38,7 +39,8 @@ class FlywayMigrationIT {
                 "select table_name from information_schema.tables where table_schema = 'public'", String.class);
         assertThat(tables).contains("country", "university", "degree_program", "academic_requirement",
                 "tuition_fee", "source", "flyway_schema_history", "academic_field", "program_language",
-                "program_source", "program_intake");
+                "program_source", "program_intake", "university_external_id", "university_alias",
+                "university_source", "source_monitor", "source_check", "staged_change");
     }
 
     @Test
@@ -62,6 +64,9 @@ class FlywayMigrationIT {
         // V1: university->country, program->university, requirement->(program, source), tuition->(program, source)
         // V2: field->parent, program->field, language->program, program_source->(program, source),
         //     intake->(program, source)
-        assertThat(fkCount).isEqualTo(13);
+        // V5: external_id->university, alias->university, university_source->(university, source)
+        // V6: source_monitor->(source, university, program), source_check->source,
+        //     staged_change->(source, university, program)
+        assertThat(fkCount).isEqualTo(13 + 4 + 7);
     }
 }

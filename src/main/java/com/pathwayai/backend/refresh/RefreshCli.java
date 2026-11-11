@@ -1,6 +1,7 @@
 package com.pathwayai.backend.refresh;
 
 import com.pathwayai.backend.refresh.registry.MonitorRegistrar;
+import com.pathwayai.backend.refresh.registry.SourceMonitorRepository;
 import com.pathwayai.backend.refresh.report.MonitoringReportService;
 import com.pathwayai.backend.refresh.schedule.RefreshService;
 import com.pathwayai.backend.refresh.pipeline.StagedChangeService;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
  *   --app.refresh.command=register                    register the official pages already cited as monitored sources
  *   --app.refresh.command=run                         check every source that is due (use this from an external scheduler)
  *   --app.refresh.command=report                      print the monitoring report
+ *   --app.refresh.command=reactivate [--app.refresh.id=SOURCE_ID]   put unsupported/failing/paused sources back on schedule
  *   --app.refresh.command=review-list                 list changes awaiting review
  *   --app.refresh.command=review-approve --app.refresh.id=N [--app.refresh.actor=name]
  *   --app.refresh.command=review-reject  --app.refresh.id=N [--app.refresh.reason=text] [--app.refresh.actor=name]
@@ -31,6 +33,7 @@ public class RefreshCli implements ApplicationRunner {
     private final MonitorRegistrar registrar;
     private final MonitoringReportService report;
     private final StagedChangeService review;
+    private final SourceMonitorRepository monitors;
     private final Clock clock;
     private final String command;
     private final Long id;
@@ -38,13 +41,14 @@ public class RefreshCli implements ApplicationRunner {
     private final String reason;
 
     public RefreshCli(RefreshService refresh, MonitorRegistrar registrar, MonitoringReportService report,
-                      StagedChangeService review, Clock clock, @Value("${app.refresh.command}") String command,
+                      StagedChangeService review, SourceMonitorRepository monitors, Clock clock, @Value("${app.refresh.command}") String command,
                       @Value("${app.refresh.id:#{null}}") Long id, @Value("${app.refresh.actor:cli}") String actor,
                       @Value("${app.refresh.reason:#{null}}") String reason) {
         this.refresh = refresh;
         this.registrar = registrar;
         this.report = report;
         this.review = review;
+        this.monitors = monitors;
         this.clock = clock;
         this.command = command;
         this.id = id;
@@ -58,6 +62,7 @@ public class RefreshCli implements ApplicationRunner {
             case "register" -> System.out.println("Registered sources: " + registrar.registerAll(clock.instant()));
             case "run" -> System.out.println("Refresh run: " + refresh.runAllDue(clock.instant()));
             case "report" -> System.out.println(report.generate(clock.instant()).render());
+            case "reactivate" -> System.out.println("Reactivated sources: " + monitors.reactivate(id, clock.instant()));
             case "review-list" -> {
                 var items = review.pending();
                 System.out.println(items.size() + " change(s) awaiting review");

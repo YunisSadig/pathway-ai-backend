@@ -50,6 +50,19 @@ public class SourceMonitorRepository {
         return jdbc.sql(SELECT + " where m.source_id = :id").param("id", sourceId).query(SourceMonitorRepository::map).optional();
     }
 
+    /**
+     * Operator action: puts UNSUPPORTED, FAILING or PAUSED sources back on schedule (all of them, or one). Returns how
+     * many were reactivated. Use it after a site changes its access rules or a crawler defect has been fixed.
+     */
+    public int reactivate(Long sourceId, Instant now) {
+        String base = """
+                update source_monitor set status = 'ACTIVE', unsupported_reason = null, failure_count = 0,
+                    next_check_at = :now, updated_at = now() where status in ('UNSUPPORTED', 'FAILING', 'PAUSED')""";
+        return sourceId == null
+                ? jdbc.sql(base).param("now", Timestamp.from(now)).update()
+                : jdbc.sql(base + " and source_id = :id").param("now", Timestamp.from(now)).param("id", sourceId).update();
+    }
+
     public List<String> activeDomains() {
         return jdbc.sql("select distinct domain from source_monitor where status <> 'PAUSED'").query(String.class).list();
     }

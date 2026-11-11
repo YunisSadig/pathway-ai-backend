@@ -348,6 +348,21 @@ class RefreshServiceIT {
     }
 
     @Test
+    void aHomePageThatChangesIsRecordedButRaisesNoReviewItem() {
+        // seen against live sites: a university home page changed within minutes (news), which is not a fact change
+        long id = monitor("/home-watch", "content-watch", "CONTENT_HASH");
+        transport.on(HOST + "/home-watch", FakeTransport.html(FakeTransport.page("News: open day on Monday", "menu")));
+        refresh.runDue(T0);
+        transport.reset(HOST + "/home-watch", FakeTransport.html(FakeTransport.page("News: new rector appointed", "menu")));
+        var summary = refresh.runDue(T0.plus(Duration.ofDays(8)));
+        assertThat(summary.changed()).isEqualTo(1);
+        assertThat(summary.pendingReview()).isZero();
+        assertThat(count("select count(*) from staged_change")).isZero();
+        assertThat(state(id).lastResult()).isEqualTo("CHANGED"); // still visible in the audit trail and the report
+        assertThat(report.generate(T0.plus(Duration.ofDays(8))).changedPages7d()).isEqualTo(1);
+    }
+
+    @Test
     void theRegistrarMonitorsAlreadyCitedPagesIdempotentlyAndTheReportCountsThem() {
         long source = jdbc.queryForObject("""
                 insert into source (url, title, publisher, source_type, retrieved_on)
@@ -364,6 +379,8 @@ class RefreshServiceIT {
         assertThat(state(programSource).kind()).isEqualTo("TUITION");
         assertThat(state(programSource).programId()).isEqualTo(programId);
         assertThat(state(source).kind()).isEqualTo("UNIVERSITY_INFO");
+        assertThat(state(source).adapterName()).isEqualTo("content-watch"); // home pages never raise review items
+        assertThat(state(programSource).adapterName()).isEqualTo("content-hash");
 
         transport.on(HOST + "/", FakeTransport.html(FakeTransport.page("home", "m")));
         transport.on(HOST + "/tuition-fees", FakeTransport.html(FakeTransport.page("fees", "m")));

@@ -161,7 +161,7 @@ public class RefreshService {
         if (baseline || parserChanged || changed) {
             List<ExtractedFact> facts = adapter.extract(page);
             result = pipeline.process(m, facts, parser, now);
-            if (changed && facts.isEmpty()) {
+            if (changed && facts.isEmpty() && adapter.raisesReviewItems()) {
                 if (pipeline.stageContentChange(m, page.hash(), parser, now)) {
                     result = new ChangePipeline.Outcome(0, 1, 0, 0, List.of());
                 }

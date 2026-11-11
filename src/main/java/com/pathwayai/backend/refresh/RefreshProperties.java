@@ -17,7 +17,7 @@ public record RefreshProperties(
         @DefaultValue("3000") long minHostIntervalMs,
         @DefaultValue("20") int timeoutSeconds,
         /** Responses larger than this are rejected, not truncated. */
-        @DefaultValue("2000000") int maxBodyBytes,
+        @DefaultValue("4000000") int maxBodyBytes,
         /** Retries for transient failures (5xx, timeouts), on top of the first attempt. */
         @DefaultValue("2") int maxRetries,
         @DefaultValue("1000") long backoffMs,

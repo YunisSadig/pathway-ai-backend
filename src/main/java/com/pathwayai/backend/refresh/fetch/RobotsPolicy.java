@@ -19,7 +19,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RobotsPolicy {
 
-    public record Decision(boolean allowed, String reason) {
+    /** {@code temporary} is true when the answer is only a precaution because robots.txt could not be fetched. */
+    public record Decision(boolean allowed, String reason, boolean temporary) {
+        static Decision yes() {
+            return new Decision(true, null, false);
+        }
     }
 
     private record Rules(List<String> allow, List<String> disallow, boolean disallowAll, Instant fetchedAt) {
@@ -52,14 +56,14 @@ public class RobotsPolicy {
             cache.put(host, rules);
         }
         if (rules.disallowAll()) {
-            return new Decision(false, "robots.txt unavailable (server error), assuming disallow");
+            return new Decision(false, "robots.txt unavailable (server error), assuming disallow for now", true);
         }
         String path = (uri.getRawPath() == null || uri.getRawPath().isEmpty() ? "/" : uri.getRawPath())
                 + (uri.getRawQuery() == null ? "" : "?" + uri.getRawQuery());
         int allowLen = longestMatch(rules.allow(), path);
         int disallowLen = longestMatch(rules.disallow(), path);
         boolean allowed = disallowLen < 0 || allowLen >= disallowLen;
-        return allowed ? new Decision(true, null) : new Decision(false, "robots.txt disallows " + path);
+        return allowed ? Decision.yes() : new Decision(false, "robots.txt disallows " + path, false);
     }
 
     private Rules load(String host) {
