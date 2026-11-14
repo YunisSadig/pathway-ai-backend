@@ -1,0 +1,2601 @@
+{
+  "schemaVersion": 1,
+  "retrievedOn": "2026-11-11",
+  "countries": [
+    {
+      "iso2": "AT",
+      "name": "Austria"
+    },
+    {
+      "iso2": "BE",
+      "name": "Belgium"
+    },
+    {
+      "iso2": "BG",
+      "name": "Bulgaria"
+    },
+    {
+      "iso2": "HR",
+      "name": "Croatia"
+    },
+    {
+      "iso2": "CY",
+      "name": "Cyprus"
+    },
+    {
+      "iso2": "CZ",
+      "name": "Czechia"
+    },
+    {
+      "iso2": "DK",
+      "name": "Denmark"
+    },
+    {
+      "iso2": "EE",
+      "name": "Estonia"
+    },
+    {
+      "iso2": "FI",
+      "name": "Finland"
+    },
+    {
+      "iso2": "FR",
+      "name": "France"
+    },
+    {
+      "iso2": "DE",
+      "name": "Germany"
+    },
+    {
+      "iso2": "GR",
+      "name": "Greece"
+    },
+    {
+      "iso2": "HU",
+      "name": "Hungary"
+    },
+    {
+      "iso2": "IE",
+      "name": "Ireland"
+    },
+    {
+      "iso2": "IT",
+      "name": "Italy"
+    },
+    {
+      "iso2": "LV",
+      "name": "Latvia"
+    },
+    {
+      "iso2": "LT",
+      "name": "Lithuania"
+    },
+    {
+      "iso2": "LU",
+      "name": "Luxembourg"
+    },
+    {
+      "iso2": "MT",
+      "name": "Malta"
+    },
+    {
+      "iso2": "NL",
+      "name": "Netherlands"
+    },
+    {
+      "iso2": "PL",
+      "name": "Poland"
+    },
+    {
+      "iso2": "PT",
+      "name": "Portugal"
+    },
+    {
+      "iso2": "RO",
+      "name": "Romania"
+    },
+    {
+      "iso2": "SK",
+      "name": "Slovakia"
+    },
+    {
+      "iso2": "SI",
+      "name": "Slovenia"
+    },
+    {
+      "iso2": "ES",
+      "name": "Spain"
+    },
+    {
+      "iso2": "SE",
+      "name": "Sweden"
+    },
+    {
+      "iso2": "CN",
+      "name": "China"
+    },
+    {
+      "iso2": "JP",
+      "name": "Japan"
+    },
+    {
+      "iso2": "KR",
+      "name": "South Korea"
+    }
+  ],
+  "universities": [
+    {
+      "slug": "university-of-vienna",
+      "name": "University of Vienna",
+      "country": "AT",
+      "city": "Vienna",
+      "nativeName": "Universität Wien",
+      "websiteUrl": "https://www.univie.ac.at/en/",
+      "admissionsUrl": "https://studieren.univie.ac.at/en/",
+      "programmeCatalogueUrl": "https://studieren.univie.ac.at/en/find-your-degree-programme",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "univie.ac.at"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "A WIEN01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208854"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999866883"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITAT WIEN",
+        "Universitat Wien"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/univie.ac.at/hei",
+          "title": "HEI registry record: UNIVERSITAT WIEN",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.univie.ac.at/en/",
+          "title": "University of Vienna – study, research, live in Vienna",
+          "publisher": "University of Vienna",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://studieren.univie.ac.at/en/",
+          "title": "Studying at the University of Vienna",
+          "publisher": "University of Vienna",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://studieren.univie.ac.at/en/find-your-degree-programme",
+          "title": "Our degree programmes",
+          "publisher": "University of Vienna",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "tu-wien",
+      "name": "TU Wien",
+      "country": "AT",
+      "city": "Vienna",
+      "nativeName": "Technische Universität Wien",
+      "websiteUrl": "https://www.tuwien.at/en/",
+      "admissionsUrl": "https://www.tuwien.at/en/studies/admission",
+      "programmeCatalogueUrl": "https://www.tuwien.at/en/studies/",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "tuwien.ac.at"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "A WIEN02"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209415"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999979888"
+        }
+      ],
+      "aliases": [
+        "TECHNISCHE UNIVERSITAET WIEN",
+        "Technische Universität Wien"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/tuwien.ac.at/hei",
+          "title": "HEI registry record: TECHNISCHE UNIVERSITAET WIEN",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tuwien.at/en/",
+          "title": "TU Wien | TU Wien",
+          "publisher": "TU Wien",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tuwien.at/en/studies/admission",
+          "title": "Admission | TU Wien",
+          "publisher": "TU Wien",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tuwien.at/en/studies/",
+          "title": "TU Wien, TUW. Study. Study at the TU Wien. | TU Wien",
+          "publisher": "TU Wien",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "ku-leuven",
+      "name": "KU Leuven",
+      "country": "BE",
+      "city": "Leuven",
+      "nativeName": "Katholieke Universiteit Leuven",
+      "websiteUrl": null,
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "kuleuven.be"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "B LEUVEN01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209482"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999991334"
+        }
+      ],
+      "aliases": [
+        "KATHOLIEKE UNIVERSITEIT LEUVEN",
+        "Katholieke Universiteit Leuven"
+      ],
+      "verificationStatus": "REGISTRY_ONLY",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/kuleuven.be/hei",
+          "title": "HEI registry record: KATHOLIEKE UNIVERSITEIT LEUVEN",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "ghent-university",
+      "name": "Ghent University",
+      "country": "BE",
+      "city": "Ghent",
+      "nativeName": "Universiteit Gent",
+      "websiteUrl": "https://www.ugent.be/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": "https://studiekiezer.ugent.be/en/zoek",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "ugent.be"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "B GENT01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209444"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999986096"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITEIT GENT",
+        "Universiteit Gent"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/ugent.be/hei",
+          "title": "HEI registry record: UNIVERSITEIT GENT",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.ugent.be/en",
+          "title": "Ghent University",
+          "publisher": "Ghent University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://studiekiezer.ugent.be/en/zoek",
+          "title": "Study guide",
+          "publisher": "Ghent University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "sofia-university",
+      "name": "Sofia University St. Kliment Ohridski",
+      "country": "BG",
+      "city": "Sofia",
+      "nativeName": null,
+      "websiteUrl": null,
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "uni-sofia.bg"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "BG SOFIA06"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209043"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999887641"
+        }
+      ],
+      "aliases": [
+        "SOFIA UNIVERSITY ST KLIMENT OHRIDSKI",
+        "Sofia University St Kliment Ohridski"
+      ],
+      "verificationStatus": "REGISTRY_ONLY",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/uni-sofia.bg/hei",
+          "title": "HEI registry record: SOFIA UNIVERSITY ST KLIMENT OHRIDSKI",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-zagreb",
+      "name": "University of Zagreb",
+      "country": "HR",
+      "city": "Zagreb",
+      "nativeName": "Sveučilište u Zagrebu",
+      "websiteUrl": "https://www.unizg.hr/homepage/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "unizg.hr"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "HR ZAGREB01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209270"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999933231"
+        }
+      ],
+      "aliases": [
+        "SVEUCILISTE U ZAGREBU",
+        "Sveuciliste u Zagrebu"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/unizg.hr/hei",
+          "title": "HEI registry record: SVEUCILISTE U ZAGREBU",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.unizg.hr/homepage/",
+          "title": "Homepage",
+          "publisher": "University of Zagreb",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-cyprus",
+      "name": "University of Cyprus",
+      "country": "CY",
+      "city": "Nicosia",
+      "nativeName": null,
+      "websiteUrl": null,
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "ucy.ac.cy"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "CY NICOSIA01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208585"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999835843"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITY OF CYPRUS",
+        "University of Cyprus"
+      ],
+      "verificationStatus": "REGISTRY_ONLY",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/ucy.ac.cy/hei",
+          "title": "HEI registry record: UNIVERSITY OF CYPRUS",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "charles-university",
+      "name": "Charles University",
+      "country": "CZ",
+      "city": "Prague",
+      "nativeName": "Univerzita Karlova",
+      "websiteUrl": "https://cuni.cz/UKEN-1.html",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "cuni.cz"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "CZ PRAHA07"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209245"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999923434"
+        }
+      ],
+      "aliases": [
+        "UNIVERZITA KARLOVA",
+        "Univerzita Karlova"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/cuni.cz/hei",
+          "title": "HEI registry record: UNIVERZITA KARLOVA",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://cuni.cz/UKEN-1.html",
+          "title": "Charles University",
+          "publisher": "Charles University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "brno-university-of-technology",
+      "name": "Brno University of Technology",
+      "country": "CZ",
+      "city": "Brno",
+      "nativeName": "Vysoké učení technické v Brně",
+      "websiteUrl": "https://www.vut.cz/en/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "vutbr.cz"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "CZ BRNO01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208907"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999873091"
+        }
+      ],
+      "aliases": [
+        "VYSOKE UCENI TECHNICKE V BRNE",
+        "Vysoke Uceni Technicke v Brne"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/vutbr.cz/hei",
+          "title": "HEI registry record: VYSOKE UCENI TECHNICKE V BRNE",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.vut.cz/en/",
+          "title": "Brno University of Technology",
+          "publisher": "Brno University of Technology",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-copenhagen",
+      "name": "University of Copenhagen",
+      "country": "DK",
+      "city": "Copenhagen",
+      "nativeName": "Københavns Universitet",
+      "websiteUrl": "https://www.ku.dk/en",
+      "admissionsUrl": "https://www.ku.dk/studies/admission/application-and-tuition-fees",
+      "programmeCatalogueUrl": "https://www.ku.dk/studies",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "ku.dk"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "DK KOBENHA01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209480"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999991043"
+        }
+      ],
+      "aliases": [
+        "KOBENHAVNS UNIVERSITET",
+        "Kobenhavns Universitet"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/ku.dk/hei",
+          "title": "HEI registry record: KOBENHAVNS UNIVERSITET",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.ku.dk/en",
+          "title": "University of Copenhagen - University of Copenhagen",
+          "publisher": "University of Copenhagen",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.ku.dk/studies/admission/application-and-tuition-fees",
+          "title": "How Much Are Tuition Fees? Costs for Master’s at UCPH",
+          "publisher": "University of Copenhagen",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.ku.dk/studies",
+          "title": "Studies - University of Copenhagen",
+          "publisher": "University of Copenhagen",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "aarhus-university",
+      "name": "Aarhus University",
+      "country": "DK",
+      "city": "Aarhus",
+      "nativeName": "Aarhus Universitet",
+      "websiteUrl": "https://international.au.dk/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "au.dk"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "DK ARHUS01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209518"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999997736"
+        }
+      ],
+      "aliases": [
+        "AARHUS UNIVERSITET",
+        "Aarhus Universitet"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/au.dk/hei",
+          "title": "HEI registry record: AARHUS UNIVERSITET",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://international.au.dk/",
+          "title": "Aarhus University – a top 100 research-intensive university",
+          "publisher": "Aarhus University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-tartu",
+      "name": "University of Tartu",
+      "country": "EE",
+      "city": "Tartu",
+      "nativeName": "Tartu Ülikool",
+      "websiteUrl": "https://ut.ee/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "ut.ee"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "EE TARTU02"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209095"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999895013"
+        }
+      ],
+      "aliases": [
+        "TARTU ULIKOOL",
+        "Tartu Ulikool"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/ut.ee/hei",
+          "title": "HEI registry record: TARTU ULIKOOL",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://ut.ee/en",
+          "title": "Home | University of Tartu",
+          "publisher": "University of Tartu",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "tallinn-university-of-technology",
+      "name": "Tallinn University of Technology (TalTech)",
+      "country": "EE",
+      "city": "Tallinn",
+      "nativeName": "Tallinna Tehnikaülikool",
+      "websiteUrl": "https://taltech.ee/en",
+      "admissionsUrl": "https://taltech.ee/en/admissions",
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "taltech.ee"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "EE TALLINN04"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208643"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999842536"
+        }
+      ],
+      "aliases": [
+        "TALLINNA TEHNIKAÜLIKOOL",
+        "Tallinna Tehnikaülikool"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/taltech.ee/hei",
+          "title": "HEI registry record: TALLINNA TEHNIKAÜLIKOOL",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://taltech.ee/en",
+          "title": "Homepage",
+          "publisher": "Tallinn University of Technology (TalTech)",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://taltech.ee/en/admissions",
+          "title": "Why TalTech | Admissions",
+          "publisher": "Tallinn University of Technology (TalTech)",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-helsinki",
+      "name": "University of Helsinki",
+      "country": "FI",
+      "city": null,
+      "nativeName": "Helsingin yliopisto",
+      "websiteUrl": "https://www.helsinki.fi/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "helsinki.fi"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "SF HELSINK01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209507"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999994535"
+        }
+      ],
+      "aliases": [
+        "HELSINGIN YLIOPISTO",
+        "Helsingin Yliopisto"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/helsinki.fi/hei",
+          "title": "HEI registry record: HELSINGIN YLIOPISTO",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.helsinki.fi/en",
+          "title": "University of Helsinki",
+          "publisher": "University of Helsinki",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "aalto-university",
+      "name": "Aalto University",
+      "country": "FI",
+      "city": "Espoo",
+      "nativeName": null,
+      "websiteUrl": "https://www.aalto.fi/en",
+      "admissionsUrl": "https://www.aalto.fi/en/admissions",
+      "programmeCatalogueUrl": "https://www.aalto.fi/en/study-options",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "aalto.fi"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "SF ESPOO12"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10181958"
+        },
+        {
+          "scheme": "PIC",
+          "value": "991256096"
+        }
+      ],
+      "aliases": [
+        "AALTO KORKEAKOULUSAATIO SR",
+        "Aalto Korkeakoulusaatio Sr"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/aalto.fi/hei",
+          "title": "HEI registry record: AALTO KORKEAKOULUSAATIO SR",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.aalto.fi/en",
+          "title": "Aalto University",
+          "publisher": "Aalto University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.aalto.fi/en/admissions",
+          "title": "Admission Services | Aalto University",
+          "publisher": "Aalto University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.aalto.fi/en/study-options",
+          "title": "Study options | Aalto University",
+          "publisher": "Aalto University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "sorbonne-university",
+      "name": "Sorbonne University",
+      "country": "FR",
+      "city": "Paris",
+      "nativeName": "Sorbonne Université",
+      "websiteUrl": "https://www.sorbonne-universite.fr/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": "https://www.sorbonne-universite.fr/en/education",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "sorbonne-universite.fr"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "F PARIS468"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10189822"
+        },
+        {
+          "scheme": "PIC",
+          "value": "909875521"
+        }
+      ],
+      "aliases": [
+        "SORBONNE UNIVERSITE",
+        "Sorbonne Universite"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/sorbonne-universite.fr/hei",
+          "title": "HEI registry record: SORBONNE UNIVERSITE",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.sorbonne-universite.fr/en",
+          "title": "Sorbonne Université| Sorbonne université",
+          "publisher": "Sorbonne University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.sorbonne-universite.fr/en/education",
+          "title": "Education | Sorbonne Université| Sorbonne université",
+          "publisher": "Sorbonne University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "universite-paris-saclay",
+      "name": "Université Paris-Saclay",
+      "country": "FR",
+      "city": "Gif-sur-Yvette",
+      "nativeName": "Université Paris-Saclay",
+      "websiteUrl": "https://www.universite-paris-saclay.fr/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": "https://www.universite-paris-saclay.fr/en/education",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "universite-paris-saclay.fr"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "F PARIS481"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10222664"
+        },
+        {
+          "scheme": "PIC",
+          "value": "897067059"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITE PARIS-SACLAY",
+        "Universite Paris-Saclay"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/universite-paris-saclay.fr/hei",
+          "title": "HEI registry record: UNIVERSITE PARIS-SACLAY",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.universite-paris-saclay.fr/en",
+          "title": "Université Paris-Saclay",
+          "publisher": "Université Paris-Saclay",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.universite-paris-saclay.fr/en/education",
+          "title": "Choose your programme | Université Paris-Saclay",
+          "publisher": "Université Paris-Saclay",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "technical-university-of-munich",
+      "name": "Technical University of Munich",
+      "country": "DE",
+      "city": "Munich",
+      "nativeName": "Technische Universität München",
+      "websiteUrl": "https://www.tum.de/en/",
+      "admissionsUrl": "https://www.tum.de/en/studies/application",
+      "programmeCatalogueUrl": "https://www.tum.de/en/studies/degree-programs",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "tum.de"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "D MUNCHEN02"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209396"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999977463"
+        }
+      ],
+      "aliases": [
+        "TECHNISCHE UNIVERSITAET MUENCHEN",
+        "Technische Universität München"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/tum.de/hei",
+          "title": "HEI registry record: TECHNISCHE UNIVERSITAET MUENCHEN",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tum.de/en/",
+          "title": "Technical University of Munich: The Entrepreneurial University - TUM",
+          "publisher": "Technical University of Munich",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tum.de/en/studies/application",
+          "title": "How to Apply - TUM",
+          "publisher": "Technical University of Munich",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tum.de/en/studies/degree-programs",
+          "title": "Degree Programs and Courses offered by the Technical University of Munich - TUM",
+          "publisher": "Technical University of Munich",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "heidelberg-university",
+      "name": "Heidelberg University",
+      "country": "DE",
+      "city": "Heidelberg",
+      "nativeName": "Ruprecht-Karls-Universität Heidelberg",
+      "websiteUrl": "https://www.uni-heidelberg.de/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "uni-heidelberg.de"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "D HEIDELB01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209457"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999987648"
+        }
+      ],
+      "aliases": [
+        "RUPRECHT-KARLS-UNIVERSITAET HEIDELBERG",
+        "Ruprecht-Karls-Universität Heidelberg"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/uni-heidelberg.de/hei",
+          "title": "HEI registry record: RUPRECHT-KARLS-UNIVERSITAET HEIDELBERG",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.uni-heidelberg.de/en",
+          "title": "Heidelberg University - Zukunft seit 1386",
+          "publisher": "Heidelberg University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "national-and-kapodistrian-university-of-athens",
+      "name": "National and Kapodistrian University of Athens",
+      "country": "GR",
+      "city": "Athens",
+      "nativeName": null,
+      "websiteUrl": "https://en.uoa.gr/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "uoa.gr"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "G ATHINE01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208247"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999643007"
+        }
+      ],
+      "aliases": [
+        "ETHNIKO KAI KAPODISTRIAKO PANEPISTIMIO ATHINON",
+        "Ethniko Kai Kapodistriako Panepistimio Athinon"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/uoa.gr/hei",
+          "title": "HEI registry record: ETHNIKO KAI KAPODISTRIAKO PANEPISTIMIO ATHINON",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://en.uoa.gr/",
+          "title": "ENGLISH | National and Kapodistrian University of Athens",
+          "publisher": "National and Kapodistrian University of Athens",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "eotvos-lorand-university",
+      "name": "Eötvös Loránd University",
+      "country": "HU",
+      "city": "Budapest",
+      "nativeName": "Eötvös Loránd Tudományegyetem",
+      "websiteUrl": "https://www.elte.hu/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": "https://www.elte.hu/en/education",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "elte.hu"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "HU BUDAPES01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209104"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999896468"
+        }
+      ],
+      "aliases": [
+        "EOTVOS LORAND TUDOMANYEGYETEM",
+        "Eotvos Lorand Tudomanyegyetem"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/elte.hu/hei",
+          "title": "HEI registry record: EOTVOS LORAND TUDOMANYEGYETEM",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.elte.hu/en",
+          "title": "Eötvös Loránd University",
+          "publisher": "Eötvös Loránd University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.elte.hu/en/education",
+          "title": "Education | Eötvös Loránd University",
+          "publisher": "Eötvös Loránd University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "budapest-university-of-technology-and-economics",
+      "name": "Budapest University of Technology and Economics",
+      "country": "HU",
+      "city": "Budapest",
+      "nativeName": "Budapesti Műszaki és Gazdaságtudományi Egyetem",
+      "websiteUrl": "https://www.bme.hu/?language=en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": "https://www.bme.hu/en/application_and_admission",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "bme.hu"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "HU BUDAPES02"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209168"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999904228"
+        }
+      ],
+      "aliases": [
+        "BUDAPESTI MUSZAKI ES GAZDASAGTUDOMANYI EGYETEM",
+        "Budapesti Muszaki es Gazdasagtudomanyi Egyetem"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/bme.hu/hei",
+          "title": "HEI registry record: BUDAPESTI MUSZAKI ES GAZDASAGTUDOMANYI EGYETEM",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.bme.hu/?language=en",
+          "title": "Főoldal | BME központi portál",
+          "publisher": "Budapest University of Technology and Economics",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.bme.hu/en/application_and_admission",
+          "title": "Application and admission | BME central site",
+          "publisher": "Budapest University of Technology and Economics",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "trinity-college-dublin",
+      "name": "Trinity College Dublin",
+      "country": "IE",
+      "city": "Dublin",
+      "nativeName": null,
+      "websiteUrl": "https://www.tcd.ie/",
+      "admissionsUrl": "https://www.tcd.ie/study/",
+      "programmeCatalogueUrl": "https://www.tcd.ie/courses/",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "tcd.ie"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "IRLDUBLIN01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208669"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999845446"
+        }
+      ],
+      "aliases": [
+        "THE PROVOST, FELLOWS, FOUNDATION SCHOLARS & THE OTHER MEMBERS OF BOARD, OF THE COLLEGE OF THE HOLY & UNDIVIDED TRINITY OF QUEEN ELIZABETH NEAR DUBLIN",
+        "The Provost, Fellows, Foundation Scholars & the Other Members of Board, of the College of the Holy & Undivided Trinity of Queen Elizabeth Near Dublin"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/tcd.ie/hei",
+          "title": "HEI registry record: THE PROVOST, FELLOWS, FOUNDATION SCHOLARS & THE OTHER MEMBERS OF BOARD, OF THE COLLEGE OF THE HOLY & UNDIVIDED TRINITY OF QUEEN ELIZABETH NEAR DUBLIN",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tcd.ie/",
+          "title": "Trinity College Dublin",
+          "publisher": "Trinity College Dublin",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tcd.ie/study/",
+          "title": "Study - Trinity College Dublin",
+          "publisher": "Trinity College Dublin",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.tcd.ie/courses/",
+          "title": "Courses - Courses | Trinity College Dublin",
+          "publisher": "Trinity College Dublin",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-college-dublin",
+      "name": "University College Dublin",
+      "country": "IE",
+      "city": "Dublin",
+      "nativeName": null,
+      "websiteUrl": null,
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "ucd.ie"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "IRLDUBLIN02"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209368"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999974359"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITY COLLEGE DUBLIN, NATIONAL UNIVERSITY OF IRELAND, DUBLIN",
+        "University College Dublin, National University of Ireland, Dublin"
+      ],
+      "verificationStatus": "REGISTRY_ONLY",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/ucd.ie/hei",
+          "title": "HEI registry record: UNIVERSITY COLLEGE DUBLIN, NATIONAL UNIVERSITY OF IRELAND, DUBLIN",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-bologna",
+      "name": "University of Bologna",
+      "country": "IT",
+      "city": "Bologna",
+      "nativeName": "Alma Mater Studiorum – Università di Bologna",
+      "websiteUrl": "https://www.unibo.it/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "unibo.it"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "I BOLOGNA01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209504"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999993953"
+        }
+      ],
+      "aliases": [
+        "ALMA MATER STUDIORUM - UNIVERSITA DI BOLOGNA",
+        "Alma Mater Studiorum - Universita di Bologna"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/unibo.it/hei",
+          "title": "HEI registry record: ALMA MATER STUDIORUM - UNIVERSITA DI BOLOGNA",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.unibo.it/en",
+          "title": "University of Bologna",
+          "publisher": "University of Bologna",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-padua",
+      "name": "University of Padua",
+      "country": "IT",
+      "city": "Padua",
+      "nativeName": "Università degli Studi di Padova",
+      "websiteUrl": "https://www.unipd.it/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "unipd.it"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "I PADOVA01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209515"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999995602"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITA DEGLI STUDI DI PADOVA",
+        "Universita degli Studi di Padova"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/unipd.it/hei",
+          "title": "HEI registry record: UNIVERSITA DEGLI STUDI DI PADOVA",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.unipd.it/en",
+          "title": "home | Università di Padova",
+          "publisher": "University of Padua",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-latvia",
+      "name": "University of Latvia",
+      "country": "LV",
+      "city": "Riga",
+      "nativeName": "Latvijas Universitāte",
+      "websiteUrl": "https://www.lu.lv/en/",
+      "admissionsUrl": "https://www.lu.lv/en/admission/",
+      "programmeCatalogueUrl": "https://www.lu.lv/en/studies/",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "lu.lv"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "LV RIGA01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208898"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999871830"
+        }
+      ],
+      "aliases": [
+        "LATVIJAS UNIVERSITATE",
+        "Latvijas Universitate"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/lu.lv/hei",
+          "title": "HEI registry record: LATVIJAS UNIVERSITATE",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.lu.lv/en/",
+          "title": "University of Latvia",
+          "publisher": "University of Latvia",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.lu.lv/en/admission/",
+          "title": "Admission",
+          "publisher": "University of Latvia",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.lu.lv/en/studies/",
+          "title": "Studies",
+          "publisher": "University of Latvia",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "vilnius-university",
+      "name": "Vilnius University",
+      "country": "LT",
+      "city": "Vilnius",
+      "nativeName": "Vilniaus universitetas",
+      "websiteUrl": "https://www.vu.lt/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": "https://www.vu.lt/en/admissions",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "vu.lt"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "LT VILNIUS01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209082"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999893170"
+        }
+      ],
+      "aliases": [
+        "VILNIAUS UNIVERSITETAS",
+        "Vilniaus Universitetas"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/vu.lt/hei",
+          "title": "HEI registry record: VILNIAUS UNIVERSITETAS",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.vu.lt/en",
+          "title": "Vilnius University",
+          "publisher": "Vilnius University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.vu.lt/en/admissions",
+          "title": "International Admissions – Apply Now | Vilnius University",
+          "publisher": "Vilnius University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "kaunas-university-of-technology",
+      "name": "Kaunas University of Technology",
+      "country": "LT",
+      "city": "Kaunas",
+      "nativeName": "Kauno technologijos universitetas",
+      "websiteUrl": "https://en.ktu.edu/",
+      "admissionsUrl": "https://admissions.ktu.edu/",
+      "programmeCatalogueUrl": "https://en.ktu.edu/studies/",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "ktu.lt"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "LT KAUNAS02"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208664"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999844961"
+        }
+      ],
+      "aliases": [
+        "KAUNO TECHNOLOGIJOS UNIVERSITETAS",
+        "Kauno Technologijos Universitetas"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/ktu.lt/hei",
+          "title": "HEI registry record: KAUNO TECHNOLOGIJOS UNIVERSITETAS",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://en.ktu.edu/",
+          "title": "Home - Kaunas University of Technology | KTU",
+          "publisher": "Kaunas University of Technology",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://admissions.ktu.edu/",
+          "title": "Home Page - Admissions | KTU",
+          "publisher": "Kaunas University of Technology",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://en.ktu.edu/studies/",
+          "title": "Studies - Kaunas University of Technology | KTU",
+          "publisher": "Kaunas University of Technology",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-luxembourg",
+      "name": "University of Luxembourg",
+      "country": "LU",
+      "city": "Esch-sur-Alzette",
+      "nativeName": "Université du Luxembourg",
+      "websiteUrl": null,
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "uni.lu"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "LUXLUX-VIL01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208960"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999878620"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITE DU LUXEMBOURG",
+        "Universite du Luxembourg"
+      ],
+      "verificationStatus": "REGISTRY_ONLY",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/uni.lu/hei",
+          "title": "HEI registry record: UNIVERSITE DU LUXEMBOURG",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-malta",
+      "name": "University of Malta",
+      "country": "MT",
+      "city": "Msida",
+      "nativeName": "Università ta' Malta",
+      "websiteUrl": "https://www.um.edu.mt/",
+      "admissionsUrl": "https://www.um.edu.mt/study/",
+      "programmeCatalogueUrl": "https://www.um.edu.mt/courses/",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "um.edu.mt"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "MT MALTA01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209037"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999887059"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITA TA MALTA",
+        "Universita ta Malta"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/um.edu.mt/hei",
+          "title": "HEI registry record: UNIVERSITA TA MALTA",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.um.edu.mt/",
+          "title": "L-Università ta' Malta",
+          "publisher": "University of Malta",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.um.edu.mt/study/",
+          "title": "Study - L-Università ta' Malta",
+          "publisher": "University of Malta",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.um.edu.mt/courses/",
+          "title": "Study at UM - L-Università ta' Malta",
+          "publisher": "University of Malta",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-amsterdam",
+      "name": "University of Amsterdam",
+      "country": "NL",
+      "city": "Amsterdam",
+      "nativeName": "Universiteit van Amsterdam",
+      "websiteUrl": "https://www.uva.nl/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": "https://www.uva.nl/en/education/education.html",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "uva.nl"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "NL AMSTERD01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209442"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999985708"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITEIT VAN AMSTERDAM",
+        "Universiteit van Amsterdam"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/uva.nl/hei",
+          "title": "HEI registry record: UNIVERSITEIT VAN AMSTERDAM",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.uva.nl/en",
+          "title": "University of Amsterdam",
+          "publisher": "University of Amsterdam",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.uva.nl/en/education/education.html",
+          "title": "Study at the UvA - University of Amsterdam",
+          "publisher": "University of Amsterdam",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "utrecht-university",
+      "name": "Utrecht University",
+      "country": "NL",
+      "city": "Utrecht",
+      "nativeName": "Universiteit Utrecht",
+      "websiteUrl": "https://www.uu.nl/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": "https://www.uu.nl/en/education",
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "uu.nl"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "NL UTRECHT01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209443"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999985805"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITEIT UTRECHT",
+        "Universiteit Utrecht"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/uu.nl/hei",
+          "title": "HEI registry record: UNIVERSITEIT UTRECHT",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.uu.nl/en",
+          "title": "Utrecht University | Sharing science, shaping tomorrow",
+          "publisher": "Utrecht University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.uu.nl/en/education",
+          "title": "Education - Utrecht University",
+          "publisher": "Utrecht University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-lodz",
+      "name": "University of Łódź",
+      "country": "PL",
+      "city": "Łódź",
+      "nativeName": "Uniwersytet Łódzki",
+      "websiteUrl": "https://www.uni.lodz.pl/en/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "uni.lodz.pl"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "PL LODZ01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208823"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999863488"
+        }
+      ],
+      "aliases": [
+        "UNIWERSYTET LODZKI",
+        "Uniwersytet Łódzki"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/uni.lodz.pl/hei",
+          "title": "HEI registry record: UNIWERSYTET LODZKI",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.uni.lodz.pl/en/",
+          "title": "University of Lodz",
+          "publisher": "University of Łódź",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "lodz-university-of-technology",
+      "name": "Łódź University of Technology",
+      "country": "PL",
+      "city": "Łódź",
+      "nativeName": "Politechnika Łódzka",
+      "websiteUrl": "https://p.lodz.pl/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "p.lodz.pl"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "PL LODZ02"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209033"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999886671"
+        }
+      ],
+      "aliases": [
+        "POLITECHNIKA LODZKA",
+        "Politechnika Łódzka"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/p.lodz.pl/hei",
+          "title": "HEI registry record: POLITECHNIKA LODZKA",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://p.lodz.pl/en",
+          "title": "Lodz University of Technology",
+          "publisher": "Łódź University of Technology",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-porto",
+      "name": "University of Porto",
+      "country": "PT",
+      "city": "Porto",
+      "nativeName": "Universidade do Porto",
+      "websiteUrl": "https://www.up.pt/portal/en/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "up.pt"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "P PORTO02"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209094"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999894916"
+        }
+      ],
+      "aliases": [
+        "UNIVERSIDADE DO PORTO",
+        "Universidade do Porto"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/up.pt/hei",
+          "title": "HEI registry record: UNIVERSIDADE DO PORTO",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.up.pt/portal/en/",
+          "title": "University of Porto",
+          "publisher": "University of Porto",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-lisbon",
+      "name": "University of Lisbon",
+      "country": "PT",
+      "city": "Lisbon",
+      "nativeName": "Universidade de Lisboa",
+      "websiteUrl": null,
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "ulisboa.pt"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "P LISBOA109"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10112968"
+        },
+        {
+          "scheme": "PIC",
+          "value": "949885305"
+        }
+      ],
+      "aliases": [
+        "UNIVERSIDADE DE LISBOA",
+        "Universidade de Lisboa"
+      ],
+      "verificationStatus": "REGISTRY_ONLY",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/ulisboa.pt/hei",
+          "title": "HEI registry record: UNIVERSIDADE DE LISBOA",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-bucharest",
+      "name": "University of Bucharest",
+      "country": "RO",
+      "city": "Bucharest",
+      "nativeName": "Universitatea din București",
+      "websiteUrl": null,
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "unibuc.ro"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "RO BUCURES09"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208074"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999603916"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITATEA DIN BUCURESTI",
+        "Universitatea din Bucuresti"
+      ],
+      "verificationStatus": "REGISTRY_ONLY",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/unibuc.ro/hei",
+          "title": "HEI registry record: UNIVERSITATEA DIN BUCURESTI",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "babes-bolyai-university",
+      "name": "Babeș-Bolyai University",
+      "country": "RO",
+      "city": "Cluj-Napoca",
+      "nativeName": "Universitatea Babeș-Bolyai",
+      "websiteUrl": "https://www.ubbcluj.ro/en/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "ubbcluj.ro"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "RO CLUJNAP01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208799"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999860578"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITATEA BABES BOLYAI",
+        "Universitatea Babes Bolyai"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/ubbcluj.ro/hei",
+          "title": "HEI registry record: UNIVERSITATEA BABES BOLYAI",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.ubbcluj.ro/en/",
+          "title": "BBU, Babeș-Bolyai University",
+          "publisher": "Babeș-Bolyai University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "slovak-university-of-technology-in-bratislava",
+      "name": "Slovak University of Technology in Bratislava",
+      "country": "SK",
+      "city": "Bratislava",
+      "nativeName": "Slovenská technická univerzita v Bratislave",
+      "websiteUrl": "https://www.stuba.sk/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "stuba.sk"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "SK BRATISL01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208874"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999868823"
+        }
+      ],
+      "aliases": [
+        "SLOVENSKA TECHNICKA UNIVERZITA V BRATISLAVE",
+        "Slovenska Technicka Univerzita v Bratislave"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/stuba.sk/hei",
+          "title": "HEI registry record: SLOVENSKA TECHNICKA UNIVERZITA V BRATISLAVE",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.stuba.sk/",
+          "title": "Slovenská technická univerzita v Bratislave",
+          "publisher": "Slovak University of Technology in Bratislava",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-ljubljana",
+      "name": "University of Ljubljana",
+      "country": "SI",
+      "city": "Ljubljana",
+      "nativeName": "Univerza v Ljubljani",
+      "websiteUrl": "https://www.uni-lj.si/en",
+      "admissionsUrl": "https://www.uni-lj.si/en/study",
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "uni-lj.si"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "SI LJUBLJA01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209243"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999923240"
+        }
+      ],
+      "aliases": [
+        "UNIVERZA V LJUBLJANI",
+        "Univerza v Ljubljani"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/uni-lj.si/hei",
+          "title": "HEI registry record: UNIVERZA V LJUBLJANI",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.uni-lj.si/en",
+          "title": "University of Ljubljana",
+          "publisher": "University of Ljubljana",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.uni-lj.si/en/study",
+          "title": "Study &vert; University of Ljubljana",
+          "publisher": "University of Ljubljana",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-barcelona",
+      "name": "University of Barcelona",
+      "country": "ES",
+      "city": "Barcelona",
+      "nativeName": "Universitat de Barcelona",
+      "websiteUrl": null,
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "ub.edu"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "E BARCELO01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209447"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999986387"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITAT DE BARCELONA",
+        "Universitat de Barcelona"
+      ],
+      "verificationStatus": "REGISTRY_ONLY",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/ub.edu/hei",
+          "title": "HEI registry record: UNIVERSITAT DE BARCELONA",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "autonomous-university-of-barcelona",
+      "name": "Autonomous University of Barcelona",
+      "country": "ES",
+      "city": "Cerdanyola del Vallès",
+      "nativeName": "Universitat Autònoma de Barcelona",
+      "websiteUrl": "https://www.uab.cat/web/universitat-autonoma-de-barcelona-1345467954774.html",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "uab.cat"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "E BARCELO02"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209448"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999986484"
+        }
+      ],
+      "aliases": [
+        "UNIVERSITAT AUTONOMA DE BARCELONA",
+        "Universitat Autonoma de Barcelona"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/uab.cat/hei",
+          "title": "HEI registry record: UNIVERSITAT AUTONOMA DE BARCELONA",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.uab.cat/web/universitat-autonoma-de-barcelona-1345467954774.html",
+          "title": "Welcome to Universitat Autònoma de Barcelona - UAB Barcelona",
+          "publisher": "Autonomous University of Barcelona",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "lund-university",
+      "name": "Lund University",
+      "country": "SE",
+      "city": "Lund",
+      "nativeName": "Lunds universitet",
+      "websiteUrl": "https://www.lunduniversity.lu.se/",
+      "admissionsUrl": "https://www.lunduniversity.lu.se/study",
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "lu.se"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "S LUND01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209141"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999901318"
+        }
+      ],
+      "aliases": [
+        "LUNDS UNIVERSITET",
+        "Lunds Universitet"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/lu.se/hei",
+          "title": "HEI registry record: LUNDS UNIVERSITET",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.lunduniversity.lu.se/",
+          "title": "Home | Lund University",
+          "publisher": "Lund University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://www.lunduniversity.lu.se/study",
+          "title": "Study | Lund University",
+          "publisher": "Lund University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "uppsala-university",
+      "name": "Uppsala University",
+      "country": "SE",
+      "city": "Uppsala",
+      "nativeName": "Uppsala universitet",
+      "websiteUrl": null,
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "uu.se"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "S UPPSALA01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209437"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999985029"
+        }
+      ],
+      "aliases": [
+        "UPPSALA UNIVERSITET",
+        "Uppsala Universitet"
+      ],
+      "verificationStatus": "REGISTRY_ONLY",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/uu.se/hei",
+          "title": "HEI registry record: UPPSALA UNIVERSITET",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "peking-university",
+      "name": "Peking University",
+      "country": "CN",
+      "city": "Beijing",
+      "nativeName": null,
+      "websiteUrl": "https://english.pku.edu.cn/",
+      "admissionsUrl": "https://isd.pku.edu.cn/cn/",
+      "programmeCatalogueUrl": null,
+      "externalIds": [],
+      "aliases": [],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://english.pku.edu.cn/",
+          "title": "Peking University",
+          "publisher": "Peking University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://isd.pku.edu.cn/cn/",
+          "title": "北京大学国际合作部留学生办公室_北京大学国际合作部留学生办公室,北大留办",
+          "publisher": "Peking University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-tokyo",
+      "name": "University of Tokyo",
+      "country": "JP",
+      "city": "Tokyo",
+      "nativeName": "東京大学",
+      "websiteUrl": "https://www.u-tokyo.ac.jp/en/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [],
+      "aliases": [],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://www.u-tokyo.ac.jp/en/",
+          "title": "The University of Tokyo",
+          "publisher": "University of Tokyo",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    },
+    {
+      "slug": "seoul-national-university",
+      "name": "Seoul National University",
+      "country": "KR",
+      "city": "Seoul",
+      "nativeName": null,
+      "websiteUrl": "https://en.snu.ac.kr/index.html",
+      "admissionsUrl": "https://en.snu.ac.kr/admission",
+      "programmeCatalogueUrl": null,
+      "externalIds": [],
+      "aliases": [],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-11",
+      "sources": [
+        {
+          "url": "https://en.snu.ac.kr/index.html",
+          "title": "Seoul National University",
+          "publisher": "Seoul National University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        },
+        {
+          "url": "https://en.snu.ac.kr/admission",
+          "title": "Admissions Home - Admissions - Seoul National University",
+          "publisher": "Seoul National University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-11"
+        }
+      ]
+    }
+  ]
+}

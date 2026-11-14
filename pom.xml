@@ -88,6 +88,12 @@
 			<artifactId>testcontainers-postgresql</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- HTML parsing for official-page canonicalisation and structured-data extraction (monitoring pipeline). -->
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.21.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>

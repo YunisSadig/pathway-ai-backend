@@ -47,3 +47,15 @@ Program slugs are unique per university only. The public identifier is `<univers
 
 ## ADR-16 Query efficiency is asserted
 List pages fetch university, country and field in the page query and batch the language collection (`@BatchSize`); the detail view loads to-one associations in one entity-graph query and the collections with a fixed number of queries. `ProgramQueryCountIT` fails if statement counts grow with page size. Indexes are kept only if measured as used (V3 dropped `idx_program_name_lower`).
+
+## ADR-17 Institution identity is separate from program facts, and verification has a level below "verified"
+V5 adds identity columns and three small tables (external ids, aliases, source links) to `university` and a second importer (`UniversityCatalogueImporter`, `reference-data/universities.json`). Resolution is by stable external id, then slug, then alias in the same country, so a rename or an existing row never produces a duplicate. `verification_status` has three levels: `VERIFIED` (registry match and official site read), `REGISTRY_ONLY` (identity confirmed, site unreadable, no website stored: enforced by a CHECK) and `UNVERIFIED`. It only ever moves up. Alternative rejected: inserting unreadable institutions as verified, or leaving three EU countries empty; either would misstate what is known.
+
+## ADR-18 Monitoring reuses `source`; facts are staged before they are published
+`source_monitor` is 1:1 with `source` (no parallel source table); `source_check` is the audit trail; `staged_change` is the staging area with a unique dedupe key. The pipeline is fetch, canonicalise, extract (per-source adapters), normalise, validate, compare, stage, apply-or-review. Only an empty duration or language field read from structured data is published automatically; tuition, deadlines, requirements and any differing value need a person. Dated facts for a new period are new rows; an existing period is never overwritten. Alternative rejected: one generic scraper publishing what it parses; universities do not share markup and a wrong fee is worse than a missing one.
+
+## ADR-19 Crawler boundaries are code, not convention
+`UrlGuard` (https only, approved hosts, public addresses, every redirect hop), `RobotsPolicy` (RFC 9309), per-host spacing, a response cap, bounded retries and Retry-After handling live in `PageFetcher`; challenge pages and 401/403 mark a source UNSUPPORTED instead of being worked around. The network is behind `HttpTransport`, so every crawler test uses recorded fixtures. There is no HTTP control surface: registering, crawling, reviewing and re-activating run from the command line (`app.refresh.command`).
+
+## ADR-20 An external scheduler runs unattended checks
+The in-process `@Scheduled` runner is off by default. Due-ness (`next_check_at`) is stored in PostgreSQL, so a daily job from any scheduler (platform cron, Cloud Run Job, GitHub Actions) is safe to repeat, delay or restart. Nothing is provisioned without approval.

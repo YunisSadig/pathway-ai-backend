@@ -32,6 +32,11 @@ app:
     import-on-startup: ${IMPORT_REFERENCE_DATA:false}
     location: ${REFERENCE_DATA_LOCATION:classpath:reference-data/programs.json}
 
+  catalogue:
+    # Off by default. Set IMPORT_UNIVERSITY_CATALOGUE=true to run the idempotent institution import at startup.
+    import-on-startup: ${IMPORT_UNIVERSITY_CATALOGUE:false}
+    location: ${UNIVERSITY_CATALOGUE_LOCATION:classpath:reference-data/universities.json}
+
 management:
   endpoints:
     web:

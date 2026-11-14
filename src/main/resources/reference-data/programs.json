@@ -8,6 +8,10 @@
     {
       "iso2": "NL",
       "name": "Netherlands"
+    },
+    {
+      "iso2": "DK",
+      "name": "Denmark"
     }
   ],
   "fields": [
@@ -162,6 +166,20 @@
       "publisher": "Aalto University",
       "type": "UNIVERSITY_WEBSITE",
       "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.ku.dk/studies/masters/computer-science",
+      "title": "Master of Science (MSc) in Computer Science - Study Programmes on University of Copenhagen",
+      "publisher": "University of Copenhagen",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
+    },
+    {
+      "url": "https://www.ku.dk/studies/masters/economics",
+      "title": "Master of Science (MSc) in Economics - Study Programmes on University of Copenhagen",
+      "publisher": "University of Copenhagen",
+      "type": "UNIVERSITY_WEBSITE",
+      "retrievedOn": "2026-11-11"
     }
   ],
   "universities": [
@@ -184,6 +202,13 @@
       "country": "FI",
       "name": "Aalto University",
       "websiteUrl": "https://www.aalto.fi"
+    },
+    {
+      "slug": "university-of-copenhagen",
+      "country": "DK",
+      "name": "University of Copenhagen",
+      "city": "Copenhagen",
+      "websiteUrl": "https://www.ku.dk/en"
     }
   ],
   "programs": [
@@ -507,6 +532,39 @@
           "scopeNote": "Study right started on or before 1 August 2024: 15,000 EUR / academic year. Tuition-fee students. The page states nothing for study rights started between 2 August 2024 and 31 July 2025.",
           "source": "https://www.aalto.fi/en/programmes/masters-programme-in-mechanical-engineering"
         }
+      ]
+    },
+    {
+      "university": "university-of-copenhagen",
+      "slug": "computer-science-msc",
+      "name": "Master of Science (MSc) in Computer Science",
+      "degreeLevel": "MASTER",
+      "field": "computer-and-data-science",
+      "studyMode": "FULL_TIME",
+      "durationMonths": 24,
+      "officialProgramUrl": "https://www.ku.dk/studies/masters/computer-science",
+      "verification": {
+        "status": "VERIFIED",
+        "verifiedOn": "2026-11-11"
+      },
+      "sources": [
+        "https://www.ku.dk/studies/masters/computer-science"
+      ]
+    },
+    {
+      "university": "university-of-copenhagen",
+      "slug": "economics-msc",
+      "name": "Master of Science (MSc) in Economics",
+      "degreeLevel": "MASTER",
+      "field": "economics",
+      "durationMonths": 24,
+      "officialProgramUrl": "https://www.ku.dk/studies/masters/economics",
+      "verification": {
+        "status": "VERIFIED",
+        "verifiedOn": "2026-11-11"
+      },
+      "sources": [
+        "https://www.ku.dk/studies/masters/economics"
       ]
     }
   ],
