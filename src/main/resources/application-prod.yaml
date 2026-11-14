@@ -1,0 +1,59 @@
+# Production profile (SPRING_PROFILES_ACTIVE=prod, set by the Dockerfile). Everything secret comes from the environment.
+server:
+  shutdown: graceful                 # finish in-flight requests on SIGTERM (platform deploys / scale-to-zero)
+  forward-headers-strategy: native   # the platform proxy's X-Forwarded-* give the real client address (rate limit, logs)
+  error:
+    include-message: never           # error bodies never carry exception text or stack traces
+    include-stacktrace: never
+    include-binding-errors: never
+    include-exception: false
+  tomcat:
+    threads:
+      max: 20
+    connection-timeout: 10s
+    max-http-header-size: 8KB
+    max-swallow-size: 64KB
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  datasource:
+    hikari:
+      # a small pool: Neon's free plan has few connections, and its compute suspends after 5 idle minutes
+      maximum-pool-size: 4
+      minimum-idle: 0
+      connection-timeout: 20000
+      validation-timeout: 5000
+      idle-timeout: 60000
+      max-lifetime: 240000
+      # pgJDBC's verify-full otherwise wants ~/.postgresql/root.crt; this validates against the JVM CA bundle (host name still verified)
+      data-source-properties:
+        sslfactory: org.postgresql.ssl.DefaultJavaSSLFactory
+  flyway:
+    # Schema changes are applied by the controlled bootstrap/migrate run with the owner role, BEFORE a deploy; the API itself may run
+    # with a read-only role. Set FLYWAY_ENABLED=true only for a deliberate first deployment.
+    enabled: ${FLYWAY_ENABLED:false}
+management:
+  endpoint:
+    health:
+      show-details: never
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  info:
+    env:
+      enabled: true
+info:
+  app:
+    commit: ${RENDER_GIT_COMMIT:${APP_COMMIT_SHA:unknown}}
+app:
+  access:
+    staging-key: ${STAGING_ACCESS_KEY:}
+    public-launch: ${PUBLIC_LAUNCH:false}   # stays false until the Studyinfo reuse rights are established (docs/data/studyinfo-permission-request.md)
+  rate-limit:
+    per-minute: ${RATE_LIMIT_PER_MINUTE:240}
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: WARN
+    com.zaxxer.hikari: WARN
