@@ -246,3 +246,26 @@ Only problems that actually happened during development. Each entry was verified
 - **Evidence:** discovery counted any successful source check; a program whose fact-extracting monitor was failing stayed listed because an admissions page was still read.
 - **Fix:** a failing, unsupported or stale extractor monitor withholds the program (`DiscoveryVisibilityIT`).
 - **Status:** fixed.
+
+## 31. A test that runs every startup importer polluted the shared test database (67 failures in 10 classes)
+
+- **Evidence:** the first full `verify` of the clean-catalogue branch: `UniversityApiIT` saw 6 universities instead of 3, `ProgramApiIT` failed with "duplicate key ... uq_academic_field_slug", `ProgramSchemaConstraintsIT` with "duplicate key ... uq_university_slug", and so on.
+- **Root cause:** `NoStaticCatalogueIT` starts the application with every importer enabled and therefore commits the real catalogue (universities, countries, fields) into the one PostgreSQL container shared by all integration tests.
+- **Files:** `NoStaticCatalogueIT`, new `IsolatedPostgresConfiguration`.
+- **Fix:** that test class gets a container of its own. Verified: the next full run had 2 failures left (unrelated causes, below), then 0.
+- **Prevention rule:** a test that commits real rows or runs startup importers must not use the shared container.
+- **Status:** fixed.
+
+## 32. The retirement script could not be run twice in one transaction
+
+- **Evidence:** `CatalogueRetirementIT.aBatchNameCannotBeReused...`: `relation "keep_program" already exists`.
+- **Root cause:** the script's temp tables were `ON COMMIT DROP`, so a second run inside the same transaction (which the test does to prove idempotence) found them still there.
+- **Fix:** the script drops its own temp tables at the start and end, schema-qualified with `pg_temp` so a permanent table of that name could never be dropped.
+- **Status:** fixed (`CatalogueRetirementIT`).
+
+## 33. Unfinished work from an interrupted session was caught only by the full build
+
+- **Evidence:** `ReferenceDataFileTest`: `Unrecognized property "_comment"` in the new `taxonomy.json`; `FlywayMigrationIT` still pinned V7; `ProgramApiIT` still pinned the old detail keys; `AaltoTuitionSyncIT` depended on a now-empty production mapping.
+- **Fix:** comment removed (the strict reader stays strict), pins updated for V8 and the additive `synchronization` object, the Aalto mapping location made configurable so the test supplies its own synthetic mapping.
+- **Prevention rule:** run the complete `verify` and read every failure BEFORE any destructive database step. Build in a scratch copy when a developer's own server is running from the working tree.
+- **Status:** fixed; full `verify` 332 tests green before the cleanup was executed.

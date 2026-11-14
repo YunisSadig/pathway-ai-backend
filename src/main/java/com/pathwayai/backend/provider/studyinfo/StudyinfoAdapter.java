@@ -38,6 +38,11 @@ public class StudyinfoAdapter implements ExtractionAdapter {
     }
 
     @Override
+    public java.util.Optional<String> discontinuation(CanonicalPage page) {
+        return StudyinfoParser.discontinuation(page.text());
+    }
+
+    @Override
     public List<ExtractedFact> extract(CanonicalPage page) {
         StudyinfoParser.Parsed parsed = StudyinfoParser.parse(page.text(), taxonomy);
         if (!parsed.issues().isEmpty()) {

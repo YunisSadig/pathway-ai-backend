@@ -1,9 +1,4 @@
 {
-  "_comment": "Reviewed mapping from Aalto programs to the fee group of the official tuition table (https://www.aalto.fi/en/admission-services/scholarships-and-tuition-fees). The table names fee groups, not programs, so a program is listed here only when its school is known from its own official page. A program that is not listed receives no automatic fee. Evidence = the page that states the program's school.",
-  "programs": [
-    {"slug": "architecture-msc", "level": "MASTER", "group": "ART_ARCHITECTURE",
-     "evidence": "https://www.aalto.fi/en/study-options/architecture-master-of-science-in-architecture"},
-    {"slug": "mechanical-engineering-msc", "level": "MASTER", "group": "TECHNOLOGY",
-     "evidence": "https://www.aalto.fi/en/programmes/masters-programme-in-mechanical-engineering"}
-  ]
+  "_comment": "Reviewed mapping from Aalto programs to the fee group of the official tuition table (https://www.aalto.fi/en/admission-services/scholarships-and-tuition-fees). EMPTY on purpose: the two programs that used to be listed were static records and were retired, and the Studyinfo-connected Aalto programs have no evidenced fee group, so their tuition is unavailable. Add an entry only with the page that states the program's school AND an official source monitor for that program.",
+  "programs": []
 }

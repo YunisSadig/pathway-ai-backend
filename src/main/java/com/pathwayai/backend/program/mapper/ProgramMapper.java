@@ -75,7 +75,8 @@ public class ProgramMapper {
                         source(t.getSource()))).toList(),
                 requirements.stream().map(r -> new Requirement(r.getApplicationCycle(), r.getRequirementType(),
                         r.getDescription(), r.getMinimumValue(), r.getValueUnit(),
-                        calendar.requirement(r.getApplicationCycle()), source(r.getSource()))).toList());
+                        calendar.requirement(r.getApplicationCycle()), source(r.getSource()))).toList(),
+                null);
     }
 
     /**

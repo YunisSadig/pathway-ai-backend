@@ -15,10 +15,11 @@ import org.springframework.stereotype.Component;
 
 /**
  * What the public may discover. When enabled (the default for the running application) a program is listed only if
- * it is VERIFIED, belongs to a VERIFIED university and at least one source registered for it was read successfully
- * within {@code app.discovery.max-source-age-days}. A program whose sources have not been refreshed for longer
- * simply drops out of discovery instead of being shown with stale facts; the data itself is never deleted, and it
- * returns the moment a refresh succeeds. Universities are listed unless they are explicitly UNVERIFIED.
+ * it is ACTIVE (not discontinued by its official source), VERIFIED, belongs to a VERIFIED university and has a working
+ * fact-extracting monitor (ADAPTER or JSON_LD, never a page-change monitor) read successfully within
+ * {@code app.discovery.max-source-age-days}. A program whose extractor stopped, failed or went stale simply drops out
+ * of discovery instead of being shown with stale facts; the data itself is never deleted, and it returns the moment a
+ * refresh succeeds. Universities are listed unless they are explicitly UNVERIFIED.
  *
  * <p>Every specification returned is a real predicate, never null (Spring Data 4).
  */
@@ -65,9 +66,13 @@ public class DiscoveryPolicy {
         }
         Instant cutoff = clock.instant().minus(maxSourceAge);
         return (root, query, cb) -> {
+            // explicit publication eligibility: a working, fresh FACT-EXTRACTING monitor (official API connector or permitted
+            // structured-data extractor). A page-change (CONTENT_HASH) monitor never makes a program eligible.
             Subquery<Long> recent = query.subquery(Long.class);
             Root<ProgramFreshness> f = recent.from(ProgramFreshness.class);
             recent.select(f.get("sourceId")).where(cb.equal(f.get("programId"), root.get("id")),
+                    f.<String>get("extractionMethod").in("ADAPTER", "JSON_LD"),
+                    cb.equal(f.get("status"), "ACTIVE"),
                     cb.greaterThanOrEqualTo(f.<Instant>get("lastSuccessAt"), cutoff));
             // a monitor that extracts facts (not a mere page-change alarm) that is failing, unsupported or stale means the
             // facts it maintains cannot be called current, even when some other page of the program was read recently
@@ -78,6 +83,7 @@ public class DiscoveryPolicy {
                     cb.or(b.<String>get("status").in("FAILING", "UNSUPPORTED"), cb.isNull(b.get("lastSuccessAt")),
                             cb.lessThan(b.<Instant>get("lastSuccessAt"), cutoff)));
             return cb.and(
+                    cb.equal(root.get("lifecycleStatus"), "ACTIVE"),
                     cb.equal(root.get("verificationStatus"), com.pathwayai.backend.program.entity.VerificationStatus.VERIFIED),
                     cb.equal(root.get("university").get("verificationStatus"), "VERIFIED"),
                     cb.exists(recent), cb.not(cb.exists(brokenExtractor)));

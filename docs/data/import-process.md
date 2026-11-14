@@ -1,3 +1,7 @@
+> **SUPERSEDED (2026-11-14).** The static reference-data import and the content-hash registrar described below were removed:
+> the active catalogue holds no hand-maintained academic records. Current policy and procedure: [sync-policy.md](sync-policy.md),
+> connectors: [official-api-connectors.md](official-api-connectors.md). This page is kept as history of how the catalogue was first built.
+
 # Import process
 
 Two idempotent importers feed the database. Neither deletes anything. Schema is Flyway; data is data (see ADR-11).

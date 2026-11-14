@@ -39,19 +39,22 @@ public class ProgramService {
     private final ProgramMapper mapper;
     private final AcademicCalendar calendar;
     private final DiscoveryPolicy discovery;
+    private final ProgramSyncInfo syncInfo;
 
     /** Without a discovery restriction (hand-built services in unit tests). */
     public ProgramService(DegreeProgramRepository programs, ProgramIntakeRepository intakes,
                           TuitionFeeRepository tuitionFees, AcademicRequirementRepository requirements,
                           ProgramMapper mapper, AcademicCalendar calendar) {
-        this(programs, intakes, tuitionFees, requirements, mapper, calendar, DiscoveryPolicy.openToAll());
+        this(programs, intakes, tuitionFees, requirements, mapper, calendar, DiscoveryPolicy.openToAll(), null);
     }
 
     @Autowired
     public ProgramService(DegreeProgramRepository programs, ProgramIntakeRepository intakes,
                           TuitionFeeRepository tuitionFees, AcademicRequirementRepository requirements,
-                          ProgramMapper mapper, AcademicCalendar calendar, DiscoveryPolicy discovery) {
+                          ProgramMapper mapper, AcademicCalendar calendar, DiscoveryPolicy discovery,
+                          ProgramSyncInfo syncInfo) {
         this.discovery = discovery;
+        this.syncInfo = syncInfo;
         this.calendar = calendar;
         this.programs = programs;
         this.intakes = intakes;
@@ -99,10 +102,11 @@ public class ProgramService {
                 .and((root, query, cb) -> cb.equal(root.get("id"), program.getId()))) == 0) {
             throw new com.pathwayai.backend.common.discovery.ProgramWithheldException(identifier, discovery.maxSourceAgeDays());
         }
-        return mapper.toDetail(
+        var detail = mapper.toDetail(
                 program,
                 intakes.findByProgramIdOrderByAcademicYearDescApplicationDeadlineAscIdAsc(program.getId()),
                 tuitionFees.findByProgramIdOrderByAcademicYearDescStudentCategoryAsc(program.getId()),
                 requirements.findByProgramIdOrderByApplicationCycleDescRequirementTypeAscIdAsc(program.getId()));
+        return syncInfo == null ? detail : detail.withSynchronization(syncInfo.forProgram(program.getId()));
     }
 }

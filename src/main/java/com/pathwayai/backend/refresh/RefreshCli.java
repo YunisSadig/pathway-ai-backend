@@ -2,7 +2,6 @@ package com.pathwayai.backend.refresh;
 
 import com.pathwayai.backend.provider.studyinfo.StudyinfoAdapter;
 import com.pathwayai.backend.provider.studyinfo.StudyinfoImporter;
-import com.pathwayai.backend.refresh.registry.MonitorRegistrar;
 import com.pathwayai.backend.refresh.registry.SourceMonitorRepository;
 import com.pathwayai.backend.refresh.report.MonitoringReportService;
 import com.pathwayai.backend.refresh.schedule.RefreshService;
@@ -17,8 +16,9 @@ import org.springframework.stereotype.Component;
 /**
  * Operations entry point, run once and then the JVM ends (start with {@code --spring.main.web-application-type=none}):
  * <pre>
- *   --app.refresh.command=register                    register the official pages already cited as monitored sources
- *   --app.refresh.command=run                         check every source that is due (use this from an external scheduler)
+ *   --app.refresh.command=sync                        the unattended pass: discover new Studyinfo programs, then refresh
+ *                                                     everything that is due (use this from an external scheduler)
+ *   --app.refresh.command=run                         refresh every monitor that is due, without discovering new programs
  *   --app.refresh.command=report                      print the monitoring report
  *   --app.refresh.command=reactivate [--app.refresh.id=SOURCE_ID]   put unsupported/failing/paused sources back on schedule
  *   --app.refresh.command=studyinfo-import [--app.refresh.dry-run=true] [--app.refresh.university=slug] [--app.refresh.limit=N]
@@ -43,7 +43,7 @@ import org.springframework.stereotype.Component;
 public class RefreshCli implements ApplicationRunner {
 
     private final RefreshService refresh;
-    private final MonitorRegistrar registrar;
+    private final SyncOrchestrator orchestrator;
     private final MonitoringReportService report;
     private final StagedChangeService review;
     private final SourceMonitorRepository monitors;
@@ -60,7 +60,7 @@ public class RefreshCli implements ApplicationRunner {
     private final boolean failOnFailures;
     private final double failureRatioThreshold;
 
-    public RefreshCli(RefreshService refresh, MonitorRegistrar registrar, MonitoringReportService report,
+    public RefreshCli(RefreshService refresh, SyncOrchestrator orchestrator, MonitoringReportService report,
                       StagedChangeService review, SourceMonitorRepository monitors, Clock clock, @Value("${app.refresh.command}") String command,
                       @Value("${app.refresh.id:#{null}}") Long id, @Value("${app.refresh.actor:cli}") String actor,
                       @Value("${app.refresh.reason:#{null}}") String reason, StudyinfoImporter studyinfo,
@@ -71,7 +71,7 @@ public class RefreshCli implements ApplicationRunner {
                       @Value("${app.refresh.fail-on-failures:false}") boolean failOnFailures,
                       @Value("${app.refresh.failure-ratio-threshold:0.0}") double failureRatioThreshold) {
         this.refresh = refresh;
-        this.registrar = registrar;
+        this.orchestrator = orchestrator;
         this.report = report;
         this.review = review;
         this.monitors = monitors;
@@ -92,7 +92,15 @@ public class RefreshCli implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         switch (command) {
-            case "register" -> System.out.println("Registered sources: " + registrar.registerAll(clock.instant()));
+            case "sync" -> {
+                var result = orchestrator.runAll(clock.instant());
+                if (result.discovery() != null) {
+                    var d = result.discovery();
+                    System.out.println("Discovery: created " + d.created() + ", already imported " + d.alreadyImported()
+                            + ", skipped " + d.skipped() + ", failed " + d.failed());
+                }
+                finish("Refresh run: ", result.refresh());
+            }
             case "run" -> finish("Refresh run: ", refresh.runAllDue(clock.instant()));
             case "report" -> System.out.println(report.generate(clock.instant()).render());
             case "reactivate" -> System.out.println("Reactivated sources: " + monitors.reactivate(id, clock.instant()));

@@ -49,6 +49,10 @@ class DiscoveryVisibilityIT {
         program(good, "unverified-program", "UNVERIFIED", now.minus(1, ChronoUnit.DAYS));
         program(good, "never-checked", "VERIFIED", null);
         program(unverified, "at-unverified-university", "VERIFIED", now.minus(1, ChronoUnit.DAYS));
+        // a page-change monitor read today does NOT make a program eligible: it detects change, it does not synchronise facts
+        program(good, "page-watch-only", "VERIFIED", now.minus(1, ChronoUnit.DAYS), "CONTENT_HASH", "content-hash");
+        program(good, "discontinued", "VERIFIED", now.minus(1, ChronoUnit.DAYS));
+        jdbc.update("update degree_program set lifecycle_status = 'DISCONTINUED', discontinued_at = now() where slug = 'discontinued'");
     }
 
     @AfterEach
@@ -68,6 +72,10 @@ class DiscoveryVisibilityIT {
     }
 
     void program(long university, String slug, String status, Instant lastSuccess) {
+        program(university, slug, status, lastSuccess, "ADAPTER", "synthetic-extractor");
+    }
+
+    void program(long university, String slug, String status, Instant lastSuccess, String method, String adapter) {
         long id = jdbc.queryForObject("""
                 insert into degree_program (university_id, slug, name, degree_level, verification_status, verified_on)
                 values (?, ?, ?, 'MASTER', ?, case when ? = 'VERIFIED' then current_date else null end) returning id""",
@@ -78,7 +86,7 @@ class DiscoveryVisibilityIT {
                     values (?, 'Synthetic', 'Synthetic', 'UNIVERSITY_WEBSITE', current_date) returning id""",
                     Long.class, "https://www.zz-disc.example/" + slug);
             monitors.register(source, new SourceMonitor.Spec("https://www.zz-disc.example/" + slug, university, id, "PROGRAM", "",
-                    "CONTENT_HASH", "content-hash", "1", 7), "VERIFIED", Instant.now());
+                    method, adapter, "1", 7), "VERIFIED", Instant.now());
             jdbc.update("update source_monitor set last_success_at = ? where source_id = ?", java.sql.Timestamp.from(lastSuccess), source);
         }
     }
@@ -92,10 +100,33 @@ class DiscoveryVisibilityIT {
     }
 
     @Test
+    void aPageChangeMonitorAloneNeverMakesAProgramEligibleAndTheStatusSaysSo() throws Exception {
+        mockMvc.perform(get("/api/v1/programs/zz-disc-u--page-watch-only")).andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", containsString("Program withheld")));
+        mockMvc.perform(get("/api/v1/discovery/status")).andExpect(jsonPath("$.withheldBecause.noExtractor", greaterThanOrEqualTo(1)));
+    }
+
+    @Test
+    void aDiscontinuedProgramIsHiddenButItsDataIsKept() throws Exception {
+        mockMvc.perform(get("/api/v1/programs/zz-disc-u--discontinued")).andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", containsString("discontinued")));
+        mockMvc.perform(get("/api/v1/discovery/status")).andExpect(jsonPath("$.withheldBecause.discontinued", greaterThanOrEqualTo(1)));
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
+                "select count(*) from degree_program where slug = 'discontinued'", Long.class)).isEqualTo(1);
+    }
+
+    @Test
+    void theStatusReportsWhetherAnInProcessScheduleIsEnabled() throws Exception {
+        mockMvc.perform(get("/api/v1/discovery/status"))
+                .andExpect(jsonPath("$.scheduler.inProcessEnabled", is(false)))
+                .andExpect(jsonPath("$.scheduler.cron").exists());
+    }
+
+    @Test
     void aHeldBackProgramIsNotReachableByItsIdentifierEither() throws Exception {
         mockMvc.perform(get("/api/v1/programs/zz-disc-u--fresh")).andExpect(status().isOk());
         for (String hidden : new String[] {"zz-disc-u--stale", "zz-disc-u--unverified-program", "zz-disc-u--never-checked",
-                "zz-disc-unv--at-unverified-university"}) {
+                "zz-disc-unv--at-unverified-university", "zz-disc-u--page-watch-only", "zz-disc-u--discontinued"}) {
             mockMvc.perform(get("/api/v1/programs/" + hidden)).andExpect(status().isNotFound());
         }
     }
@@ -116,7 +147,7 @@ class DiscoveryVisibilityIT {
                 .andExpect(jsonPath("$.maxSourceAgeDays", is(45)))
                 .andExpect(jsonPath("$.programsWithheld", greaterThanOrEqualTo(4)))
                 .andExpect(jsonPath("$.withheldBecause.sourcesStale", greaterThanOrEqualTo(1)))
-                .andExpect(jsonPath("$.withheldBecause.neverChecked", greaterThanOrEqualTo(1)))
+                .andExpect(jsonPath("$.withheldBecause.noExtractor", greaterThanOrEqualTo(2)))
                 .andExpect(jsonPath("$.withheldBecause.notVerified", greaterThanOrEqualTo(2)))
                 .andExpect(jsonPath("$.lastSuccessfulSourceCheck").exists())
                 .andExpect(jsonPath("$.message", containsString("held back")));

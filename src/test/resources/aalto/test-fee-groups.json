@@ -1,0 +1,15 @@
+{
+  "_comment": "Synthetic mapping for AaltoTuitionSyncIT only (production maps no program).",
+  "programs": [
+    {
+      "slug": "architecture-msc",
+      "level": "MASTER",
+      "group": "ART_ARCHITECTURE"
+    },
+    {
+      "slug": "mechanical-engineering-msc",
+      "level": "MASTER",
+      "group": "TECHNOLOGY"
+    }
+  ]
+}

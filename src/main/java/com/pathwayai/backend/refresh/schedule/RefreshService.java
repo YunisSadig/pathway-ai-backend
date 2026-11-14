@@ -9,6 +9,7 @@ import com.pathwayai.backend.refresh.extract.ScopedExtractionAdapter;
 import com.pathwayai.backend.refresh.extract.PageCanonicalizer.CanonicalPage;
 import com.pathwayai.backend.refresh.fetch.PageFetcher;
 import com.pathwayai.backend.refresh.pipeline.ChangePipeline;
+import com.pathwayai.backend.refresh.pipeline.ProgramLifecycle;
 import com.pathwayai.backend.refresh.registry.SourceMonitor;
 import com.pathwayai.backend.refresh.registry.SourceMonitorRepository;
 import java.time.Duration;
@@ -59,18 +60,20 @@ public class RefreshService {
     private final PageCanonicalizer canonicalizer;
     private final Map<String, ExtractionAdapter> adapters;
     private final ChangePipeline pipeline;
+    private final ProgramLifecycle lifecycle;
     private final RefreshProperties props;
     private final JdbcClient jdbc;
     private final TransactionTemplate tx;
 
     public RefreshService(SourceMonitorRepository monitors, PageFetcher fetcher, PageCanonicalizer canonicalizer,
-                          List<ExtractionAdapter> adapterList, ChangePipeline pipeline, RefreshProperties props,
+                          List<ExtractionAdapter> adapterList, ChangePipeline pipeline, ProgramLifecycle lifecycle, RefreshProperties props,
                           JdbcClient jdbc, PlatformTransactionManager txManager) {
         this.monitors = monitors;
         this.fetcher = fetcher;
         this.canonicalizer = canonicalizer;
         this.adapters = adapterList.stream().collect(Collectors.toMap(ExtractionAdapter::name, Function.identity()));
         this.pipeline = pipeline;
+        this.lifecycle = lifecycle;
         this.props = props;
         this.jdbc = jdbc;
         this.tx = new TransactionTemplate(txManager);
@@ -174,6 +177,27 @@ public class RefreshService {
         ChangePipeline.Outcome result = new ChangePipeline.Outcome(0, 0, 0, 0, List.of());
         if (baseline || parserChanged || changed) {
             List<ExtractedFact> facts = List.of();
+            // the source itself says the program is gone: hide it (nothing is deleted); a failure never does this
+            var gone = m.programId() == null ? java.util.Optional.<String>empty() : adapter.discontinuation(page);
+            if (gone.isPresent()) {
+                boolean marked = lifecycle.discontinue(m, gone.get(), parser, now);
+                log.info("Source {} states program {} is discontinued ({}): {}", m.sourceId(), m.programId(), gone.get(),
+                        marked ? "now hidden from discovery" : "already hidden");
+                save(m.with(f -> {
+                    success(f, now);
+                    f.etag = r.etag();
+                    f.lastModified = r.lastModified();
+                    f.contentHash = page.hash();
+                    f.hashParserVersion = parser;
+                    f.adapterVersion = adapter.version();
+                    f.lastResult = "CHANGED";
+                    f.lastChangeAt = now;
+                    f.nextCheckAt = CheckSchedule.next(now, m.checkIntervalDays(), window, props.deadlineIntervalDays(), 0);
+                }));
+                monitors.logCheck(m.sourceId(), now, "CHANGED", r.httpStatus(), page.hash(), r.durationMs(), parser, gone.get());
+                RunSummary base = count("changed");
+                return new RunSummary(base.checked(), 0, 0, 0, base.changed(), 0, 0, 0, marked ? 1 : 0, 0, 0);
+            }
             if (adapter instanceof ScopedExtractionAdapter && m.universityId() == null) {
                 // a misconfigured source must fail visibly, not turn into a vague "page changed" review item
                 throw new IllegalStateException("adapter " + adapter.name() + " states facts for several programs and needs a source bound to a university"
@@ -185,6 +209,9 @@ public class RefreshService {
                 facts = perProgram.values().stream().flatMap(List::stream).toList();
             } else {
                 facts = adapter.extract(page);
+                if (!facts.isEmpty() && m.programId() != null && lifecycle.reinstate(m, parser, now)) {
+                    log.info("Source {} publishes program {} again: reinstated", m.sourceId(), m.programId());
+                }
                 result = pipeline.process(m, facts, parser, now);
             }
             log.info("Source {} read by {}: {} fact(s) extracted; {} unchanged, {} auto-applied, {} staged for review, {} already seen, {} rejected",
