@@ -332,3 +332,11 @@ Only problems that actually happened during development. Each entry was verified
 - **Fix:** narrowed immediately to the single repository in the installation settings; later installs were done by screenshot and coordinates with a check before pressing Install.
 - **Prevention rule:** on a page that re-renders, click by what the screenshot shows, and verify the selected scope on screen before an irreversible button.
 - **Status:** fixed.
+
+## 42. The first hosted backup failed: `pg_dump: SSL error: certificate verify failed`
+
+- **Evidence:** backup run 43633074004, step "Encrypted dump". The Java driver verified the same server successfully.
+- **Root cause:** the `postgres:17` image ships without a CA bundle (`/etc/ssl/certs` has two entries), so libpq's `sslrootcert=system` had no roots to verify against. Reproduced without credentials: the handshake fails before authentication.
+- **Fix:** mount the runner's CA bundle read-only into the container and set `PGSSLROOTCERT=/ca-bundle.crt`; refuse to run when the bundle is missing (guard test added). Verified without credentials: with the bundle the handshake succeeds and the attempt reaches "password authentication failed", which is the expected next step.
+- **Prevention rule:** a container is not a trust store; verify TLS from inside the same container image that will do the work.
+- **Status:** fixed (see the green run recorded in `docs/engineering/deployment-status.md`).
