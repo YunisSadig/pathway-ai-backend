@@ -1,7 +1,7 @@
 # Unattended synchronization: keeps the official-API programs current while nobody's computer is on.
 #
-# It does NOTHING until the owner opts in. The jobs only run when the repository VARIABLE SYNC_ENABLED is "true"; until then every scheduled
-# run is skipped (no cost, no secret, no database access). Exact owner steps (accounts, the protected "sync" environment, secrets, first run):
+# It does NOTHING until the owner opts in. SCHEDULED runs only happen when the repository VARIABLE SYNC_ENABLED is "true"; until then every scheduled
+# run is skipped (a manual "Run workflow" dispatch by a repository writer always runs, to test a setup before enabling the schedule) (no cost, no secret, no database access). Exact owner steps (accounts, the protected "sync" environment, secrets, first run):
 # docs/deployment-sync.md.
 #
 # What runs (all in scripts/ci/run-refresh.sh, the same file you can run on a laptop):
@@ -44,7 +44,8 @@ concurrency:
 
 jobs:
   refresh:
-    if: ${{ vars.SYNC_ENABLED == 'true' }}
+    # the schedule needs the owner's opt-in; a manual dispatch is itself the owner's explicit action (still restricted to main by the "sync" environment)
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.SYNC_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     environment: sync
