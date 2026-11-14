@@ -125,6 +125,8 @@ class CatalogueRetirementIT {
     void runScript(String batch, Consumer<JdbcTemplate> settings) {
         jdbc.queryForObject("select set_config('cleanup.batch', ?, true)", String.class, batch);
         jdbc.queryForObject("select set_config('cleanup.expected_database', current_database(), true)", String.class);
+        // the test database carries no development marker; the scenarios that are not about the marker opt out explicitly
+        jdbc.queryForObject("select set_config('cleanup.allow_unmarked_database', 'true', true)", String.class);
         settings.accept(jdbc);
         jdbc.execute(SCRIPT);
     }
@@ -196,6 +198,31 @@ class CatalogueRetirementIT {
             jdbc.execute("rollback to savepoint wrong_count");
             assertThat(count("select count(*) from degree_program where slug in ('synced', 'static', 'static-too')")).isEqualTo(3);
             assertThat(count("select count(*) from catalogue_archive where batch = 'it-batch-bad'")).isZero();
+        });
+    }
+
+    @Test
+    void refusesToRunOnADatabaseThatIsNotMarkedAsTheDevelopmentDatabase() {
+        inTransaction(() -> {
+            jdbc.execute("savepoint unmarked");
+            // same database name as expected, no development marker: exactly what a production database would look like
+            assertThatThrownBy(() -> runScript("it-batch-unmarked",
+                    j -> j.queryForObject("select set_config('cleanup.allow_unmarked_database', 'false', true)", String.class)))
+                    .hasMessageContaining("is not marked as the development database");
+            jdbc.execute("rollback to savepoint unmarked");
+            assertThat(count("select count(*) from degree_program where slug = 'static'")).as("nothing was removed").isEqualTo(1);
+            assertThat(count("select count(*) from catalogue_archive where batch = 'it-batch-unmarked'")).isZero();
+        });
+    }
+
+    @Test
+    void runsOnceThePersonWhoOwnsTheDevelopmentDatabaseHasMarkedIt() {
+        inTransaction(() -> {
+            String db = jdbc.queryForObject("select current_database()", String.class);
+            jdbc.execute("COMMENT ON DATABASE \"" + db + "\" IS 'pathway-ai:development'");
+            runScript("it-batch-marked", j -> j.queryForObject("select set_config('cleanup.allow_unmarked_database', 'false', true)", String.class));
+            assertThat(count("select count(*) from degree_program where slug = 'static'")).isZero();
+            assertThat(count("select count(*) from catalogue_archive where batch = 'it-batch-marked'")).isPositive();
         });
     }
 

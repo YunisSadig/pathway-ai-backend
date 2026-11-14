@@ -5,7 +5,8 @@
 -- that a page changed; it is not synchronization. A university is kept only if it has a kept program.
 --
 -- Safety (the whole script is ONE statement, so it runs inside whatever transaction the caller opened):
---   * refuses to run unless current_database() equals cleanup.expected_database (default 'pathway_ai');
+--   * refuses to run unless current_database() equals cleanup.expected_database (default 'pathway_ai') AND the database carries the
+--     development marker (COMMENT ON DATABASE ... IS 'pathway-ai:development'): the name alone cannot tell production apart;
 --   * refuses to run without the V8 archive table, or when the batch name was already used;
 --   * snapshots every removed program, university, monitor and orphaned source into catalogue_archive BEFORE deleting;
 --   * never touches flyway_schema_history, country, academic_field, or any other database;
@@ -31,6 +32,16 @@ BEGIN
     -- ---- guards ---------------------------------------------------------------------------------------------------
     IF current_database() <> v_expected_db THEN
         RAISE EXCEPTION 'refusing to run: connected to database %, expected %', current_database(), v_expected_db;
+    END IF;
+    -- The database NAME cannot tell development from production (both default to pathway_ai), so the database itself must carry
+    -- an explicit marker, set once by a person on the development database only:
+    --     COMMENT ON DATABASE pathway_ai IS 'pathway-ai:development';
+    -- An unmarked database (for example a production one) is refused. Only the integration test overrides this, with a setting
+    -- that no script, wrapper or documented command sets.
+    IF coalesce(current_setting('cleanup.allow_unmarked_database', true), '') <> 'true'
+       AND coalesce(shobj_description((SELECT d.oid FROM pg_database d WHERE d.datname = current_database()), 'pg_database'), '') <> 'pathway-ai:development' THEN
+        RAISE EXCEPTION 'refusing to run: database % is not marked as the development database (a person must run COMMENT ON DATABASE % IS ''pathway-ai:development'' on it first)',
+            current_database(), current_database();
     END IF;
     IF to_regclass('public.catalogue_archive') IS NULL THEN
         RAISE EXCEPTION 'refusing to run: public.catalogue_archive is missing (apply Flyway V8 first)';

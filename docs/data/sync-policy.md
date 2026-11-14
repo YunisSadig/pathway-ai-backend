@@ -75,7 +75,9 @@ Files: `scripts/db/retire-preview.sql` (read-only), `scripts/db/retire-unsynchro
 `scripts/db/retire-unsynchronised-catalogue.sh` (`--dry-run` / `--commit`). Rule: keep a program only if one of its monitors
 extracts facts; keep a university only if it has a kept program.
 
-Safeguards: database-name guard (`cleanup.expected_database`, default `pathway_ai`); verified `pg_dump` first (restore
+Safeguards: database-name guard (`cleanup.expected_database`, default `pathway_ai`) **and a development marker on the database itself**
+(the name alone cannot tell production apart; set once, by a person, on the development database only:
+`COMMENT ON DATABASE pathway_ai IS 'pathway-ai:development';` , an unmarked database is refused and no wrapper sets it); verified `pg_dump` first (restore
 into a scratch database and compare counts); preview; one transaction; every removed program, university, monitor and
 orphaned source is snapshotted into `catalogue_archive` **before** deleting; verification inside the transaction (expected
 counts, extractor present for every kept program, no page-change monitor left, no university without a program, no
