@@ -16,7 +16,9 @@
 #   MAX_AGE_HOURS         freshness threshold for the watchdog (default 240 = 10 days)
 #
 # Safety it enforces before starting Java (it never prints the password and never runs with `set -x`):
-#   * DB_URL must be a PostgreSQL JDBC URL; a database that is not on this machine must be reached over TLS (sslmode=require or stricter);
+#   * DB_URL must be a PostgreSQL JDBC URL; a database that is not on this machine must be reached with sslmode=verify-full: the server
+#     certificate AND host name are verified. The PostgreSQL JDBC driver's sslmode=require "accepts all server certificates" (it encrypts but
+#     does not authenticate the server), so it is refused. Neon's certificates chain to ISRG Root X1, which Java trusts by default;
 #   * a hosted runner (GITHUB_ACTIONS=true) is refused a localhost database: it cannot reach your computer and must never be pointed at it;
 #   * static academic records can never come back through this path: the reference-data importers are switched off for every mode
 #     except `bootstrap`, which loads only the taxonomy and the reviewed universities, and the "allow static records" override is refused.
@@ -39,12 +41,25 @@ case "$DB_URL" in jdbc:postgresql://*) ;; *) die "DB_URL must start with jdbc:po
 
 host="${DB_URL#jdbc:postgresql://}"; host="${host%%[/?]*}"; host="${host%%:*}"; host="${host#\[}"; host="${host%\]}"
 case "$host" in localhost|127.0.0.1|::1) is_local=true ;; *) is_local=false ;; esac
+db_name="${DB_URL#jdbc:postgresql://}"; db_name="${db_name#*/}"; db_name="${db_name%%[?]*}"
+# Actions logs of a PUBLIC repository are public. GitHub already masks the values of repository secrets (DB_URL, DB_USERNAME, DB_PASSWORD) but NOT
+# the parts Flyway and Hikari print when they log the URL (without its query string): mask the host name and the database name too. The
+# secrets themselves are deliberately not echoed here, not even inside a mask command.
+if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+  for derived in "$host" "$db_name"; do
+    [ -n "$derived" ] && echo "::add-mask::$derived"
+  done
+fi
 if [ "$is_local" = true ] && [ "${GITHUB_ACTIONS:-}" = "true" ]; then
-  die "refusing to run on a hosted runner against a localhost database ($host): point DB_URL at the hosted database"
+  die "refusing to run on a hosted runner against a localhost database: point DB_URL at the hosted database"
 fi
 if [ "$is_local" = false ]; then
-  case "$DB_URL" in *sslmode=require*|*sslmode=verify-ca*|*sslmode=verify-full*|*ssl=true*) ;;
-    *) die "DB_URL points at $host without TLS: add ?sslmode=require";; esac
+  # exactly one sslmode, and it must be verify-full (certificate + host name verified)
+  [ "$(printf '%s' "$DB_URL" | grep -o 'sslmode=' | wc -l)" -eq 1 ] || die "DB_URL must contain sslmode=verify-full exactly once"
+  case "$DB_URL" in
+    *[?\&]sslmode=verify-full|*[?\&]sslmode=verify-full\&*) ;;
+    *) die "a remote database must be reached with sslmode=verify-full (sslmode=require encrypts but does not verify the server)";;
+  esac
 fi
 [ "${APP_REFERENCE_DATA_ALLOW_STATIC_RECORDS:-}" != "true" ] || die "static academic records are not allowed through the unattended path"
 
@@ -73,7 +88,7 @@ with_retries() {  # with_retries <attempts> <base> command...
 }
 
 started=$(date -u +%FT%TZ)
-host_label="$host"; [ "$is_local" = true ] && host_label="$host (local)"
+host_label="hosted database"; [ "$is_local" = true ] && host_label="local database"
 echo "== Pathway AI refresh: mode=$MODE database=$host_label attempts=$ATTEMPTS started=$started"
 
 fail_flags=(--app.refresh.fail-on-failures=true "--app.refresh.failure-ratio-threshold=$FAILURE_RATIO")
@@ -96,7 +111,7 @@ echo "== Pathway AI refresh $outcome: mode=$MODE finished=$(date -u +%FT%TZ)"
 if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
   {
     echo "### Pathway AI refresh: \`$MODE\` $outcome"
-    echo "Database host: \`$host_label\`; started $started UTC."
+    echo "Target: \`$host_label\`; started $started UTC."
     echo '```'
     grep -E "Refresh run|Discovery|Freshness|attempt|ERROR|Exception|WARN" "$LOG" | grep -viE "password|secret|token" | tail -n 25
     echo '```'

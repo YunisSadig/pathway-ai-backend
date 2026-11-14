@@ -55,19 +55,47 @@ Expected cost: **$0**. Billing conditions can change: read each sign-up page, an
   than half of the checks fail.
 * **Last-success monitoring:** `scripts/ci/run-refresh.sh freshness`, `GET /api/v1/discovery/status` (`lastSuccessfulSourceCheck`,
   `state`) and the per-program `synchronization.lastSuccessfulSyncAt`.
-* **If the schedule itself stops** (the 60-day rule, a disabled workflow) the job cannot report that. Two protections: any push or merge
-  resets the 60-day clock, and once the API is hosted an external uptime check on `/api/v1/discovery/status` (alert when `state` is not
-  `FRESH`) is the independent alarm. Programs also leave public discovery on their own after 45 days without a successful read, so stale
-  data is never presented as current.
+* **Three different failures need three different alarms.** A watchdog inside the job can tell the first two apart; it can never notice the third:
+
+  | What went wrong | Who notices | How |
+  |---|---|---|
+  | A run fails, or more than half of the source checks fail | the workflow | the run fails, the `alert` job opens or comments on an issue (+ webhook), GitHub emails the user who last edited the cron line |
+  | Runs "succeed" but a program is no longer current (a source quietly stopped, a monitor FAILING) | the `freshness` watchdog step | it exits non-zero unless **every** extractor-maintained program was read within 10 days, which fails the run and triggers the alert above |
+  | **No run happens at all**: schedule disabled after 60 days of repository inactivity, a GitHub outage or dropped run, `SYNC_ENABLED` switched off by mistake | **nothing inside GitHub can** | an **independent dead-man's switch**: after every fully successful run the workflow pings `HEALTHCHECK_PING_URL`; the external service alerts you when the expected ping does not arrive |
+
+  **Set up the independent missed-run alert, it is not optional.** Use any dead-man's-switch ("cron monitoring") service that is not GitHub: for
+  example Healthchecks.io, whose pricing page lists a free plan with 20 jobs and 100 log entries per job (its notification options, grace
+  period and whether a card is required were not stated on that page: UNVERIFIED, check at sign-up). Configure an expected period of 1 day and a
+  grace period of at least 12 hours, and put its ping URL in the `HEALTHCHECK_PING_URL` secret. Without it the workflow prints a notice on every run
+  and the only remaining backstop is that programs leave public discovery after 45 days without a successful read. Once the API is hosted, an
+  external uptime check on `GET /api/v1/discovery/status` (alert when `state` is not `FRESH`) is a second independent alarm. Any push or merge
+  resets the 60-day clock.
 
 ## 3. Security
 
-* **Your local database is never exposed.** `docker-compose.yaml` now binds PostgreSQL to `127.0.0.1` only (before, `0.0.0.0` made it
-  reachable from your network). The change takes effect when the container is recreated: `docker compose up -d` (the volume is kept; do not
-  delete it). The hosted runner is refused a localhost database by the script.
-* **Secrets** live only in GitHub (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, optional `ALERT_WEBHOOK_URL`). The script never prints the password
-  and runs without `set -x`. The jar reads them from the environment.
-* **TLS is mandatory** for any non-local database (`?sslmode=require`); the script refuses otherwise.
+* **Your local database is never exposed.** `docker-compose.yaml` now publishes PostgreSQL on `127.0.0.1` only (before, `0.0.0.0` made it
+  reachable from your network). **Your running container still uses the old mapping until you recreate it.** Safe procedure, tested on a throwaway
+  Compose project (the container was recreated with only `127.0.0.1` published, the volume was the same volume, and a row written beforehand survived):
+  1. Stop anything using the database (your `spring-boot:run`).
+  2. Optional but sensible: `docker exec pathway-ai-postgres pg_dump -U pathway -d pathway_ai -Fc > backup.dump` (keep it outside the repository).
+  3. From the repository root: `docker compose up -d`. Compose sees the changed port mapping and recreates only the container; the named volume
+     `pathway-ai-backend_pathway_ai_pgdata` is reused.
+  4. Check: `docker port pathway-ai-postgres` must show only `127.0.0.1:5433`, and your data (3 universities, 9 programs) must still be there.
+  **Never** run `docker compose down -v`, `docker volume rm` or `docker volume prune` on this project: they delete the database volume.
+  The hosted runner is refused a localhost database by the script.
+* **Secrets** (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, optional `ALERT_WEBHOOK_URL`, `HEALTHCHECK_PING_URL`) live in a protected GitHub **Environment**
+  named `sync` that you restrict to the `main` branch, so a workflow on any other branch can never read them. Inside the workflow they exist only in
+  the two steps that need the database (never in checkout or the Maven build) and the alert job holds no database secret and only `issues: write`.
+  The script never prints the password and runs without `set -x`. **Actions logs of a public repository are public**: GitHub masks secret values, and
+  the script additionally masks the derived host name and database name (which Flyway and Hikari log) before anything can print them, and never prints
+  the connection string. The third-party actions are pinned to commit SHAs (checkout v7.0.1, setup-java v6.1.0, chosen for being weeks old, not
+  the release of the day). The only triggers are the schedule and manual dispatch; never `pull_request`.
+* **TLS with server verification is mandatory** for any non-local database: the script refuses anything but `sslmode=verify-full`. The PostgreSQL JDBC
+  driver documents `sslmode=require` as accepting all server certificates (encryption without authentication: no protection against an impostor
+  server), and `verify-ca` does not check the host name. `verify-full` verifies the certificate chain and the host name. Neon documents that it
+  recommends `verify-full` and that its certificates chain to ISRG Root X1 (Let's Encrypt), which is in the system root stores and which Java
+  trusts by default. **Neon's connection-string screen shows `sslmode=require`: change it to `sslmode=verify-full`.** The handshake itself could not be
+  tested without a Neon database; if it ever fails, the failure is immediate and visible (the first `bootstrap` run), never silent.
 * **Public repository:** workflows triggered from forks never receive secrets, the schedule runs on the default branch only, and the CI
   workflow (`ci.yml`) uses throw-away Testcontainers, never the hosted database.
 * **Least privilege (recommended, not yet done):** start with the single role Neon creates; once the API is hosted, give it a second
@@ -90,11 +118,14 @@ artifacts of a public repository).
 
 1. **Neon account and project** (free): sign up at neon.com; create a project (Postgres 17 if offered; pick an EU region). If any step asks
    for a payment card, **stop** and tell me. From the dashboard copy the **direct (not pooled)** connection details: host, database, user,
-   password.
-2. **GitHub repository settings** (Settings, Secrets and variables, Actions):
-   * Secrets: `DB_URL` = `jdbc:postgresql://<host>/<database>?sslmode=require`, `DB_USERNAME`, `DB_PASSWORD`.
-   * Optional secret `ALERT_WEBHOOK_URL` (a Slack/Discord/Teams incoming webhook).
-   * Variable `SYNC_ENABLED` = `true` (set it only after the secrets exist).
+   password. Build the JDBC URL as `jdbc:postgresql://<host>/<database>?sslmode=verify-full` (NOT the `sslmode=require` that Neon shows).
+2. **GitHub repository settings:**
+   * **First create the Environment** (Settings, Environments, New environment) named exactly `sync`, and under "Deployment branches" choose
+     "Selected branches" and allow only `main`. (If the variable below is set before this environment exists, GitHub creates it unprotected.)
+   * In that environment add the secrets: `DB_URL` = `jdbc:postgresql://<host>/<database>?sslmode=verify-full`, `DB_USERNAME`, `DB_PASSWORD`; and
+     `HEALTHCHECK_PING_URL` from your dead-man's-switch check (section 2; expected period 1 day, grace at least 12 hours). Optional: `ALERT_WEBHOOK_URL`.
+   * Only after all that, add the repository **variable** (Settings, Secrets and variables, Actions, Variables) `SYNC_ENABLED` = `true`.
+     Until it exists every scheduled run is skipped.
 3. **First run on the empty hosted database:** Actions, "Source refresh", "Run workflow", mode `bootstrap` (about 20 minutes: Flyway,
    taxonomy, the three universities, then the Studyinfo programs at one request per 30 s). Open the run summary.
 4. **Verify:** run mode `freshness` (must pass), then check the data, for example with the Neon SQL editor:

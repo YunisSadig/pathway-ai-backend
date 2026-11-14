@@ -105,7 +105,7 @@ database exists and no account was created**, so it is not operational. Facts an
 
 * `.github/workflows/source-refresh.yml` runs daily (`run`), weekly (`sync`) and a last-success watchdog (`freshness`); it does nothing
   until the repository variable `SYNC_ENABLED` is `true` and the `DB_*` secrets exist.
-* `scripts/ci/run-refresh.sh` is the single entry point (retries with growing pauses, TLS required for a remote database, localhost refused
+* `scripts/ci/run-refresh.sh` is the single entry point (retries with growing pauses, verified TLS (`sslmode=verify-full`) required for a remote database, localhost refused
   on a hosted runner, importers switched off except in `bootstrap`).
 * `--app.refresh.command=freshness-check` fails unless every extractor-maintained program was read successfully within the threshold.
 * The API sends bounded cache headers (default 5 minutes) with ETag revalidation so synchronized changes reach the frontend.

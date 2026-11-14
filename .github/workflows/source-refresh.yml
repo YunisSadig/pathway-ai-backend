@@ -1,22 +1,28 @@
 # Unattended synchronization: keeps the official-API programs current while nobody's computer is on.
 #
-# It does NOTHING until the owner opts in. The job only runs when the repository VARIABLE SYNC_ENABLED is "true" and the three
-# repository SECRETS below exist; until then every scheduled run is skipped (no cost, no database access).
-# The exact owner steps (account sign-up, secrets, first run) are in docs/deployment-sync.md.
+# It does NOTHING until the owner opts in. The jobs only run when the repository VARIABLE SYNC_ENABLED is "true"; until then every scheduled
+# run is skipped (no cost, no secret, no database access). Exact owner steps (accounts, the protected "sync" environment, secrets, first run):
+# docs/deployment-sync.md.
 #
 # What runs (all in scripts/ci/run-refresh.sh, the same file you can run on a laptop):
-#   * daily 05:17 UTC  : `run`  = re-read every source that is due (each program is due weekly, daily inside an application window)
+#   * daily 05:17 UTC  : `run`  = re-read every source that is due (each program weekly; daily inside an application window)
 #   * Mondays          : `sync` = discover new programs for the three reviewed universities, then `run`
 #   * every run        : `freshness` = last-success watchdog; fails unless EVERY extractor-maintained program was read within 10 days
-# Retries: each step is attempted 3 times with growing pauses (database cold start, network blips); a single flaky source never
-# fails the job (it is marked FAILING and shows in the report); the job fails when more than half of the checks fail or the
-# watchdog finds a program that is no longer current.
-# Alerts: a failed run opens (or comments on) a GitHub issue, calls ALERT_WEBHOOK_URL if that secret exists, and GitHub emails the
-# user who last edited the cron line (documented GitHub behaviour for scheduled workflows).
 #
-# Limits that matter (checked against GitHub's documentation on 2026-11-14): scheduled workflows run only on the default branch, can be
-# delayed under load, and in a PUBLIC repository are disabled automatically after 60 days without repository activity (any push or
-# merge resets the clock; re-enable under Actions if it ever happens). Free for public repositories on standard runners.
+# Three different failures, three different alarms (see docs/deployment-sync.md section 2):
+#   1. a run that fails or a source that stops working  -> this workflow opens/comments on a GitHub issue (+ webhook), GitHub emails the user
+#      who last edited the cron line;
+#   2. data that went stale although runs "succeed"      -> the watchdog step fails the run, so alarm 1 fires;
+#   3. NO RUN AT ALL (schedule disabled after 60 days of repository inactivity, GitHub outage, a dropped run, SYNC_ENABLED switched off)
+#      -> nothing in this workflow can notice. The last step pings an INDEPENDENT dead-man's-switch (secret HEALTHCHECK_PING_URL) after a fully
+#      successful run; that service alerts when the ping is missing. Without it the only backstop is that programs leave public discovery
+#      after 45 days without a successful read.
+#
+# Hardening: workflow permissions are empty and each job asks for the minimum; the DB secrets exist only in the two steps that need them
+# (never in checkout, the build, or the alert job); secrets come from the protected "sync" Environment (restrict it to the main branch);
+# third-party actions are pinned to commit SHAs; the checkout keeps no git credentials; the only triggers are schedule and manual dispatch,
+# never pull_request, so forks and branches never reach a secret. Limits (GitHub docs, 2026-11-14): scheduled workflows run only on the default
+# branch, may be delayed under load, and in a PUBLIC repository are disabled after 60 days without repository activity.
 name: Source refresh
 
 on:
@@ -30,9 +36,7 @@ on:
         options: [run, sync, force, bootstrap, freshness]
         default: run
 
-permissions:
-  contents: read
-  issues: write
+permissions: {}
 
 concurrency:
   group: source-refresh
@@ -43,17 +47,22 @@ jobs:
     if: ${{ vars.SYNC_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    env:
-      DB_URL: ${{ secrets.DB_URL }}
-      DB_USERNAME: ${{ secrets.DB_USERNAME }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+    environment: sync
+    permissions:
+      contents: read
+    outputs:
+      refresh: ${{ steps.refresh.outcome }}
+      freshness: ${{ steps.freshness.outcome }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
           java-version: 21
           cache: maven
+      # no database secret is present in this step: the build runs repository and plugin code
       - run: ./mvnw -B -q package -DskipTests
 
       - name: Choose the mode
@@ -72,35 +81,64 @@ jobs:
         continue-on-error: true
         env:
           MODE: ${{ steps.mode.outputs.mode }}
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: bash scripts/ci/run-refresh.sh "$MODE"
 
       - name: Last-success watchdog
         id: freshness
         if: ${{ steps.mode.outputs.mode != 'bootstrap' }}
         continue-on-error: true
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: bash scripts/ci/run-refresh.sh freshness
 
-      - name: Alert
-        if: ${{ steps.refresh.outcome == 'failure' || steps.freshness.outcome == 'failure' }}
+      # independent missed-run alarm: only after a fully successful run; a failed ping never fails the job
+      - name: Dead-man's-switch ping
+        if: ${{ steps.refresh.outcome == 'success' && (steps.freshness.outcome == 'success' || steps.mode.outputs.mode == 'bootstrap') }}
         env:
-          GH_TOKEN: ${{ github.token }}
-          ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          REFRESH_OUTCOME: ${{ steps.refresh.outcome }}
-          FRESHNESS_OUTCOME: ${{ steps.freshness.outcome }}
+          PING_URL: ${{ secrets.HEALTHCHECK_PING_URL }}
         run: |
-          title="Source synchronization needs attention"
-          body="Synchronization step: ${REFRESH_OUTCOME}; last-success watchdog: ${FRESHNESS_OUTCOME}. Run: ${RUN_URL}"
-          existing=$(gh issue list --repo "${{ github.repository }}" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
-          if [ -n "$existing" ]; then
-            gh issue comment "$existing" --repo "${{ github.repository }}" --body "$body"
+          if [ -n "$PING_URL" ]; then
+            curl -fsS -m 10 --retry 3 -o /dev/null "$PING_URL" || echo "::warning::the dead-man's-switch ping failed"
           else
-            gh issue create --repo "${{ github.repository }}" --title "$title" --body "$body"
-          fi
-          if [ -n "$ALERT_WEBHOOK_URL" ]; then
-            curl -fsS -X POST -H 'Content-Type: application/json' -d "{\"text\":\"$title. $RUN_URL\"}" "$ALERT_WEBHOOK_URL" || true
+            echo "::notice::HEALTHCHECK_PING_URL is not set: nothing would notice a completely missed run"
           fi
 
       - name: Fail the job when a step failed
         if: ${{ steps.refresh.outcome == 'failure' || steps.freshness.outcome == 'failure' }}
         run: exit 1
+
+  alert:
+    needs: refresh
+    if: ${{ always() && vars.SYNC_ENABLED == 'true' && (needs.refresh.result == 'failure' || needs.refresh.outputs.refresh == 'failure' || needs.refresh.outputs.freshness == 'failure') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: sync
+    permissions:
+      issues: write          # the only permission this job has; it holds no database secret
+    steps:
+      - name: Open or update the alert issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          JOB_RESULT: ${{ needs.refresh.result }}
+          REFRESH_OUTCOME: ${{ needs.refresh.outputs.refresh }}
+          FRESHNESS_OUTCOME: ${{ needs.refresh.outputs.freshness }}
+        run: |
+          title="Source synchronization needs attention"
+          body="Job: ${JOB_RESULT}; synchronization step: ${REFRESH_OUTCOME:-n/a}; last-success watchdog: ${FRESHNESS_OUTCOME:-n/a}. Run: ${RUN_URL}"
+          existing=$(gh issue list --repo "$REPO" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$REPO" --body "$body"
+          else
+            gh issue create --repo "$REPO" --title "$title" --body "$body"
+          fi
+          if [ -n "$ALERT_WEBHOOK_URL" ]; then
+            curl -fsS -X POST -H 'Content-Type: application/json' -d "{\"text\":\"$title. $RUN_URL\"}" "$ALERT_WEBHOOK_URL" || true
+          fi
