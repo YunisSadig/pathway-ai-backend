@@ -12,3 +12,7 @@ updates:
   - package-ecosystem: docker
     directory: /
     schedule: { interval: weekly }
+    ignore:
+      # the runtime is Java 21 on purpose; a JVM upgrade is a deliberate change, not a weekly bump
+      - dependency-name: eclipse-temurin
+        update-types: ["version-update:semver-major"]
