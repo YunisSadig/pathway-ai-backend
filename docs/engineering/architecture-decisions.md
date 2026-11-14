@@ -78,3 +78,25 @@ classification (name, level, field), tuition, requirements and any change to a d
 unavailable, not shown. The catalogue is small on purpose; growth is by adding connectors, never records. Removed rows are kept
 in `catalogue_archive` and in a verified `pg_dump`; the cleanup is a guarded, transactional, dry-run-first procedure
 (`scripts/db/`). Nothing refreshes unattended until a hosted scheduler exists (known issue 45).
+
+## ADR-22 Student accounts: server-side sessions behind a same-origin proxy; the catalogue is gated (2026-11-15)
+
+**Decision.** Students sign up and log in with email and password (bcrypt). Sessions are server-side (Spring Session JDBC, tables owned
+by Flyway V9); the browser holds only an opaque `PATHWAY_SESSION` cookie (HttpOnly, SameSite=Lax, Secure in production). No token is
+ever handed to JavaScript or stored in localStorage. The browser never calls this API directly: the Next.js site forwards `/api/v1/*`,
+adds the staging key on the server and checks `Origin` on writes, which is the CSRF defence together with SameSite (Spring's own CSRF
+filter is disabled deliberately). One-time tokens (email verification 24 h, password reset 1 h) store only a SHA-256 hash and are
+consumed atomically. Login, registration and recovery are throttled in PostgreSQL (`auth_throttle`); unknown email and wrong password
+are indistinguishable. Every account endpoint acts on the session's own account id; no account or profile id appears in a URL (no IDOR).
+Saved items store public identifiers, not catalogue foreign keys, so a catalogue refresh can never break or leak them.
+
+**Catalogue gate.** Until the Studyinfo reuse conditions are settled the catalogue (`/programs`, `/universities`, `/discovery`) needs a
+session whose account has `catalogue_access` (checked in the database on every request), unless `CATALOGUE_PUBLIC=true`. 401 anonymous,
+403 without access. Registration alone never grants access.
+
+**Database roles.** The runtime role `pathway_app` has SELECT on the catalogue and DML only on the account tables
+(`docs/database/account-role.sql`). The read-only role `pathway_api` has no access to account tables.
+
+**Known limits.** Email verification and password reset need an SMTP account; without one the API says so (`EMAIL_UNAVAILABLE`) and
+registration reports an existing address as taken (the only enumeration exception, documented). Google sign-in needs an OAuth client
+and is not implemented.

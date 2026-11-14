@@ -31,9 +31,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "run | sync | force (re-read all Studyinfo programs now) | bootstrap (first run on an empty database) | freshness | verify (read-only data audit) | api-smoke (boot the API on the runner and read it over HTTP)"
+        description: "run | sync | force (re-read all Studyinfo programs now) | bootstrap (first run on an empty database) | freshness | verify (read-only data audit) | api-smoke (boot the API on the runner and read it over HTTP) | migrate (apply pending Flyway migrations only)"
         type: choice
-        options: [run, sync, force, bootstrap, freshness, verify, api-smoke]
+        options: [run, sync, force, bootstrap, freshness, verify, api-smoke, migrate]
         default: run
 
 permissions: {}

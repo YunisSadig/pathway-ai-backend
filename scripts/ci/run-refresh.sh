@@ -32,7 +32,7 @@ MAX_AGE_HOURS="${MAX_AGE_HOURS:-240}"
 
 die() { echo "ERROR: $*" >&2; exit "${2:-2}"; }
 
-case "$MODE" in run|sync|force|bootstrap|freshness|verify|api-smoke) ;; *) die "unknown mode '$MODE' (run|sync|force|bootstrap|freshness|verify|api-smoke)";; esac
+case "$MODE" in run|sync|force|bootstrap|freshness|verify|api-smoke|migrate) ;; *) die "unknown mode '$MODE' (run|sync|force|bootstrap|freshness|verify|api-smoke|migrate)";; esac
 
 for v in DB_URL DB_USERNAME DB_PASSWORD; do
   [ -n "${!v:-}" ] || die "$v is not set (on GitHub it comes from a repository secret)"
@@ -137,6 +137,8 @@ case "$MODE" in
   sync)      with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=sync "${fail_flags[@]}"; rc=$? ;;
   force)     with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=studyinfo-sync "${fail_flags[@]}"; rc=$? ;;
   api-smoke) with_retries 1 1 api_smoke; rc=$? ;;
+  # migrate: starts the application once with every importer off, so Flyway applies pending migrations (as the owner role) and the process ends
+  migrate)   with_retries 2 "$((BASE < 60 ? BASE : 60))" java -jar "$JAR" --spring.main.web-application-type=none; rc=$? ;;
   verify)    with_retries 2 "$((BASE < 60 ? BASE : 60))" app --app.refresh.command=verify-data; rc=$? ;;
   freshness) with_retries 2 "$((BASE < 60 ? BASE : 60))" app --app.refresh.command=freshness-check "--app.refresh.max-age-hours=$MAX_AGE_HOURS"; rc=$? ;;
   bootstrap)

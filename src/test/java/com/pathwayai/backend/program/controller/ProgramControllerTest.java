@@ -26,6 +26,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+// these slices test controller behaviour; the security rules have their own integration tests (AccountApiIT, CatalogueGateIT)
+@org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(ProgramController.class)
 class ProgramControllerTest {
 

@@ -22,6 +22,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+// these slices test controller behaviour; the security rules have their own integration tests (AccountApiIT, CatalogueGateIT)
+@org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(UniversityController.class)
 @Import(CorsConfig.class)
 @TestPropertySource(properties = "app.cors.allowed-origins=http://localhost:3000")

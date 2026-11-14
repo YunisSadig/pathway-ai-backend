@@ -1,5 +1,9 @@
 # Production profile (SPRING_PROFILES_ACTIVE=prod, set by the Dockerfile). Everything secret comes from the environment.
 server:
+  servlet:
+    session:
+      cookie:
+        secure: true
   shutdown: graceful                 # finish in-flight requests on SIGTERM (platform deploys / scale-to-zero)
   forward-headers-strategy: native   # the platform proxy's X-Forwarded-* give the real client address (rate limit, logs)
   error:
