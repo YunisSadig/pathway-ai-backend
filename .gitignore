@@ -43,3 +43,4 @@ build/
 .playwright-mcp/
 backups/
 /scripts/ops/
+/backup-out/
