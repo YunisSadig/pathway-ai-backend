@@ -92,6 +92,43 @@ class ReferenceDataFileTest {
     }
 
     @Test
+    void admissionsPagesAreCitedSourcesAndNoUnreadApplyLinkIsShipped() {
+        for (ProgramData p : data.programs()) {
+            if (p.officialAdmissionsUrl() != null) {
+                assertThat(p.sources()).as(p.slug() + " admissions page must be a cited source")
+                        .contains(p.officialAdmissionsUrl());
+            }
+            if (p.officialApplicationUrl() != null) {
+                assertThat(p.officialApplicationCycle()).as(p.slug() + " apply link needs its cycle").isNotBlank();
+            }
+        }
+    }
+
+    @Test
+    void everyTuitionRecordsTheExactPeriodItsSourceStatedOrSaysItStatedNone() {
+        for (ProgramData p : data.programs()) {
+            for (var t : p.tuition()) {
+                boolean hasPeriod = t.academicYear() != null || t.effectiveFrom() != null || t.effectiveTo() != null;
+                assertThat(hasPeriod || (t.scopeNote() != null && !t.scopeNote().isBlank()))
+                        .as(p.slug() + ": a fee without a period must carry the source's own wording").isTrue();
+                if (t.academicYear() != null) {
+                    // a year is only ever stored when the source prints one, so it must be quoted
+                    assertThat(t.scopeNote()).as(p.slug() + ": a stored academic year needs the source wording")
+                            .isNotBlank();
+                }
+            }
+        }
+    }
+
+    @Test
+    void retractionsAreAuditedWithAReason() {
+        assertThat(data.retractions()).isNotEmpty();
+        for (var r : data.retractions()) {
+            assertThat(r.reason()).isNotBlank();
+        }
+    }
+
+    @Test
     void tuitionIsNeverInventedAsZero() {
         for (ProgramData p : data.programs()) {
             p.tuition().forEach(t -> assertThat(t.amount().signum()).as(p.slug()).isPositive());

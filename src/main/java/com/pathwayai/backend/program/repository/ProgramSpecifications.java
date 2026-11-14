@@ -9,6 +9,7 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Locale;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -98,19 +99,31 @@ public final class ProgramSpecifications {
      * or billing periods are never compared. {@code category} may be null (any category).
      */
     public static Specification<DegreeProgram> tuitionAtMost(BigDecimal max, String currency,
-                                                              StudentCategory category) {
+                                                              StudentCategory category, int currentStartYear,
+                                                              LocalDate today) {
         if (max == null) {
             return matchAll();
         }
         String code = currency.trim().toUpperCase(Locale.ROOT);
+        // Only CURRENT fees count: an academic year that is the present or upcoming one, or a start-date range
+        // that has not ended. Historical fees and fees with no stated period never match a price filter.
+        String currentYear = String.valueOf(currentStartYear);
         return (root, query, cb) -> {
             Subquery<Long> sub = query.subquery(Long.class);
             Root<TuitionFee> fee = sub.from(TuitionFee.class);
+            var current = cb.or(
+                    cb.and(cb.isNotNull(fee.get("academicYear")),
+                            cb.greaterThanOrEqualTo(fee.<String>get("academicYear"), currentYear)),
+                    cb.and(cb.isNull(fee.get("academicYear")),
+                            cb.or(cb.isNotNull(fee.get("effectiveFrom")), cb.isNotNull(fee.get("effectiveTo"))),
+                            cb.or(cb.isNull(fee.get("effectiveTo")),
+                                    cb.greaterThanOrEqualTo(fee.<LocalDate>get("effectiveTo"), today))));
             var where = cb.and(
                     cb.equal(fee.get("program"), root),
                     cb.equal(fee.get("currency"), code),
                     cb.equal(fee.get("billingPeriod"), BillingPeriod.PER_YEAR),
-                    cb.lessThanOrEqualTo(fee.<BigDecimal>get("amount"), max));
+                    cb.lessThanOrEqualTo(fee.<BigDecimal>get("amount"), max),
+                    current);
             if (category != null) {
                 where = cb.and(where, cb.equal(fee.get("studentCategory"), category));
             }

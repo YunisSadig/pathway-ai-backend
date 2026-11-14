@@ -1,5 +1,6 @@
 package com.pathwayai.backend.program.dto;
 
+import com.pathwayai.backend.program.calendar.TemporalStatus;
 import com.pathwayai.backend.program.dto.ProgramListItemResponse.FieldRef;
 import com.pathwayai.backend.program.dto.ProgramListItemResponse.UniversityRef;
 import com.pathwayai.backend.program.dto.ProgramListItemResponse.Verification;
@@ -15,7 +16,9 @@ import java.util.List;
 
 /**
  * {@code GET /api/v1/programs/{identifier}}. Every changing fact carries the official source it came from
- * (its {@code retrievedOn} is the date it was checked). Empty lists mean "nothing known", not "none exist".
+ * (its {@code retrievedOn} is the date it was read) and a {@code temporalStatus} describing the period the
+ * source attached to it. A {@code HISTORICAL} value must never be shown as current; {@code UNKNOWN_YEAR} means
+ * the source stated no period. Empty lists mean "nothing known", not "none exist".
  */
 public record ProgramDetailResponse(
         String identifier,
@@ -29,6 +32,7 @@ public record ProgramDetailResponse(
         String campusCity,
         UniversityRef university,
         String officialProgramUrl,
+        String officialAdmissionsUrl,
         String officialApplicationUrl,
         Verification verification,
         List<SourceRef> sources,
@@ -40,14 +44,21 @@ public record ProgramDetailResponse(
     }
 
     public record Intake(String label, String academicYear, LocalDate startDate, LocalDate applicationDeadline,
-                         StudentCategory applicantCategory, SourceRef source) {
+                         StudentCategory applicantCategory, TemporalStatus temporalStatus, SourceRef source) {
     }
 
-    public record Tuition(String academicYear, StudentCategory studentCategory, BigDecimal amount, String currency,
-                          BillingPeriod billingPeriod, SourceRef source) {
+    /**
+     * {@code academicYear} is only set when the source prints one; otherwise the period may be a start-date range
+     * ({@code effectiveFrom}/{@code effectiveTo}, inclusive, either end open) or unknown. {@code scopeNote} is the
+     * source's own wording.
+     */
+    public record Tuition(String academicYear, LocalDate effectiveFrom, LocalDate effectiveTo, String scopeNote,
+                          StudentCategory studentCategory, BigDecimal amount, String currency,
+                          BillingPeriod billingPeriod, TemporalStatus temporalStatus, SourceRef source) {
     }
 
     public record Requirement(String applicationCycle, RequirementType type, String description,
-                              BigDecimal minimumValue, String valueUnit, SourceRef source) {
+                              BigDecimal minimumValue, String valueUnit, TemporalStatus temporalStatus,
+                              SourceRef source) {
     }
 }

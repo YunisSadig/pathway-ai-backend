@@ -4,6 +4,7 @@ import static com.pathwayai.backend.support.ProgramFixtures.describe;
 import static com.pathwayai.backend.support.ProgramFixtures.field;
 import static com.pathwayai.backend.support.ProgramFixtures.program;
 import static com.pathwayai.backend.support.ProgramFixtures.verified;
+import static com.pathwayai.backend.support.ProgramFixtures.withAdmissions;
 import static com.pathwayai.backend.support.SyntheticFixtures.countryA;
 import static com.pathwayai.backend.support.SyntheticFixtures.countryB;
 import static com.pathwayai.backend.support.SyntheticFixtures.source;
@@ -97,18 +98,36 @@ class ProgramApiIT {
         var gamma1 = programs.save(program(gamma, "computing", "Synthetic Computing", DegreeLevel.BACHELOR, cs,
                 "en"));
 
-        tuitionFees.save(new TuitionFee(computing, src, "2027/2028", StudentCategory.INTERNATIONAL,
+        tuitionFees.save(new TuitionFee(computing, src, "2099/2100", StudentCategory.INTERNATIONAL,
                 new BigDecimal("1000.00"), "EUR", BillingPeriod.PER_YEAR));
-        tuitionFees.save(new TuitionFee(physics, src, "2027/2028", StudentCategory.INTERNATIONAL,
+        tuitionFees.save(new TuitionFee(physics, src, "2099/2100", StudentCategory.INTERNATIONAL,
                 new BigDecimal("5000.00"), "EUR", BillingPeriod.PER_YEAR));
-        tuitionFees.save(new TuitionFee(physics, src, "2027/2028", StudentCategory.DOMESTIC,
+        tuitionFees.save(new TuitionFee(physics, src, "2099/2100", StudentCategory.DOMESTIC,
                 new BigDecimal("700.00"), "EUR", BillingPeriod.PER_YEAR));
-        tuitionFees.save(new TuitionFee(gamma1, src, "2027/2028", StudentCategory.INTERNATIONAL,
+        tuitionFees.save(new TuitionFee(gamma1, src, "2099/2100", StudentCategory.INTERNATIONAL,
                 new BigDecimal("800.00"), "USD", BillingPeriod.PER_YEAR));
-        intakes.save(new ProgramIntake(computing, src, "Autumn", "2027/2028", null,
-                LocalDate.of(2027, 1, 15), null));
-        requirements.save(new AcademicRequirement(computing, src, "2027", RequirementType.MIN_GPA,
+        intakes.save(new ProgramIntake(computing, src, "Autumn", "2099/2100", null,
+                LocalDate.of(2099, 1, 15), null));
+        requirements.save(new AcademicRequirement(computing, src, "2099", RequirementType.MIN_GPA,
                 "Synthetic minimum grade", new BigDecimal("3.00"), "GPA"));
+
+        // Year-specific facts of every kind: historical, unknown period, start-date range.
+        tuitionFees.save(new TuitionFee(programs.findByUniversitySlugAndSlug("beta-university", "100-match")
+                .orElseThrow(), src, "2000/2001", StudentCategory.INTERNATIONAL, new BigDecimal("1.00"), "EUR",
+                BillingPeriod.PER_YEAR));
+        tuitionFees.save(new TuitionFee(programs.findByUniversitySlugAndSlug("beta-university", "100-match")
+                .orElseThrow(), src, null, StudentCategory.DOMESTIC, new BigDecimal("2.00"), "EUR",
+                BillingPeriod.PER_YEAR, null, null, "Synthetic: the source states no period"));
+        tuitionFees.save(new TuitionFee(gamma1, src, null, StudentCategory.DOMESTIC, new BigDecimal("700.00"),
+                "USD", BillingPeriod.PER_YEAR, LocalDate.of(2000, 1, 1), null, "Synthetic: rights from 2000-01-01"));
+        intakes.save(new ProgramIntake(computing, src, "Old autumn", "2000/2001", null,
+                LocalDate.of(2000, 1, 15), null));
+        requirements.save(new AcademicRequirement(computing, src, "2000", RequirementType.MIN_GPA,
+                "Synthetic old minimum grade", new BigDecimal("2.00"), "GPA"));
+        // gamma: its application link was verified for an OLD cycle; the admissions page is informational
+        verified(gamma1, "https://example.invalid/apply/old-cycle", "2000");
+        withAdmissions(gamma1, "https://example.invalid/admissions/gamma");
+        withAdmissions(computing, "https://example.invalid/admissions/computing");
 
         entityManager.flush();
         // Requests run in this test's transaction; clear so reads hit the database, not stale entities.
@@ -127,7 +146,7 @@ class ProgramApiIT {
                 .andExpect(jsonPath("$.content[0].keys()").value(containsInAnyOrder(
                         "identifier", "slug", "name", "degreeLevel", "field", "studyMode", "durationMonths",
                         "teachingLanguages", "campusCity", "university", "officialProgramUrl",
-                        "officialApplicationUrl", "verification")))
+                        "officialAdmissionsUrl", "officialApplicationUrl", "verification")))
                 .andExpect(jsonPath("$.content[0].university.keys()").value(containsInAnyOrder(
                         "slug", "name", "city", "countryCode", "countryName")));
     }
@@ -280,7 +299,7 @@ class ProgramApiIT {
                 .andExpect(jsonPath("$.keys()").value(containsInAnyOrder(
                         "identifier", "slug", "name", "degreeLevel", "field", "studyMode", "durationMonths",
                         "teachingLanguages", "campusCity", "university", "officialProgramUrl",
-                        "officialApplicationUrl", "verification", "sources", "intakes", "tuition",
+                        "officialAdmissionsUrl", "officialApplicationUrl", "verification", "sources", "intakes", "tuition",
                         "requirements")))
                 .andExpect(jsonPath("$.name").value("Synthetic Computing"))
                 .andExpect(jsonPath("$.degreeLevel").value("BACHELOR"))
@@ -295,7 +314,7 @@ class ProgramApiIT {
                 .andExpect(jsonPath("$.verification.verifiedOn").value("2026-01-15"))
                 .andExpect(jsonPath("$.sources", hasSize(1)))
                 .andExpect(jsonPath("$.intakes[0].label").value("Autumn"))
-                .andExpect(jsonPath("$.intakes[0].applicationDeadline").value("2027-01-15"))
+                .andExpect(jsonPath("$.intakes[0].applicationDeadline").value("2099-01-15"))
                 .andExpect(jsonPath("$.intakes[0].startDate").value(nullValue()))
                 .andExpect(jsonPath("$.intakes[0].source.url").value("https://example.invalid/program-source"))
                 .andExpect(jsonPath("$.tuition[0].amount").value(1000.0))
@@ -396,6 +415,63 @@ class ProgramApiIT {
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
                         .delete("/api/v1/programs/alpha-institute--computing"))
                 .andExpect(status().isMethodNotAllowed());
+    }
+
+    // ---------- historical vs current facts ----------
+
+    @Test
+    void everyYearSpecificFactSaysWhetherItIsCurrentHistoricalOrOfUnknownPeriod() throws Exception {
+        mockMvc.perform(get("/api/v1/programs/alpha-institute--computing"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tuition[?(@.academicYear == '2099/2100')].temporalStatus")
+                        .value(containsInAnyOrder("CURRENT")))
+                .andExpect(jsonPath("$.intakes[?(@.label == 'Autumn')].temporalStatus")
+                        .value(containsInAnyOrder("CURRENT")))
+                .andExpect(jsonPath("$.intakes[?(@.label == 'Old autumn')].temporalStatus")
+                        .value(containsInAnyOrder("HISTORICAL")))
+                .andExpect(jsonPath("$.requirements[?(@.applicationCycle == '2099')].temporalStatus")
+                        .value(containsInAnyOrder("CURRENT")))
+                .andExpect(jsonPath("$.requirements[?(@.applicationCycle == '2000')].temporalStatus")
+                        .value(containsInAnyOrder("HISTORICAL")));
+        mockMvc.perform(get("/api/v1/programs/beta-university--100-match"))
+                .andExpect(jsonPath("$.tuition", hasSize(2)))
+                .andExpect(jsonPath("$.tuition[?(@.academicYear == '2000/2001')].temporalStatus")
+                        .value(containsInAnyOrder("HISTORICAL")))
+                // no year, no range: the API says so and does not pick a year
+                .andExpect(jsonPath("$.tuition[?(@.academicYear == null)].temporalStatus")
+                        .value(containsInAnyOrder("UNKNOWN_YEAR")))
+                .andExpect(jsonPath("$.tuition[?(@.academicYear == null)].scopeNote")
+                        .value(containsInAnyOrder("Synthetic: the source states no period")));
+        mockMvc.perform(get("/api/v1/programs/gamma-college--computing"))
+                .andExpect(jsonPath("$.tuition[?(@.effectiveFrom == '2000-01-01')].temporalStatus")
+                        .value(containsInAnyOrder("CURRENT")))
+                .andExpect(jsonPath("$.tuition[?(@.effectiveFrom == '2000-01-01')].academicYear")
+                        .value(containsInAnyOrder(nullValue())));
+    }
+
+    @Test
+    void priceFiltersIgnoreHistoricalAndUnknownPeriodFees() throws Exception {
+        // 100-match has only a HISTORICAL (1 EUR) and an UNKNOWN_YEAR (2 EUR) fee: neither may match.
+        mockMvc.perform(get("/api/v1/programs").param("tuitionMax", "10").param("tuitionCurrency", "EUR"))
+                .andExpect(jsonPath("$.totalElements").value(0));
+        mockMvc.perform(get("/api/v1/programs").param("tuitionMax", "999999").param("tuitionCurrency", "EUR"))
+                .andExpect(jsonPath("$.totalElements").value(2));
+    }
+
+    @Test
+    void anApplyLinkForAnOldCycleIsNeverPresentedAsActive() throws Exception {
+        // computing: verified for cycle 2099 -> active Apply link; gamma: verified for cycle 2000 -> withheld.
+        mockMvc.perform(get("/api/v1/programs/alpha-institute--computing"))
+                .andExpect(jsonPath("$.officialApplicationUrl").value("https://example.invalid/apply/computing"))
+                .andExpect(jsonPath("$.officialAdmissionsUrl").value("https://example.invalid/admissions/computing"));
+        mockMvc.perform(get("/api/v1/programs/gamma-college--computing"))
+                .andExpect(jsonPath("$.officialApplicationUrl").value(nullValue()))
+                // the informational admissions page is still offered, clearly separate from an Apply link
+                .andExpect(jsonPath("$.officialAdmissionsUrl").value("https://example.invalid/admissions/gamma"))
+                .andExpect(jsonPath("$.verification.status").value("VERIFIED"));
+        mockMvc.perform(get("/api/v1/programs").param("country", "XB"))
+                .andExpect(jsonPath("$.content[0].officialApplicationUrl").value(nullValue()))
+                .andExpect(jsonPath("$.content[0].officialAdmissionsUrl").value("https://example.invalid/admissions/gamma"));
     }
 
     // ---------- university API regression ----------

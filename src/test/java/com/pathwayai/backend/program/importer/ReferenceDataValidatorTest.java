@@ -16,7 +16,7 @@ class ReferenceDataValidatorTest {
     private static ReferenceData.ProgramData program(String slug, ReferenceData.VerificationData v, String applyUrl,
                                                      List<String> sources) {
         return new ReferenceData.ProgramData("u1", slug, "Name", DegreeLevel.BACHELOR, null, null, null, null,
-                null, List.of(), null, applyUrl, v, sources, List.of(), List.of(), List.of());
+                null, List.of(), null, applyUrl, v, sources, List.of(), List.of(), List.of(), null, applyUrl == null ? null : "2099");
     }
 
     private static ReferenceData file(ReferenceData.ProgramData... programs) {
@@ -25,7 +25,7 @@ class ReferenceDataValidatorTest {
                 List.of(),
                 List.of(new ReferenceData.SourceData(SRC, "t", null, SourceType.OTHER, LocalDate.of(2026, 1, 1))),
                 List.of(new ReferenceData.UniversityData("u1", "XA", "Uni", null, null, null)),
-                List.of(programs));
+                List.of(programs), List.of());
     }
 
     private static final ReferenceData.VerificationData VERIFIED =
@@ -64,7 +64,7 @@ class ReferenceDataValidatorTest {
 
     @Test
     void rejectsAnUnsupportedSchemaVersion() {
-        var f = new ReferenceData(99, List.of(), List.of(), List.of(), List.of(), List.of());
+        var f = new ReferenceData(99, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
         assertThat(ReferenceDataValidator.validate(f)).anyMatch(e -> e.contains("schemaVersion"));
     }
 }

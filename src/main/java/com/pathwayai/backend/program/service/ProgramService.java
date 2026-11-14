@@ -12,6 +12,7 @@ import static com.pathwayai.backend.program.repository.ProgramSpecifications.tui
 import com.pathwayai.backend.common.exception.InvalidRequestException;
 import com.pathwayai.backend.common.exception.ResourceNotFoundException;
 import com.pathwayai.backend.common.response.PageResponse;
+import com.pathwayai.backend.program.calendar.AcademicCalendar;
 import com.pathwayai.backend.program.dto.ProgramDetailResponse;
 import com.pathwayai.backend.program.dto.ProgramListItemResponse;
 import com.pathwayai.backend.program.entity.DegreeProgram;
@@ -34,10 +35,12 @@ public class ProgramService {
     private final TuitionFeeRepository tuitionFees;
     private final AcademicRequirementRepository requirements;
     private final ProgramMapper mapper;
+    private final AcademicCalendar calendar;
 
     public ProgramService(DegreeProgramRepository programs, ProgramIntakeRepository intakes,
                           TuitionFeeRepository tuitionFees, AcademicRequirementRepository requirements,
-                          ProgramMapper mapper) {
+                          ProgramMapper mapper, AcademicCalendar calendar) {
+        this.calendar = calendar;
         this.programs = programs;
         this.intakes = intakes;
         this.tuitionFees = tuitionFees;
@@ -64,7 +67,8 @@ public class ProgramService {
                 .and(inCountry(c.countryCode()))
                 .and(atUniversity(c.universitySlug()))
                 .and(taughtIn(c.languageCode()))
-                .and(tuitionAtMost(c.tuitionMax(), c.tuitionCurrency(), c.tuitionCategory()));
+                .and(tuitionAtMost(c.tuitionMax(), c.tuitionCurrency(), c.tuitionCategory(),
+                        calendar.currentStartYear(), calendar.today()));
         return PageResponse.from(programs.findAll(spec, pageable), mapper::toListItem);
     }
 

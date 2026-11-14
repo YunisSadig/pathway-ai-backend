@@ -98,6 +98,7 @@ public class ReferenceDataImporter {
             throw new IllegalArgumentException("Reference data rejected: " + String.join("; ", errors));
         }
         Map<String, Integer> created = new LinkedHashMap<>();
+        retract(data, created);
         Map<String, Country> countryBySlug = importCountries(data, created);
         importFields(data, created);
         Map<String, Source> sourceByUrl = importSources(data, created);
@@ -180,12 +181,14 @@ public class ReferenceDataImporter {
         }
         AcademicField field = p.field() == null ? null : fields.findBySlug(p.field()).orElseThrow();
         program.describe(p.name(), p.degreeLevel(), field, p.campusCity(), p.studyMode(), p.durationMonths(),
-                p.teachingLanguage(), new LinkedHashSet<>(orEmpty(p.languages())), p.officialProgramUrl());
+                p.teachingLanguage(), new LinkedHashSet<>(orEmpty(p.languages())), p.officialProgramUrl(),
+                p.officialAdmissionsUrl());
         var verification = p.verification();
         if (verification == null) {
-            program.verify(VerificationStatus.UNVERIFIED, null, null);
+            program.verify(VerificationStatus.UNVERIFIED, null, null, null);
         } else {
-            program.verify(verification.status(), verification.verifiedOn(), p.officialApplicationUrl());
+            program.verify(verification.status(), verification.verifiedOn(), p.officialApplicationUrl(),
+                    p.officialApplicationCycle());
         }
         program.getSources().clear();
         for (String url : orEmpty(p.sources())) {
@@ -206,15 +209,20 @@ public class ReferenceDataImporter {
         }
         for (var t : orEmpty(p.tuition())) {
             Source source = sourceByUrl.get(t.source());
-            var existing = tuitionFees.findByProgramIdAndAcademicYearAndStudentCategory(
-                    program.getId(), t.academicYear(), t.studentCategory());
+            var existing = t.academicYear() != null
+                    ? tuitionFees.findByProgramIdAndAcademicYearAndStudentCategory(
+                            program.getId(), t.academicYear(), t.studentCategory())
+                    : tuitionFees.findWithoutYear(program.getId(), t.studentCategory(), t.billingPeriod(),
+                            t.effectiveFrom(), t.effectiveTo());
             if (existing.isEmpty()) {
                 tuitionFees.save(new TuitionFee(program, source, t.academicYear(), t.studentCategory(),
-                        t.amount(), t.currency(), t.billingPeriod()));
+                        t.amount(), t.currency(), t.billingPeriod(), t.effectiveFrom(), t.effectiveTo(),
+                        t.scopeNote()));
                 count(created, "tuition");
             } else {
-                // Tuition rows are keyed by (program, year, category); a differing figure is a data error
-                // in one of the two files, so refuse to overwrite silently.
+                // A fee is keyed by the period its source states. A differing amount for the same key is a data
+                // error in one of the two files, so refuse to overwrite it silently; use a retraction to
+                // remove a fact that was published in error.
                 var row = existing.get();
                 if (row.getAmount().compareTo(t.amount()) != 0 || !row.getCurrency().equals(t.currency())
                         || row.getBillingPeriod() != t.billingPeriod()) {
@@ -222,6 +230,7 @@ public class ReferenceDataImporter {
                             + t.academicYear() + " " + t.studentCategory()
                             + " already exists with a different value; correct it deliberately, not by import");
                 }
+                row.recite(source, t.scopeNote());
             }
         }
         for (var r : orEmpty(p.requirements())) {
@@ -234,6 +243,33 @@ public class ReferenceDataImporter {
                 count(created, "requirements");
             }
         }
+    }
+
+    /** Removes facts the file explicitly retracts. Absent facts are ignored, so a re-run changes nothing. */
+    private void retract(ReferenceData data, Map<String, Integer> created) {
+        for (var r : data.retractions()) {
+            int sep = r.program().indexOf(DegreeProgram.IDENTIFIER_SEPARATOR);
+            var program = programs.findByUniversitySlugAndSlug(r.program().substring(0, sep),
+                    r.program().substring(sep + DegreeProgram.IDENTIFIER_SEPARATOR.length())).orElse(null);
+            if (program == null) {
+                continue;
+            }
+            if (r.type() == ReferenceData.RetractionType.TUITION) {
+                tuitionFees.findByProgramIdAndAcademicYearAndStudentCategory(
+                        program.getId(), r.academicYear(), r.studentCategory()).ifPresent(row -> {
+                    tuitionFees.delete(row);
+                    count(created, "retracted tuition");
+                });
+            } else {
+                intakes.findNatural(program.getId(), r.label(), r.academicYear(), r.applicantCategory())
+                        .ifPresent(row -> {
+                            intakes.delete(row);
+                            count(created, "retracted intakes");
+                        });
+            }
+        }
+        tuitionFees.flush();
+        intakes.flush();
     }
 
     private static void count(Map<String, Integer> created, String key) {

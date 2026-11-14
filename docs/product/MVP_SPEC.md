@@ -28,6 +28,9 @@ Pathway AI is a **global, program-first** university and scholarship discovery p
 - **No acceptance probabilities**, scores that imply them, or rankings invented by Pathway AI.
 - **Application buttons** appear only when a verified official university or scholarship application URL exists. They link to that page and nowhere else.
 
+- **Year-specific facts** (tuition, deadlines, requirements, application links) record the period the source states (an academic year or a start-date range) and are never relabelled. The API says whether each is `CURRENT`, `HISTORICAL` or `UNKNOWN_YEAR`. Historical values and links are never presented as current or active; older years are kept, not overwritten.
+- An **Apply** button needs a verified official application page for a current or upcoming cycle. Otherwise show only an official admissions-information link.
+
 ## 4. Discovery and recommendation
 
 - Public browsing: search and filter programs (field, degree level, country, language, tuition, intake) and universities; scholarships by eligibility.
@@ -63,7 +66,7 @@ The schema and API must allow new countries, fields of study, academic years, in
 | Scholarships                                 | None (frontend shows an honest empty state)                                                                                 | Independent entities with structured eligibility |
 | Accounts / roles                             | None                                                                                                                        | USER and ADMIN, server-authorised                |
 | Profiles, saves, comparison, recommendations | None                                                                                                                        | Registered features, explainable                 |
-| Data                                         | 8 source-cited programs (3 institutions, FI and NL, 8 fields) importable via the idempotent importer                        | Sourced records across fields and countries      |
+| Data                                         | 8 source-cited programs (3 institutions, FI and NL, 8 fields); year-specific facts keep their stated period; no active Apply links yet; no five-year history could be verified | Sourced records across fields and countries, with history |
 
 ## 9. Suggested delivery order (each step = tests + PR, preserving what works)
 

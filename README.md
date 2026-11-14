@@ -4,7 +4,9 @@ REST backend for **Pathway AI**, an international university discovery and educa
 
 > Product direction: [docs/product/MVP_SPEC.md](docs/product/MVP_SPEC.md) (global, program-first, all disciplines, bachelor and master).
 >
-> Real data is **not** in the migrations. A small, source-cited batch (8 programs) ships as reference data and is imported on request: see [docs/reference-data.md](docs/reference-data.md). Every fact cites an official page and the date it was read; unknown stays unknown.
+> Real data is **not** in the migrations. A small, source-cited batch (8 programs) ships as reference data and is imported on request: see [docs/reference-data.md](docs/reference-data.md). Every fact cites an official page and the date it was read; a year is stored only when the source states it; unknown stays unknown.
+>
+> Inspecting the database in pgAdmin 4: [docs/database/PGADMIN_GUIDE.md](docs/database/PGADMIN_GUIDE.md).
 
 ## Technology stack
 Java 21 · Spring Boot 4.1.2 (Web MVC, Data JPA, Validation, Actuator) · PostgreSQL 17 · Flyway · Maven Wrapper · JUnit 5 + Mockito + Testcontainers · GitHub Actions
@@ -139,7 +141,7 @@ Response `200` (same `Page` envelope; empty result is `200` with `content: []`):
 ```
 `degreeLevel`: `BACHELOR | MASTER | DOCTORATE | DIPLOMA | CERTIFICATE`. `studyMode`: `FULL_TIME | PART_TIME | DISTANCE | BLENDED | null`.
 `field`, `studyMode`, `durationMonths`, `campusCity`, the URLs and `verifiedOn` are `null` when unknown; `teachingLanguages` is `[]`.
-`officialApplicationUrl` is only ever non-null for a `VERIFIED` program (database constraint).
+Two link fields: `officialAdmissionsUrl` is an official admissions-**information** page; `officialApplicationUrl` is an **active Apply link** and is only non-null for a `VERIFIED` program whose link was verified for a current or upcoming cycle. A link for an older cycle is withheld. Today no program has an active Apply link: the application forms (national portals) have not been verified.
 
 ### `GET /api/v1/programs/{identifier}`
 `identifier` is `<university-slug>--<program-slug>` (globally unique and stable; slugs never contain `--`; ≤245 chars). Response `200` is the list item plus the facts, **each with its official source**:
@@ -153,7 +155,7 @@ Response `200` (same `Page` envelope; empty result is `200` with `content: []`):
   "requirements": [ { "applicationCycle": "2027", "type": "ENTRANCE_EXAM", "description": "...",
                       "minimumValue": null, "valueUnit": null, "source": { "...": "..." } } ] }
 ```
-Empty arrays mean "nothing known", not "none exist". `404` for an unknown program, `400` for a malformed identifier. The `programs` rows inside `GET /api/v1/universities/{slug}` gained an additive `identifier` field.
+Empty arrays mean "nothing known", not "none exist". **Every `intakes`, `tuition` and `requirements` item carries `temporalStatus`**: `CURRENT`, `HISTORICAL` (the period has ended; never show it as current) or `UNKNOWN_YEAR` (the source stated no period). Tuition has `academicYear` (only when the source prints one), `effectiveFrom` / `effectiveTo` (a stated start-date range) and `scopeNote` (the source's wording); all may be `null`. The `tuitionMax` filter only matches `CURRENT` fees. `404` for an unknown program, `400` for a malformed identifier. The `programs` rows inside `GET /api/v1/universities/{slug}` gained an additive `identifier` field.
 
 ### Errors
 Every non-2xx API response: `{ "timestamp": "ISO-8601", "status": 400, "error": "Bad Request", "message": "...", "path": "/api/v1/universities", "violations": [{ "field": "size", "message": "must be between 1 and 100" }] }` (`violations` omitted when empty). `400` invalid/ill-typed parameter or malformed slug, `404` unknown slug or path, `405` wrong method, `500` unexpected. A CORS rejection by Spring returns `403` with plain text `Invalid CORS request`.

@@ -86,9 +86,17 @@ public class DegreeProgram {
     @Column(name = "official_program_url", length = 1000)
     private String officialProgramUrl;
 
-    /** Only ever set for a VERIFIED program (database constraint). */
+    /** Official admissions-information page. Informational, never presented as an Apply button. */
+    @Column(name = "official_admissions_url", length = 1000)
+    private String officialAdmissionsUrl;
+
+    /** Only ever set for a VERIFIED program (database constraint), and only for {@link #officialApplicationCycle}. */
     @Column(name = "official_application_url", length = 1000)
     private String officialApplicationUrl;
+
+    /** The cycle (e.g. "2027" or "2026/2027") the application URL was verified for. */
+    @Column(name = "official_application_cycle", length = 20)
+    private String officialApplicationCycle;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "verification_status", nullable = false, length = 20)
@@ -138,7 +146,7 @@ public class DegreeProgram {
     /** Applies the descriptive facts of an import. Identity (university, slug) never changes. */
     public void describe(String name, DegreeLevel degreeLevel, AcademicField academicField, String campusCity,
                          StudyMode studyMode, Integer durationMonths, String teachingLanguage,
-                         Set<String> languageCodes, String officialProgramUrl) {
+                         Set<String> languageCodes, String officialProgramUrl, String officialAdmissionsUrl) {
         this.name = name;
         this.degreeLevel = degreeLevel;
         this.academicField = academicField;
@@ -151,12 +159,20 @@ public class DegreeProgram {
         this.teachingLanguageCodes.clear();
         this.teachingLanguageCodes.addAll(codes);
         this.officialProgramUrl = officialProgramUrl;
+        this.officialAdmissionsUrl = officialAdmissionsUrl;
     }
 
-    /** Records the verification outcome. The application URL is only accepted when VERIFIED. */
-    public void verify(VerificationStatus status, LocalDate verifiedOn, String officialApplicationUrl) {
+    /**
+     * Records the verification outcome. The application URL is only accepted when VERIFIED and when the cycle it
+     * was verified for is stated.
+     */
+    public void verify(VerificationStatus status, LocalDate verifiedOn, String officialApplicationUrl,
+                       String officialApplicationCycle) {
         if (officialApplicationUrl != null && status != VerificationStatus.VERIFIED) {
             throw new IllegalArgumentException("An application URL requires a VERIFIED program");
+        }
+        if (officialApplicationUrl != null && (officialApplicationCycle == null || officialApplicationCycle.isBlank())) {
+            throw new IllegalArgumentException("An application URL requires the cycle it was verified for");
         }
         if (status == VerificationStatus.VERIFIED && verifiedOn == null) {
             throw new IllegalArgumentException("A VERIFIED program requires a verification date");
@@ -164,6 +180,7 @@ public class DegreeProgram {
         this.verificationStatus = status;
         this.verifiedOn = verifiedOn;
         this.officialApplicationUrl = officialApplicationUrl;
+        this.officialApplicationCycle = officialApplicationUrl == null ? null : officialApplicationCycle;
     }
 
     /** Globally unique, stable public identifier: {@code <university-slug>--<program-slug>}. */
@@ -184,7 +201,9 @@ public class DegreeProgram {
     public String getCampusCity() { return campusCity; }
     public StudyMode getStudyMode() { return studyMode; }
     public String getOfficialProgramUrl() { return officialProgramUrl; }
+    public String getOfficialAdmissionsUrl() { return officialAdmissionsUrl; }
     public String getOfficialApplicationUrl() { return officialApplicationUrl; }
+    public String getOfficialApplicationCycle() { return officialApplicationCycle; }
     public VerificationStatus getVerificationStatus() { return verificationStatus; }
     public LocalDate getVerifiedOn() { return verifiedOn; }
     public Set<Source> getSources() { return sources; }

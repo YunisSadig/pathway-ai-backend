@@ -8,7 +8,13 @@ import java.util.List;
 
 /**
  * One row of {@code GET /api/v1/programs}. Unknown values are {@code null} (or an empty list), never
- * placeholders. The application URL is only present for a VERIFIED program.
+ * placeholders.
+ *
+ * <ul>
+ *   <li>{@code officialAdmissionsUrl}: an official admissions-information page. Show it as information.</li>
+ *   <li>{@code officialApplicationUrl}: an ACTIVE apply link: only present when the program is VERIFIED and the
+ *       link was verified for a current or upcoming cycle. A link for an older cycle is never returned here.</li>
+ * </ul>
  */
 public record ProgramListItemResponse(
         String identifier,
@@ -22,6 +28,7 @@ public record ProgramListItemResponse(
         String campusCity,
         UniversityRef university,
         String officialProgramUrl,
+        String officialAdmissionsUrl,
         String officialApplicationUrl,
         Verification verification) {
 
