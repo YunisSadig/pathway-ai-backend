@@ -42,3 +42,4 @@ build/
 # browser-tool scratch output
 .playwright-mcp/
 backups/
+/scripts/ops/
