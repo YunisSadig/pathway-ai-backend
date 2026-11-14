@@ -45,6 +45,6 @@ COMPLETE = observed in a real run (link or measurement). PARTIAL = works, with a
 
 1. **Public launch: BLOCKED.** Studyinfo licence, attribution, persistent-copy and commercial terms are unanswered. The email is drafted in `docs/data/studyinfo-permission-request.md` (repository URL filled in; your name and contact remain). It has **not** been sent.
 2. **Healthchecks.io:** create an account (emailed link), create a check with a 1-day period and a short grace, store its ping URL as the `HEALTHCHECK_PING_URL` secret of environment `sync`, send a test ping, then set `SYNC_ENABLED=true`.
-3. **Independent backups:** decide on an off-site encrypted dump (needs a storage account and a key).
+3. **Backups:** workflow `Backup` (encrypted `pg_dump` kept 30 days as an artifact, then an automatic restore test into a throwaway database). Manual dispatch works; the weekly schedule is off until you (or I, after a green run) set the repository variable `BACKUP_ENABLED=true`. Residual risk: artifacts live in GitHub, so a lost GitHub account loses them; a copy elsewhere is an owner decision.
 4. **Commercial use:** Vercel Hobby is for non-commercial use; revisit before any commercial launch.
-5. The 37 staged changes are untouched; they need source-specific review (`docs/data/change-review.md`).
+5. **The 37 `staged_change` rows are not a review queue.** Inspected 2026-11-14 in the database: all 37 are `AUTO_APPLIED`, risk `LOW`, reason "initial import of a new program from the official source" (9 deadlines, 9 durations, 9 campus cities, 9 languages, 1 academic field). Nothing is `PENDING_REVIEW`. Each deadline states its own year in the round label (Spring 2027, Admission 2027), so the year rule holds. An earlier report called them "awaiting review"; that was wrong.

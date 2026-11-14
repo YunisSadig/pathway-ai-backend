@@ -1,0 +1,58 @@
+# Independent, encrypted backup of the hosted database plus a restore test into a throwaway database. See docs/deployment-api.md section 7.
+#
+#   1. dump          pg_dump of the hosted database (READ-ONLY use of the owner credentials), streamed through AES-256 encryption: there is no
+#                    plaintext file. The result is uploaded as an artifact kept 30 days. Artifacts of a PUBLIC repository can be downloaded by any
+#                    GitHub user, which is why the file exists only encrypted (key: environment secret BACKUP_PASSPHRASE, never in the repository).
+#   2. restore-test  decrypts the backup it just made, restores it into a PostgreSQL container that lives only inside this run, compares row
+#                    counts and the Flyway version with the manifest taken at dump time, and fails the run on any difference.
+#
+# Manual dispatch always works. The weekly schedule runs only when the repository VARIABLE BACKUP_ENABLED is "true".
+name: Backup
+
+on:
+  schedule:
+    - cron: "41 3 * * 0"   # Sundays, off the hour on purpose
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.BACKUP_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: sync
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Encrypted dump
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          OUT_DIR: backup-out
+        run: bash scripts/ci/backup.sh dump
+
+      - name: Keep the encrypted backup for 30 days
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pathway-ai-backup
+          path: backup-out/
+          retention-days: 30
+          if-no-files-found: error
+
+      # no database secret is present in this step: it only needs the passphrase and the file it just created
+      - name: Restore test into a throwaway database
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          OUT_DIR: backup-out
+        run: bash scripts/ci/backup.sh restore-test

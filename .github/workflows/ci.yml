@@ -36,6 +36,9 @@ jobs:
       - name: Scheduler script guards
         run: bash scripts/ci/test-run-refresh.sh
 
+      - name: Backup script guards
+        run: bash scripts/ci/test-backup.sh
+
       # verify = compile + unit tests (surefire) + package + integration tests (failsafe, Testcontainers PostgreSQL;
       # Docker is preinstalled on ubuntu-latest). No secrets are needed: tests create their own database.
       - name: Build and test
