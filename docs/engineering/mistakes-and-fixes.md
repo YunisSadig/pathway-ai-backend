@@ -317,3 +317,18 @@ Only problems that actually happened during development. Each entry was verified
 - **Fix:** the API's role is created with SQL (`CREATE ROLE ... LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE`) plus `GRANT SELECT` only. Verified in SQL: not superuser, not in `neon_superuser`, `SELECT` yes, `INSERT`/`UPDATE` no; the Neon SQL-history entry that held the generated password was deleted.
 - **Prevention rule:** least-privilege roles are created in SQL, and their privileges are asserted with `has_table_privilege`, not assumed from a console screen.
 - **Status:** fixed.
+
+## 40. The post-deploy verification of the frontend never started (wrong trigger)
+
+- **Evidence:** after the first production deployment on Vercel no `Verify deployment` run existed and the repository had zero GitHub Deployments.
+- **Root cause:** the workflow used `on: deployment_status`, but this Vercel integration reports a commit status (context `Vercel`) and creates no GitHub Deployment.
+- **Fix:** trigger on `status` (context `Vercel`, state success, sha equal to the head of `main`). Verification: frontend run 43628497905 started by itself after a merge and passed.
+- **Prevention rule:** prove a trigger by observing it fire; run the workflow manually first (it passed 10 smoke tests) and then wait for the automatic run.
+- **Status:** fixed.
+
+## 41. A UI element reference pointed at a different control after the page re-rendered (GitHub app install)
+
+- **Evidence:** selecting "Only select repositories" for Render's GitHub app by element reference installed the app on all repositories.
+- **Fix:** narrowed immediately to the single repository in the installation settings; later installs were done by screenshot and coordinates with a check before pressing Install.
+- **Prevention rule:** on a page that re-renders, click by what the screenshot shows, and verify the selected scope on screen before an irreversible button.
+- **Status:** fixed.
