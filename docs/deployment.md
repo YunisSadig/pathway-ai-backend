@@ -1,5 +1,8 @@
 # Deployment
 
+> **Unattended synchronization (hosted database + scheduled job), its limits, security and the steps that need the owner's accounts:
+> [deployment-sync.md](deployment-sync.md).** This page keeps the general CI/CD plan.
+
 CI and CD are separate concerns. **Nothing in this document has been provisioned, published or paid for.**
 
 ## CI (implemented, automatic)

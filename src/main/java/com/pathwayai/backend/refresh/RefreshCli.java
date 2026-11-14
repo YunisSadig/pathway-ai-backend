@@ -28,6 +28,9 @@ import org.springframework.stereotype.Component;
  *                                                     read one source with a named extraction adapter (re-baselines it;
  *                                                     a university binds a source that states facts for several programs)
  *   --app.refresh.command=sync-adapter --app.refresh.adapter=NAME   re-read every active source of one adapter now
+ *   --app.refresh.command=freshness-check [--app.refresh.max-age-hours=240]
+ *                                                     last-success monitoring: exits non-zero unless EVERY program kept current by an
+ *                                                     extractor was read successfully within that many hours (default 240 = 10 days)
  *   --app.refresh.fail-on-failures=true [--app.refresh.failure-ratio-threshold=0.5]
  *                                                     exit non-zero when more than that share of the checks failed or were
  *                                                     blocked (default 0 = any failure); a single flaky site stays visible in
@@ -59,6 +62,7 @@ public class RefreshCli implements ApplicationRunner {
     private final String adapter;
     private final boolean failOnFailures;
     private final double failureRatioThreshold;
+    private final long maxAgeHours;
 
     public RefreshCli(RefreshService refresh, SyncOrchestrator orchestrator, MonitoringReportService report,
                       StagedChangeService review, SourceMonitorRepository monitors, Clock clock, @Value("${app.refresh.command}") String command,
@@ -69,7 +73,8 @@ public class RefreshCli implements ApplicationRunner {
                       @Value("${app.refresh.limit:#{null}}") Integer limit,
                       @Value("${app.refresh.adapter:#{null}}") String adapter,
                       @Value("${app.refresh.fail-on-failures:false}") boolean failOnFailures,
-                      @Value("${app.refresh.failure-ratio-threshold:0.0}") double failureRatioThreshold) {
+                      @Value("${app.refresh.failure-ratio-threshold:0.0}") double failureRatioThreshold,
+                      @Value("${app.refresh.max-age-hours:240}") long maxAgeHours) {
         this.refresh = refresh;
         this.orchestrator = orchestrator;
         this.report = report;
@@ -87,6 +92,7 @@ public class RefreshCli implements ApplicationRunner {
         this.adapter = adapter;
         this.failOnFailures = failOnFailures;
         this.failureRatioThreshold = failureRatioThreshold;
+        this.maxAgeHours = maxAgeHours;
     }
 
     @Override
@@ -100,6 +106,17 @@ public class RefreshCli implements ApplicationRunner {
                             + ", skipped " + d.skipped() + ", failed " + d.failed());
                 }
                 finish("Refresh run: ", result.refresh());
+            }
+            case "freshness-check" -> {
+                var f = monitors.extractorFreshness(clock.instant().minus(java.time.Duration.ofHours(maxAgeHours)));
+                System.out.println("Freshness (max age " + maxAgeHours + " h): " + f.fresh() + " of " + f.total()
+                        + " extractor-maintained program(s) are fresh; never succeeded " + f.neverSucceeded() + ", stale " + f.stale()
+                        + ", not active " + f.notActive() + "; newest success " + f.newestSuccess() + ", oldest " + f.oldestSuccess());
+                if (f.total() == 0 || f.fresh() < f.total()) {
+                    throw new IllegalStateException("synchronization is not current: " + (f.total() - f.fresh()) + " of " + f.total()
+                            + " extractor-maintained program(s) were not read successfully within " + maxAgeHours + " hours"
+                            + (f.total() == 0 ? " (there are none)" : ""));
+                }
             }
             case "run" -> finish("Refresh run: ", refresh.runAllDue(clock.instant()));
             case "report" -> System.out.println(report.generate(clock.instant()).render());

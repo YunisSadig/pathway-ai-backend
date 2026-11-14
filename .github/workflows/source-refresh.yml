@@ -1,29 +1,34 @@
-# TEMPLATE for unattended source refresh (official APIs and monitored pages). It does nothing until you opt in:
-#   - it only runs when started by hand (workflow_dispatch);
-#   - the daily schedule below is commented out on purpose.
+# Unattended synchronization: keeps the official-API programs current while nobody's computer is on.
 #
-# To enable (needs your approval and a hosted PostgreSQL that this runner can reach; none is provisioned here):
-#   1. Add repository secrets DB_URL, DB_USERNAME, DB_PASSWORD for the hosted database.
-#      Optional: ALERT_WEBHOOK_URL (a Slack/Teams-style incoming webhook) for a second alert channel.
-#   2. Run the schema once (the app applies Flyway on start) and seed with the operator commands in
-#      docs/data/official-api-connectors.md (catalogue, reference data, studyinfo-import).
-#   3. Uncomment the `schedule` block.
-# See docs/data/automated-refresh.md. The job is safe to run twice or late: due-ness is stored in the database.
+# It does NOTHING until the owner opts in. The job only runs when the repository VARIABLE SYNC_ENABLED is "true" and the three
+# repository SECRETS below exist; until then every scheduled run is skipped (no cost, no database access).
+# The exact owner steps (account sign-up, secrets, first run) are in docs/deployment-sync.md.
 #
-# Failure handling:
-#   - a run is retried up to 3 times with growing pauses (database or network blips); a source that keeps failing is
-#     marked FAILING in the registry and shown in the report, it does not fail the job on its own;
-#   - the job fails (and alerts) when more than half of the checks failed or were blocked, or the app cannot run at all;
-#   - on failure a GitHub issue is opened (or commented on) and, if ALERT_WEBHOOK_URL is set, a webhook is called;
-#   - public discovery also protects itself: programs whose sources have not been read for 45 days are withheld and
-#     GET /api/v1/discovery/status says so, so point an external uptime check at that endpoint (state must not be
-#     STALE) as the alarm for "the scheduler itself stopped" (GitHub disables schedules after 60 days of repo silence).
+# What runs (all in scripts/ci/run-refresh.sh, the same file you can run on a laptop):
+#   * daily 05:17 UTC  : `run`  = re-read every source that is due (each program is due weekly, daily inside an application window)
+#   * Mondays          : `sync` = discover new programs for the three reviewed universities, then `run`
+#   * every run        : `freshness` = last-success watchdog; fails unless EVERY extractor-maintained program was read within 10 days
+# Retries: each step is attempted 3 times with growing pauses (database cold start, network blips); a single flaky source never
+# fails the job (it is marked FAILING and shows in the report); the job fails when more than half of the checks fail or the
+# watchdog finds a program that is no longer current.
+# Alerts: a failed run opens (or comments on) a GitHub issue, calls ALERT_WEBHOOK_URL if that secret exists, and GitHub emails the
+# user who last edited the cron line (documented GitHub behaviour for scheduled workflows).
+#
+# Limits that matter (checked against GitHub's documentation on 2026-11-14): scheduled workflows run only on the default branch, can be
+# delayed under load, and in a PUBLIC repository are disabled automatically after 60 days without repository activity (any push or
+# merge resets the clock; re-enable under Actions if it ever happens). Free for public repositories on standard runners.
 name: Source refresh
 
 on:
+  schedule:
+    - cron: "17 5 * * *"   # daily, off the hour on purpose (GitHub delays :00 runs under load)
   workflow_dispatch:
-  # schedule:
-  #   - cron: "17 5 * * *"   # daily, 05:17 UTC (off the hour on purpose)
+    inputs:
+      mode:
+        description: "run | sync | force (re-read all Studyinfo programs now) | bootstrap (first run on an empty database) | freshness"
+        type: choice
+        options: [run, sync, force, bootstrap, freshness]
+        default: run
 
 permissions:
   contents: read
@@ -35,6 +40,7 @@ concurrency:
 
 jobs:
   refresh:
+    if: ${{ vars.SYNC_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
@@ -49,35 +55,42 @@ jobs:
           java-version: 21
           cache: maven
       - run: ./mvnw -B -q package -DskipTests
-      - name: Refresh every source that is due (3 attempts)
+
+      - name: Choose the mode
+        id: mode
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_MODE: ${{ inputs.mode }}
         run: |
-          for attempt in 1 2 3; do
-            if java -jar target/pathway-ai-backend-0.0.1-SNAPSHOT.jar \
-                 --spring.main.web-application-type=none \
-                 --app.refresh.command=run \
-                 --app.refresh.fail-on-failures=true \
-                 --app.refresh.failure-ratio-threshold=0.5; then
-              exit 0
-            fi
-            echo "::warning::refresh attempt $attempt failed"
-            [ "$attempt" -lt 3 ] && sleep $((attempt * 300))
-          done
-          exit 1
-      - name: Report
-        if: always()
-        run: >
-          java -jar target/pathway-ai-backend-0.0.1-SNAPSHOT.jar
-          --spring.main.web-application-type=none
-          --app.refresh.command=report
-      - name: Alert on failure
-        if: failure()
+          if [ "$EVENT" = "workflow_dispatch" ]; then m="$INPUT_MODE"
+          elif [ "$(date -u +%u)" = "1" ]; then m=sync
+          else m=run; fi
+          echo "mode=$m" >> "$GITHUB_OUTPUT"
+
+      - name: Synchronize
+        id: refresh
+        continue-on-error: true
+        env:
+          MODE: ${{ steps.mode.outputs.mode }}
+        run: bash scripts/ci/run-refresh.sh "$MODE"
+
+      - name: Last-success watchdog
+        id: freshness
+        if: ${{ steps.mode.outputs.mode != 'bootstrap' }}
+        continue-on-error: true
+        run: bash scripts/ci/run-refresh.sh freshness
+
+      - name: Alert
+        if: ${{ steps.refresh.outcome == 'failure' || steps.freshness.outcome == 'failure' }}
         env:
           GH_TOKEN: ${{ github.token }}
           ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REFRESH_OUTCOME: ${{ steps.refresh.outcome }}
+          FRESHNESS_OUTCOME: ${{ steps.freshness.outcome }}
         run: |
-          title="Source refresh failed"
-          body="The scheduled source refresh failed after 3 attempts. Run: ${RUN_URL}"
+          title="Source synchronization needs attention"
+          body="Synchronization step: ${REFRESH_OUTCOME}; last-success watchdog: ${FRESHNESS_OUTCOME}. Run: ${RUN_URL}"
           existing=$(gh issue list --repo "${{ github.repository }}" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
           if [ -n "$existing" ]; then
             gh issue comment "$existing" --repo "${{ github.repository }}" --body "$body"
@@ -87,3 +100,7 @@ jobs:
           if [ -n "$ALERT_WEBHOOK_URL" ]; then
             curl -fsS -X POST -H 'Content-Type: application/json' -d "{\"text\":\"$title. $RUN_URL\"}" "$ALERT_WEBHOOK_URL" || true
           fi
+
+      - name: Fail the job when a step failed
+        if: ${{ steps.refresh.outcome == 'failure' || steps.freshness.outcome == 'failure' }}
+        run: exit 1

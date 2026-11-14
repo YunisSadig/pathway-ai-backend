@@ -73,6 +73,28 @@ public class SourceMonitorRepository {
         return jdbc.sql("select id from university where slug = :s").param("s", slug).query(Long.class).optional();
     }
 
+    /** How current the fact-extracting monitors are: the base of last-success monitoring and the freshness watchdog. */
+    public record ExtractorFreshness(int total, int fresh, int neverSucceeded, int stale, int notActive, Instant newestSuccess,
+                                     Instant oldestSuccess) {
+    }
+
+    /** Every monitor of a program that extracts facts (official API or structured data); {@code cutoff} is the oldest acceptable success. */
+    public ExtractorFreshness extractorFreshness(Instant cutoff) {
+        return jdbc.sql("""
+                select count(*) as total,
+                       count(*) filter (where status = 'ACTIVE' and last_success_at >= :cutoff) as fresh,
+                       count(*) filter (where last_success_at is null) as never,
+                       count(*) filter (where last_success_at < :cutoff) as stale,
+                       count(*) filter (where status <> 'ACTIVE') as not_active,
+                       max(last_success_at) as newest, min(last_success_at) as oldest
+                from source_monitor
+                where program_id is not null and extraction_method in ('ADAPTER', 'JSON_LD')""")
+                .param("cutoff", Timestamp.from(cutoff))
+                .query((rs, i) -> new ExtractorFreshness(rs.getInt("total"), rs.getInt("fresh"), rs.getInt("never"),
+                        rs.getInt("stale"), rs.getInt("not_active"), instant(rs, "newest"), instant(rs, "oldest")))
+                .single();
+    }
+
     /** Operator action: makes the active sources of one adapter due now. Returns how many. */
     public int markDue(String adapterName, Instant now) {
         return jdbc.sql("""
