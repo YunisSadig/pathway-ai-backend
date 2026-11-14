@@ -56,3 +56,15 @@ is not shown as verified current while pending (known issue 42: needs an additiv
 4. The monitor is registered and due, discovery shows the program as fresh, and `GET /api/v1/discovery/status` is `FRESH` or
    explains why not.
 5. No unverified or invented value; unknown stays null.
+
+## Where we are and the first concrete steps (2026-11-15)
+
+**State.** The infrastructure is no longer the constraint: official API -> scheduled connector -> Neon -> hosted API -> hosted site was verified end to end (`docs/engineering/deployment-status.md`), with 3 universities and 9 programs, all maintained by one connector (Studyinfo). What limits growth now is data rights and connector coverage, in this order:
+
+1. **Rights first (gates every public use).** The Studyinfo reuse email (`studyinfo-permission-request.md`) is drafted and unsent. Until it is answered, everything below stays in protected staging. Every future provider gets the same written reuse position before its data is shown.
+2. **Depth inside the proven connector (no new infrastructure).** `reference-data/studyinfo.json` caps programs per university with `maxPrograms` (4, 3, 3). The 9 programs are a sample of the 41 (Helsinki), about 38 (Oulu) and Aalto English-taught offerings the provider lists. Raising the caps, and extending the reviewed field map `studyinfo-field-map.json` (codes such as 0731, 0712, 0713, 0718 and 0512 were left out because their mapping is not reviewed), grows the catalogue with the same adapter, parser and tests. Each cap change is a reviewed PR; the hosted `bootstrap`/`sync` then imports them (about 30 s per record, so the 120-minute run limit allows a few hundred records per run).
+3. **More Finnish institutions through the same connector.** The Studyinfo organisation identifier is the only new input per university (plus a reviewed identity entry in `universities.json`). This is the cheapest "new university", and it is a connector-backed one, as the policy requires.
+4. **Facts Studyinfo cannot give (tuition, language and admission requirements, official application links, scholarships).** Each is a new fact type and a new extractor, one provider at a time, each with its own source, period and review policy. They need the per-fact "pending review" flag (known issue 42) before they are shown as current.
+5. **Other countries.** One written finding per region first (permitted? machine-readable? which facts? licence?) from a handful of requests, then a connector only if it passes the admission test above. The order in the table stays a hypothesis.
+
+**Per-step proof, unchanged:** recorded fixtures, a repeat read that writes nothing, a controlled change that stages or applies by policy, an outage that changes nothing, one live read of the real service, then the hosted sequence `bootstrap` or `sync` -> `verify` -> `api-smoke` -> the live-site smoke test, and the encrypted backup with its restore test before and after a large import.

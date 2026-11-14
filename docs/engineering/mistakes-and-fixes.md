@@ -347,4 +347,4 @@ Only problems that actually happened during development. Each entry was verified
 - **Root cause:** the timeout was chosen from Render's "about one minute" without a measurement.
 - **Fix:** frontend PR #26: upstream wait 130 s, `maxDuration = 150` (Fluid Compute is enabled on the Hobby project), a unit test that pins the wait above 100 s and below the function limit, and a loading state that explains a long wait after 6 s.
 - **Prevention rule:** timeouts come from measured values, and a documented figure is a hypothesis until measured.
-- **Status:** fixed; the end-to-end cold path through the live site is verified separately (see deployment-status).
+- **Status:** fixed; verified through the live site on 2026-11-15: first request after 17 idle minutes, HTTP 200 in 108.7 s, 9 programs.
