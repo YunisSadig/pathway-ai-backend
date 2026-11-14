@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "countries": [
+    {
+      "iso2": "FI",
+      "name": "Finland"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "natural-sciences",
+      "name": "Natural Sciences"
+    },
+    {
+      "slug": "mathematics-and-statistics",
+      "name": "Mathematics and Statistics"
+    },
+    {
+      "slug": "computer-and-data-science",
+      "name": "Computer and Data Science"
+    },
+    {
+      "slug": "engineering-and-technology",
+      "name": "Engineering and Technology"
+    },
+    {
+      "slug": "mechanical-engineering",
+      "name": "Mechanical Engineering",
+      "parent": "engineering-and-technology"
+    },
+    {
+      "slug": "architecture-and-design",
+      "name": "Architecture and Design"
+    },
+    {
+      "slug": "social-sciences",
+      "name": "Social Sciences"
+    },
+    {
+      "slug": "economics",
+      "name": "Economics",
+      "parent": "social-sciences"
+    },
+    {
+      "slug": "psychology",
+      "name": "Psychology",
+      "parent": "social-sciences"
+    },
+    {
+      "slug": "humanities",
+      "name": "Humanities"
+    },
+    {
+      "slug": "languages-and-literature",
+      "name": "Languages and Literature",
+      "parent": "humanities"
+    },
+    {
+      "slug": "interdisciplinary-studies",
+      "name": "Interdisciplinary Studies"
+    }
+  ],
+  "sources": [],
+  "universities": [],
+  "programs": [],
+  "retractions": []
+}

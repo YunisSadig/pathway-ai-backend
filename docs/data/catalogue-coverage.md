@@ -1,3 +1,7 @@
+> **HISTORICAL (2026-11-11 snapshot).** The 48-institution catalogue and its static programs were retired on 2026-11-14 (archived in
+> `catalogue_archive`, batch `retire-20261114T100605`). The active catalogue is only what a working connector keeps current; see
+> [sync-policy.md](sync-policy.md). The numbers below describe the retired state.
+
 # Catalogue coverage
 
 State of the database after the EU + Asia catalogue import (2026-11-11). Numbers are from direct queries against PostgreSQL, not estimates. Regenerate any time with the monitoring report (`app.refresh.command=report`, see `automated-refresh.md`).

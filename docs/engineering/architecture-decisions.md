@@ -59,3 +59,22 @@ V5 adds identity columns and three small tables (external ids, aliases, source l
 
 ## ADR-20 An external scheduler runs unattended checks
 The in-process `@Scheduled` runner is off by default. Due-ness (`next_check_at`) is stored in PostgreSQL, so a daily job from any scheduler (platform cron, Cloud Run Job, GitHub Actions) is safe to repeat, delay or restart. Nothing is provisioned without approval.
+
+## ADR-21 No static academic records: only connector-maintained facts are published (2026-11-14)
+
+**Decision.** The active catalogue contains no hand-maintained university, program, tuition, admission or scholarship records.
+A program is published only if (1) an official, permitted source is read by a fact-extracting connector (an official API, or
+permitted structured data / a narrowly scoped extractor), (2) it has a stable provider identifier, a successful live import and a
+successful repeated read with field-level comparison, and (3) its extractor monitor is active and has succeeded within the
+freshness window. A `CONTENT_HASH` monitor (page-change alarm) never qualifies. Supersedes ADR-11's "facts live in a versioned
+JSON file": that file, its importer path and the content-hash registrar were removed.
+
+**What is automatic.** Deterministic fields from an official API (duration, teaching languages, campus city, new application
+rounds, a source-declared discontinuation) are published without review, the replaced value is archived and audited. Identity and
+classification (name, level, field), tuition, requirements and any change to a dated fact need a person, so they are labelled
+`REVIEW_REQUIRED` in the API. `SyncPolicy` is the single statement of this.
+
+**Consequences.** Facts with no connector (tuition, scholarships, admission requirements, application URL) are reported as
+unavailable, not shown. The catalogue is small on purpose; growth is by adding connectors, never records. Removed rows are kept
+in `catalogue_archive` and in a verified `pg_dump`; the cleanup is a guarded, transactional, dry-run-first procedure
+(`scripts/db/`). Nothing refreshes unattended until a hosted scheduler exists (known issue 45).

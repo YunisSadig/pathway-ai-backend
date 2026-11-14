@@ -27,7 +27,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * programs; the sync confirms the stored, already-curated fees, stages anything that differs and never overwrites
  * a fee that belongs to a stated period. The page is a scripted copy of a real recorded one.
  */
-@SpringBootTest(properties = "app.refresh.min-host-interval-ms=0")
+@SpringBootTest(properties = {"app.refresh.min-host-interval-ms=0", "app.aalto.fee-groups=classpath:aalto/test-fee-groups.json"})
 @Import({TestcontainersConfiguration.class, RefreshTestConfig.class})
 class AaltoTuitionSyncIT {
 

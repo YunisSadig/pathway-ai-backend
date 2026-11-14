@@ -4,7 +4,7 @@ REST backend for **Pathway AI**, an international university discovery and educa
 
 > Product direction: [docs/product/MVP_SPEC.md](docs/product/MVP_SPEC.md) (global, program-first, all disciplines, bachelor and master).
 >
-> Real data is **not** in the migrations. A small, source-cited batch (8 programs) ships as reference data and is imported on request: see [docs/reference-data.md](docs/reference-data.md). Every fact cites an official page and the date it was read; a year is stored only when the source states it; unknown stays unknown.
+> There are **no static academic records**, neither in the migrations nor in a data file. Programs enter only through an official-API connector and stay current through `--app.refresh.command=sync`: see [docs/data/sync-policy.md](docs/data/sync-policy.md). Every fact has a source and a field-level provenance row; a year is stored only when the source states it; unknown stays unknown.
 >
 > Inspecting the database in pgAdmin 4: [docs/database/PGADMIN_GUIDE.md](docs/database/PGADMIN_GUIDE.md).
 
@@ -52,11 +52,14 @@ Flyway creates the schema automatically when the app starts. The database listen
 ```
 Health: <http://localhost:8080/actuator/health>
 
-## Import the reference data
+## Where the data comes from (no static academic records)
+The catalogue holds **no static university, program, tuition, admission or scholarship records**. `reference-data/taxonomy.json` only carries the
+countries and academic fields; programs arrive only through an official-API connector and are kept current by `--app.refresh.command=sync`
+(see [docs/data/sync-policy.md](docs/data/sync-policy.md)). `IMPORT_REFERENCE_DATA=true` loads the taxonomy and refuses a file that carries academic records.
 ```powershell
-$env:IMPORT_REFERENCE_DATA = "true"; .mvnw.cmd spring-boot:run   # idempotent: a second run logs "0 new rows"
+$env:JAVA_HOME = "<JDK 21>"
+.\mvnw.cmd -q spring-boot:run "-Dspring-boot.run.arguments=--app.refresh.command=sync --spring.main.web-application-type=none"
 ```
-Off by default. Details, rules and the known gaps of the data: [docs/reference-data.md](docs/reference-data.md).
 
 ## Run tests
 ```powershell
@@ -157,6 +160,25 @@ Two link fields: `officialAdmissionsUrl` is an official admissions-**information
 ```
 Empty arrays mean "nothing known", not "none exist". **Every `intakes`, `tuition` and `requirements` item carries `temporalStatus`**: `CURRENT`, `HISTORICAL` (the period has ended; never show it as current) or `UNKNOWN_YEAR` (the source stated no period). Tuition has `academicYear` (only when the source prints one), `effectiveFrom` / `effectiveTo` (a stated start-date range) and `scopeNote` (the source's wording); all may be `null`. The `tuitionMax` filter only matches `CURRENT` fees. `404` for an unknown program, `400` for a malformed identifier. The `programs` rows inside `GET /api/v1/universities/{slug}` gained an additive `identifier` field.
 
+### `synchronization` block of `GET /api/v1/programs/{identifier}` (additive)
+```json
+"synchronization": {
+  "status": "AUTOMATIC | NOT_SYNCHRONIZED",
+  "connector": "studyinfo-external", "sourceKind": "OFFICIAL_API",
+  "lastSuccessfulSyncAt": "2026-11-14T07:16:03Z", "nextCheckDueAt": "2026-11-21T07:16:03Z",
+  "fresh": true, "freshnessWindowDays": 45,
+  "fields": [ { "field": "duration_months", "updateMode": "AUTOMATIC | REVIEW_REQUIRED | ADDITIVE_AUTOMATIC | FIXED_AT_CREATION", "verifiedOn": "2026-11-14" } ],
+  "notSynchronized": ["tuition", "scholarships", "admissionRequirements", "applicationUrl"]
+}
+```
+`status: AUTOMATIC` means a working extractor maintains the program, **not** that an unattended scheduler is running: `fresh` and `lastSuccessfulSyncAt` say how recently it was read.
+A field with `REVIEW_REQUIRED` is re-read automatically but a change waits for a person (the old value stays until approved). Facts listed in `notSynchronized` have no connector
+and are omitted rather than shown as maintained. A program the official source has discontinued, or whose extractor is failing or stale, is withheld from discovery.
+
+### `GET /api/v1/discovery/status` (additive)
+Explains the state of public discovery: `state` (`FRESH`, `PARTIAL`, `STALE`, `EMPTY`, `UNRESTRICTED`), `programsTotal`, `programsListed`, `programsWithheld`,
+`withheldBecause` (`notVerified`, `discontinued`, `noExtractor`, `neverChecked`, `sourcesStale`, `extractorFailing`), `lastSuccessfulSourceCheck`, the scheduler status and a plain-language `message`.
+
 ### Errors
 Every non-2xx API response: `{ "timestamp": "ISO-8601", "status": 400, "error": "Bad Request", "message": "...", "path": "/api/v1/universities", "violations": [{ "field": "size", "message": "must be between 1 and 100" }] }` (`violations` omitted when empty). `400` invalid/ill-typed parameter or malformed slug, `404` unknown slug or path, `405` wrong method, `500` unexpected. A CORS rejection by Spring returns `403` with plain text `Invalid CORS request`.
 
@@ -176,7 +198,7 @@ Invoke-RestMethod "http://localhost:8080/api/v1/universities?q=tech&country=de&s
 | `POSTGRES_DB` / `POSTGRES_PORT` | `pathway_ai` / `5433` | Used by Docker Compose |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:3000` | Comma-separated explicit browser origins allowed to call `/api/**` (no wildcards) |
 | `IMPORT_REFERENCE_DATA` | `false` | `true` runs the idempotent reference-data import at startup |
-| `REFERENCE_DATA_LOCATION` | `classpath:reference-data/programs.json` | Any Spring resource (`file:...`) to import a different file |
+| `REFERENCE_DATA_LOCATION` | `classpath:reference-data/taxonomy.json` | The taxonomy file (countries and academic fields only; a file with academic records is refused) |
 | `PORT` | `8080` | HTTP port (injected by most hosts) |
 
 A git-ignored `.env` in the working directory is read automatically; real environment variables take precedence.
@@ -220,4 +242,4 @@ Measured on a developer laptop (Windows, PostgreSQL 17 in Docker, JDK 21, local 
 
 ## University catalogue and automated source monitoring
 
-The database holds 48 institutions (all 27 EU member states plus China, Japan and South Korea; 39 verified, 9 registry-only) and an automated, source-aware monitoring pipeline that checks the official pages the platform cites and routes changes to a review queue. Coverage, sources, the import process, the refresh architecture and the review workflow are documented in [docs/data/](docs/data/): `catalogue-coverage.md`, `official-sources.md`, `import-process.md`, `automated-refresh.md`, `change-review.md`. Monitoring is operated from the command line (`--app.refresh.command=register|run|report|reactivate|review-list|review-approve|review-reject`); there is no public control endpoint.
+The active catalogue is deliberately small: only institutions that have at least one program kept current by a working official-API connector (today the University of Helsinki, Aalto University and the University of Oulu with their Studyinfo programs). A source monitor that only notices a changed page is not synchronization and does not make a program eligible. The policy, what updates automatically, what still needs review, how stale data is withheld and how the development database was cleaned are in [docs/data/sync-policy.md](docs/data/sync-policy.md); the connectors are in [docs/data/official-api-connectors.md](docs/data/official-api-connectors.md); the monitoring and review machinery in [docs/data/](docs/data/) (`automated-refresh.md`, `change-review.md`). Everything runs from the command line (`--app.refresh.command=sync|run|report|review-list|review-approve|review-reject|studyinfo-import|studyinfo-sync|assign-adapter|sync-adapter`); there is no HTTP control surface.

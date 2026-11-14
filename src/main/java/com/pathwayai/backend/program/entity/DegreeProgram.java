@@ -105,6 +105,10 @@ public class DegreeProgram {
     @Column(name = "verified_on")
     private LocalDate verifiedOn;
 
+    /** ACTIVE or DISCONTINUED; written only by the refresh pipeline (database default ACTIVE), never by this entity. */
+    @Column(name = "lifecycle_status", insertable = false, updatable = false)
+    private String lifecycleStatus;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "program_source",
             joinColumns = @JoinColumn(name = "program_id"),
@@ -206,6 +210,7 @@ public class DegreeProgram {
     public String getOfficialApplicationCycle() { return officialApplicationCycle; }
     public VerificationStatus getVerificationStatus() { return verificationStatus; }
     public LocalDate getVerifiedOn() { return verifiedOn; }
+    public String getLifecycleStatus() { return lifecycleStatus; }
     public Set<Source> getSources() { return sources; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

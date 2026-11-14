@@ -300,7 +300,7 @@ class ProgramApiIT {
                         "identifier", "slug", "name", "degreeLevel", "field", "studyMode", "durationMonths",
                         "teachingLanguages", "campusCity", "university", "officialProgramUrl",
                         "officialAdmissionsUrl", "officialApplicationUrl", "verification", "sources", "intakes", "tuition",
-                        "requirements")))
+                        "requirements", "synchronization")))
                 .andExpect(jsonPath("$.name").value("Synthetic Computing"))
                 .andExpect(jsonPath("$.degreeLevel").value("BACHELOR"))
                 .andExpect(jsonPath("$.studyMode").value("FULL_TIME"))

@@ -24,10 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
  * NORMALIZE → VALIDATE → COMPARE → STAGE → APPLY OR REVIEW. Nothing extracted from a page is published directly:
  * every proposed change is written to {@code staged_change} first.
  *
- * <p>Policy. Only a fill-in of an empty, low-impact field (programme duration or teaching languages) read from
- * structured data by a deterministic adapter is published automatically. Everything else, in particular tuition,
- * deadlines, requirements and any value that differs from what is already published, waits for review, so a badly
- * parsed value can never replace a verified fee or requirement. Processing the same page twice stages nothing new
+ * <p>Policy (see {@link SyncPolicy}). A fill-in of an empty, low-impact field read from structured data by a
+ * deterministic adapter is published automatically. From an OFFICIAL API connector, a different duration, teaching
+ * languages or campus city replaces the published value automatically (the old value is archived), and a new application
+ * round is added automatically. Everything else, in particular tuition, requirements, identity (name, level, field)
+ * and any change to an existing dated value, waits for review, so a badly parsed value can never replace a verified fee,
+ * requirement or classification. Processing the same page twice stages nothing new
  * (the dedupe key covers source, fact and value).
  */
 @Service
@@ -96,13 +98,22 @@ public class ChangePipeline {
                 continue;
             }
             // STAGE + APPLY OR REVIEW
-            boolean auto = cmp.kind() == Kind.NEW
-                    && (initialImport || LOW_RISK.contains(f.type()) && !"CONTENT_HASH".equals(monitor.extractionMethod()));
-            String reason = cmp.kind() == Kind.CONFLICT
+            boolean official = SyncPolicy.isOfficialApi(monitor.adapterName()) && "ADAPTER".equals(monitor.extractionMethod());
+            boolean fill = cmp.kind() == Kind.NEW
+                    && (initialImport || LOW_RISK.contains(f.type()) && !"CONTENT_HASH".equals(monitor.extractionMethod())
+                    || official && SyncPolicy.AUTO_ADD.contains(f.type()));
+            boolean replace = cmp.kind() == Kind.CONFLICT && official && SyncPolicy.AUTO_REPLACE.contains(f.type());
+            boolean auto = fill || replace;
+            String reason = replace
+                    ? "official API now states a different value (was " + cmp.existing() + "): published automatically, old value archived"
+                    : cmp.kind() == Kind.CONFLICT
                     ? "differs from the published value (" + cmp.existing() + "): review before replacing"
-                    : auto ? (initialImport ? "initial import of a new program from the official source" : "empty field filled from structured data") : "new " + f.type() + " read from a monitored page: review before publishing";
+                    : auto ? (initialImport ? "initial import of a new program from the official source"
+                            : official && SyncPolicy.AUTO_ADD.contains(f.type()) ? "new " + f.type() + " stated by the official API"
+                            : "empty field filled from structured data") : "new " + f.type() + " read from a monitored page: review before publishing";
+            // an automatic replacement may legitimately return to a value held before, so its audit row is keyed by time too
             Long stagedId = stage(monitor, f, cmp.existing(), auto ? "LOW" : "HIGH", auto ? "AUTO_APPLIED" : "PENDING_REVIEW",
-                    reason, parserVersion, now, auto);
+                    reason, parserVersion, now, auto, replace ? cmp.existing() + "@" + now.toEpochMilli() : "");
             if (stagedId == null) {
                 seen++;
                 continue;
@@ -122,7 +133,7 @@ public class ChangePipeline {
     public boolean stageContentChange(SourceMonitor monitor, String contentHash, String parserVersion, Instant now) {
         ExtractedFact f = ExtractedFact.of(FactType.SOURCE_CONTENT, "", Map.of("contentHash", contentHash));
         Long id = stage(monitor, f, monitor.contentHash(), "LOW", "PENDING_REVIEW",
-                "page content changed and no adapter extracts facts from it: re-read the page", parserVersion, now, false);
+                "page content changed and no adapter extracts facts from it: re-read the page", parserVersion, now, false, "");
         if (id != null) {
             jdbc.sql("""
                     update staged_change set status = 'SUPERSEDED', decided_at = :now, decided_by = :by
@@ -134,9 +145,10 @@ public class ChangePipeline {
 
     /** Inserts the staged row; returns its id, or null if this exact change was already staged earlier. */
     private Long stage(SourceMonitor m, ExtractedFact f, String oldValue, String risk, String status, String reason,
-                       String parserVersion, Instant now, boolean decided) {
+                       String parserVersion, Instant now, boolean decided, String dedupeSalt) {
         String newValue = f.canonicalValue();
-        String key = PageCanonicalizer.sha256(m.sourceId() + "|" + f.type() + "|" + f.key() + "|" + newValue);
+        String key = PageCanonicalizer.sha256(m.sourceId() + "|" + f.type() + "|" + f.key() + "|" + newValue
+                + (dedupeSalt.isEmpty() ? "" : "|" + dedupeSalt));
         return jdbc.sql("""
                 insert into staged_change (source_id, university_id, program_id, fact_type, fact_key, old_value, new_value,
                     risk, status, reason, parser_version, dedupe_key, detected_at, decided_at, decided_by)

@@ -16,6 +16,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -50,8 +53,11 @@ public class AaltoTuitionAdapter implements ScopedExtractionAdapter {
 
     private final List<Mapping> mappings;
 
-    public AaltoTuitionAdapter() {
-        this(load());
+    /** The reviewed mapping lives in a file (empty unless a program is mapped AND monitored); tests point it elsewhere. */
+    @Autowired
+    public AaltoTuitionAdapter(ResourceLoader resources,
+                               @Value("${app.aalto.fee-groups:classpath:reference-data/aalto-fee-groups.json}") String location) {
+        this(load(resources, location));
     }
 
     AaltoTuitionAdapter(List<Mapping> mappings) {
@@ -139,11 +145,8 @@ public class AaltoTuitionAdapter implements ScopedExtractionAdapter {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<Mapping> load() {
-        try (InputStream in = AaltoTuitionAdapter.class.getResourceAsStream("/reference-data/aalto-fee-groups.json")) {
-            if (in == null) {
-                throw new IllegalStateException("reference-data/aalto-fee-groups.json is missing");
-            }
+    private static List<Mapping> load(ResourceLoader resources, String location) {
+        try (InputStream in = resources.getResource(location).getInputStream()) {
             Map<String, Object> root = JsonMapper.builder().build().readValue(in, Map.class);
             List<Mapping> out = new ArrayList<>();
             for (Object o : (List<Object>) root.get("programs")) {

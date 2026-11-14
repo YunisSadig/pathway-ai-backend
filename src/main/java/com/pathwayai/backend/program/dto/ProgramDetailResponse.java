@@ -11,6 +11,7 @@ import com.pathwayai.backend.source.entity.SourceType;
 import com.pathwayai.backend.tuition.entity.BillingPeriod;
 import com.pathwayai.backend.tuition.entity.StudentCategory;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -38,7 +39,29 @@ public record ProgramDetailResponse(
         List<SourceRef> sources,
         List<Intake> intakes,
         List<Tuition> tuition,
-        List<Requirement> requirements) {
+        List<Requirement> requirements,
+        Synchronization synchronization) {
+
+    public ProgramDetailResponse withSynchronization(Synchronization s) {
+        return new ProgramDetailResponse(identifier, slug, name, degreeLevel, field, studyMode, durationMonths, teachingLanguages,
+                campusCity, university, officialProgramUrl, officialAdmissionsUrl, officialApplicationUrl, verification, sources,
+                intakes, tuition, requirements, s);
+    }
+
+    /**
+     * How this program is kept current. {@code status} is AUTOMATIC when a working extractor of an official source maintains
+     * it, NOT_SYNCHRONIZED otherwise. Per field, {@code updateMode} says whether a change at the source is published
+     * automatically (AUTOMATIC), added automatically but never overwritten (ADDITIVE_AUTOMATIC), held for approval
+     * (REVIEW_REQUIRED, the old value stays shown until then) or fixed when the program was created (FIXED_AT_CREATION).
+     * {@code notSynchronized} lists facts no connector maintains for this program: they are omitted, not guessed.
+     */
+    public record Synchronization(String status, String connector, String sourceKind, Instant lastSuccessfulSyncAt,
+                                  Instant nextCheckDueAt, boolean fresh, int freshnessWindowDays, List<FieldSync> fields,
+                                  List<String> notSynchronized) {
+    }
+
+    public record FieldSync(String field, String updateMode, LocalDate verifiedOn) {
+    }
 
     public record SourceRef(String url, String title, String publisher, SourceType type, LocalDate retrievedOn) {
     }

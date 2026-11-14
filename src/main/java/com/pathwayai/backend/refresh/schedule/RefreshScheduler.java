@@ -1,5 +1,6 @@
 package com.pathwayai.backend.refresh.schedule;
 
+import com.pathwayai.backend.refresh.SyncOrchestrator;
 import java.time.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,17 +20,17 @@ public class RefreshScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(RefreshScheduler.class);
 
-    private final RefreshService refresh;
+    private final SyncOrchestrator sync;
     private final Clock clock;
 
-    public RefreshScheduler(RefreshService refresh, Clock clock) {
-        this.refresh = refresh;
+    public RefreshScheduler(SyncOrchestrator sync, Clock clock) {
+        this.sync = sync;
         this.clock = clock;
     }
 
     @Scheduled(cron = "${app.refresh.scheduler.cron:0 0 5 * * *}", zone = "UTC")
     public void run() {
-        var summary = refresh.runAllDue(clock.instant());
-        log.info("Scheduled source refresh finished: {}", summary);
+        var result = sync.runAll(clock.instant());
+        log.info("Scheduled synchronization finished: {}", result);
     }
 }

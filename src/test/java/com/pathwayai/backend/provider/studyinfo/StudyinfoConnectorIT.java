@@ -55,6 +55,7 @@ class StudyinfoConnectorIT {
     static final Instant T1 = Instant.parse("2026-11-20T00:00:00Z");
 
     @Autowired StudyinfoImporter importer;
+    @Autowired com.pathwayai.backend.refresh.SyncOrchestrator orchestrator;
     @Autowired RefreshService refresh;
     @Autowired SourceMonitorRepository monitors;
     @Autowired StagedChangeService review;
@@ -298,16 +299,62 @@ class StudyinfoConnectorIT {
     }
 
     @Test
-    void aChangedDurationIsStagedAndNeverOverwritesThePublishedValue() {
+    void aChangedDurationIsPublishedAutomaticallyArchivedAndCanReturnToAnEarlierValue() {
         importer.run(false, null, null);
         serveModified(r -> StudyinfoParserTest.opetus(StudyinfoParserTest.first(r, "toteutukset")).put("suunniteltuKestoVuodet", 3));
         monitors.markDue(StudyinfoAdapter.NAME, T1);
         var run = refresh.runDueForAdapter(StudyinfoAdapter.NAME, T1);
 
-        assertThat(run.pendingReview()).isEqualTo(1);
-        assertThat(run.autoApplied()).isZero();
+        // a deterministic, low-impact field from the official API is published without a person in the loop
+        assertThat(run.autoApplied()).isEqualTo(1);
+        assertThat(run.pendingReview()).isZero();
+        assertThat(field("p.duration_months")).isEqualTo("36");
+        assertThat(jdbc.queryForList("select value from program_fact_history where program_id = ? and field_name = 'duration_months'", String.class, programId()))
+                .containsExactly("24");
+        var audit = jdbc.queryForMap("select status, risk, decided_by, reason, old_value, new_value from staged_change where fact_type = 'DURATION_MONTHS' and status = 'AUTO_APPLIED' and old_value is not null");
+        assertThat(audit).containsEntry("decided_by", "system:auto").containsEntry("old_value", "24");
+        assertThat((String) audit.get("reason")).contains("published automatically, old value archived");
+        assertThat(jdbc.queryForObject("select verified_on::text from program_field_provenance where program_id = ? and field_name = 'duration_months'", String.class, programId()))
+                .isEqualTo(java.time.LocalDate.ofInstant(T1, java.time.ZoneOffset.UTC).toString());
+
+        // the provider later returns to the earlier value: that is applied too (the audit row is not deduplicated away)
+        serve(StudyinfoParserTest.recorded());
+        monitors.markDue(StudyinfoAdapter.NAME, T1.plusSeconds(60));
+        var back = refresh.runDueForAdapter(StudyinfoAdapter.NAME, T1.plusSeconds(60));
+        assertThat(back.autoApplied()).isEqualTo(1);
         assertThat(field("p.duration_months")).isEqualTo("24");
-        assertThat(jdbc.queryForObject("select new_value from staged_change where fact_type = 'DURATION_MONTHS' and status = 'PENDING_REVIEW'", String.class)).contains("36");
+        assertThat(jdbc.queryForObject("select count(*) from program_fact_history where program_id = ? and field_name = 'duration_months'", Long.class, programId())).isEqualTo(2);
+
+        // and an identical re-read changes nothing further
+        var settled = snapshot();
+        monitors.markDue(StudyinfoAdapter.NAME, T1.plusSeconds(120));
+        refresh.runDueForAdapter(StudyinfoAdapter.NAME, T1.plusSeconds(120));
+        assertThat(snapshot()).isEqualTo(settled);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void aNewApplicationRoundIsAddedAutomaticallyAndTheExistingRoundIsLeftAlone() {
+        importer.run(false, null, null);
+        serveModified(r -> {
+            var haut = (List<Object>) r.get("haut");
+            var round = new java.util.HashMap<>((Map<String, Object>) haut.get(0));
+            round.put("oid", "1.2.246.562.29.99999999999");
+            round.put("nimi", Map.of("en", "Separate Application, Autumn 2027"));
+            round.put("hakuajat", List.of(Map.of("alkaa", "2027-02-01T08:00", "paattyy", "2027-03-31T15:00")));
+            haut.add(round);
+            var targets = (List<Object>) r.get("hakukohteet");
+            var target = new java.util.HashMap<>((Map<String, Object>) targets.get(0));
+            target.put("hakuOid", "1.2.246.562.29.99999999999");
+            targets.add(target);
+        });
+        monitors.markDue(StudyinfoAdapter.NAME, T1);
+        var run = refresh.runDueForAdapter(StudyinfoAdapter.NAME, T1);
+
+        assertThat(run.autoApplied()).isEqualTo(1);
+        assertThat(run.pendingReview()).isZero();
+        assertThat(jdbc.queryForList("select application_deadline::text || ' ' || label from program_intake where program_id = ? order by 1", String.class, programId()))
+                .containsExactly("2027-01-21 Joint Application to Higher Education, Spring 2027", "2027-03-31 Separate Application, Autumn 2027");
     }
 
     @Test
@@ -328,18 +375,89 @@ class StudyinfoConnectorIT {
     }
 
     @Test
-    void anUnpublishedRecordPublishesNothingAndAsksForReviewInsteadOfDeletingFacts() {
+    void aDraftStateRecordPublishesNothingAndOnlyAsksForReview() {
         importer.run(false, null, null);
         var before = snapshot();
+        serveModified(r -> r.put("tila", "tallennettu"));
+        monitors.markDue(StudyinfoAdapter.NAME, T1);
+        var run = refresh.runDueForAdapter(StudyinfoAdapter.NAME, T1);
+
+        // "tallennettu" (saved draft) may be temporary: it is not a discontinuation
+        assertThat(run.pendingReview()).isEqualTo(1);
+        assertThat(jdbc.queryForObject("select fact_type from staged_change where status = 'PENDING_REVIEW'", String.class)).isEqualTo("SOURCE_CONTENT");
+        assertThat(lifecycle()).isEqualTo("ACTIVE");
+        assertThat(snapshot().get("provenance")).isEqualTo(before.get("provenance"));
+        assertThat(field("p.name")).startsWith("Computer Science and Engineering");
+    }
+
+    String lifecycle() {
+        return jdbc.queryForObject("select lifecycle_status from degree_program where id = ?", String.class, programId());
+    }
+
+    @Test
+    void aRecordTheProviderArchivesDiscontinuesTheProgramKeepsItsFactsAndReinstatesItIfPublishedAgain() {
+        importer.run(false, null, null);
+        var factsBefore = snapshot();
         serveModified(r -> r.put("tila", "arkistoitu"));
         monitors.markDue(StudyinfoAdapter.NAME, T1);
         var run = refresh.runDueForAdapter(StudyinfoAdapter.NAME, T1);
 
-        assertThat(run.pendingReview()).isEqualTo(1);
-        assertThat(jdbc.queryForObject("select fact_type from staged_change where status = 'PENDING_REVIEW'", String.class)).isEqualTo("SOURCE_CONTENT");
-        var after = snapshot();
-        assertThat(after.get("provenance")).isEqualTo(before.get("provenance"));
+        assertThat(run.pendingReview()).as("an explicit archive statement is deterministic: no review item").isZero();
+        assertThat(lifecycle()).isEqualTo("DISCONTINUED");
+        assertThat(jdbc.queryForObject("select discontinued_at is not null from degree_program where id = ?", Boolean.class, programId())).isTrue();
+        assertThat(snapshot().get("provenance")).as("facts and provenance are kept, nothing is deleted").isEqualTo(factsBefore.get("provenance"));
         assertThat(field("p.name")).startsWith("Computer Science and Engineering");
+        var audit = jdbc.queryForMap("select old_value, new_value, status, reason from staged_change where fact_type = 'LIFECYCLE'");
+        assertThat(audit).containsEntry("old_value", "ACTIVE").containsEntry("new_value", "DISCONTINUED").containsEntry("status", "AUTO_APPLIED");
+        assertThat((String) audit.get("reason")).contains("arkistoitu");
+        assertThat(jdbc.queryForObject("select value from program_fact_history where field_name = 'lifecycle'", String.class)).isEqualTo("ACTIVE");
+
+        // re-reading the same archived record does not repeat the transition
+        monitors.markDue(StudyinfoAdapter.NAME, T1.plusSeconds(60));
+        refresh.runDueForAdapter(StudyinfoAdapter.NAME, T1.plusSeconds(60));
+        assertThat(jdbc.queryForObject("select count(*) from staged_change where fact_type = 'LIFECYCLE'", Long.class)).isEqualTo(1);
+
+        // the provider publishes it again
+        serve(StudyinfoParserTest.recorded());
+        monitors.markDue(StudyinfoAdapter.NAME, T1.plusSeconds(120));
+        refresh.runDueForAdapter(StudyinfoAdapter.NAME, T1.plusSeconds(120));
+        assertThat(lifecycle()).isEqualTo("ACTIVE");
+        assertThat(jdbc.queryForObject("select count(*) from staged_change where fact_type = 'LIFECYCLE'", Long.class)).isEqualTo(2);
+    }
+
+    @Test
+    void theApiStatesPerFieldHowTheProgramIsKeptCurrent() throws Exception {
+        importer.run(false, null, null);
+        monitors.markDue(StudyinfoAdapter.NAME, T1);
+        refresh.runDueForAdapter(StudyinfoAdapter.NAME, T1);
+        var get = org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .get("/api/v1/programs/zz-studyinfo-u--computer-science-and-engineering-master-of-science");
+        mockMvc.perform(get)
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.status").value("AUTOMATIC"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.connector").value("studyinfo-external"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.sourceKind").value("OFFICIAL_API"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.lastSuccessfulSyncAt").exists())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.fields[?(@.field == 'duration_months')].updateMode").value("AUTOMATIC"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.fields[?(@.field == 'languages')].updateMode").value("AUTOMATIC"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.fields[?(@.field == 'name')].updateMode").value("REVIEW_REQUIRED"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.fields[?(@.field == 'academic_field')].updateMode").value("REVIEW_REQUIRED"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.fields[?(@.field == 'application_deadline')].updateMode").value("ADDITIVE_AUTOMATIC"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.notSynchronized[0]").value("tuition"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.tuition").isEmpty());
+    }
+
+    @Test
+    void theSyncPassDiscoversANewProgramThenRepeatingItChangesNothing() {
+        var first = orchestrator.runAll(T1);
+        assertThat(first.discovery().created()).isEqualTo(1);
+        assertThat(first.refresh().failed()).isZero();
+        var settled = snapshot();
+
+        var second = orchestrator.runAll(T1.plusSeconds(3600));
+        assertThat(second.discovery().created()).isZero();
+        assertThat(second.discovery().alreadyImported()).isEqualTo(1);
+        assertThat(snapshot()).as("a repeated sync pass rewrites nothing").isEqualTo(settled);
     }
 
     @Test
@@ -356,6 +474,7 @@ class StudyinfoConnectorIT {
         assertThat(m.failureCount()).isEqualTo(1);
         assertThat(m.lastResult()).isEqualTo("FAILED");
         assertThat(m.lastSuccessAt()).as("the last successful refresh is not advanced by a failure").isNotEqualTo(T1);
+        assertThat(lifecycle()).as("an outage is never read as a discontinuation").isEqualTo("ACTIVE");
     }
 
     @Test

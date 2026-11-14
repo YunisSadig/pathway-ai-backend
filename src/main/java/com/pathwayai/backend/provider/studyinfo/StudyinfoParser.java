@@ -54,6 +54,26 @@ public final class StudyinfoParser {
     private StudyinfoParser() {
     }
 
+    /**
+     * The provider states in the record's own {@code tila} that the education was archived ("arkistoitu") or deleted
+     * ("poistettu"). Any other non-published state (for example the draft state "tallennettu") may be temporary and is
+     * not a discontinuation, so it keeps going through the review path.
+     */
+    public static java.util.Optional<String> discontinuation(String json) {
+        try {
+            Object parsed = MAPPER.readValue(json, Object.class);
+            if (parsed instanceof Map<?, ?> root && str(root.get("oid")) != null) {
+                String tila = str(root.get("tila"));
+                if ("arkistoitu".equals(tila) || "poistettu".equals(tila)) {
+                    return java.util.Optional.of("the provider states the education is no longer offered (tila=" + tila + ")");
+                }
+            }
+        } catch (RuntimeException e) {
+            // not valid JSON: a failure, not a discontinuation
+        }
+        return java.util.Optional.empty();
+    }
+
     @SuppressWarnings("unchecked")
     public static Parsed parse(String json, FieldTaxonomy taxonomy) {
         List<String> issues = new ArrayList<>();

@@ -30,7 +30,9 @@ app:
   reference-data:
     # Off by default. Set IMPORT_REFERENCE_DATA=true to run the idempotent source-cited import at startup.
     import-on-startup: ${IMPORT_REFERENCE_DATA:false}
-    location: ${REFERENCE_DATA_LOCATION:classpath:reference-data/programs.json}
+    location: ${REFERENCE_DATA_LOCATION:classpath:reference-data/taxonomy.json}
+    # Static programs/universities/sources are refused at startup unless this is set deliberately (see ReferenceDataImportRunner).
+    allow-static-records: ${ALLOW_STATIC_REFERENCE_RECORDS:false}
 
   refresh:
     # Hosts the crawler may contact besides those of registered sources. opintopolku.fi is the Studyinfo official API

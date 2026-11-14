@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pathwayai.backend.TestcontainersConfiguration;
 import com.pathwayai.backend.refresh.fetch.ApprovedHosts;
 import com.pathwayai.backend.refresh.pipeline.StagedChangeService;
-import com.pathwayai.backend.refresh.registry.MonitorRegistrar;
 import com.pathwayai.backend.refresh.registry.SourceMonitor;
 import com.pathwayai.backend.refresh.registry.SourceMonitorRepository;
 import com.pathwayai.backend.refresh.report.MonitoringReportService;
@@ -39,7 +38,6 @@ class RefreshServiceIT {
 
     @Autowired RefreshService refresh;
     @Autowired SourceMonitorRepository monitors;
-    @Autowired MonitorRegistrar registrar;
     @Autowired StagedChangeService review;
     @Autowired MonitoringReportService report;
     @Autowired ApprovedHosts approvedHosts;
@@ -363,28 +361,14 @@ class RefreshServiceIT {
     }
 
     @Test
-    void theRegistrarMonitorsAlreadyCitedPagesIdempotentlyAndTheReportCountsThem() {
-        long source = jdbc.queryForObject("""
-                insert into source (url, title, publisher, source_type, retrieved_on)
-                values (?, 'Home', 'Synthetic', 'UNIVERSITY_WEBSITE', current_date) returning id""", Long.class, HOST + "/");
-        jdbc.update("insert into university_source (university_id, source_id) values (?, ?)", universityId, source);
-        long programSource = jdbc.queryForObject("""
-                insert into source (url, title, publisher, source_type, retrieved_on)
-                values (?, 'Tuition', 'Synthetic', 'UNIVERSITY_WEBSITE', current_date) returning id""", Long.class, HOST + "/tuition-fees");
-        jdbc.update("insert into program_source (program_id, source_id) values (?, ?)", programId, programSource);
-
-        var first = registrar.registerAll(T0);
-        assertThat(first).containsEntry("registered", 2);
-        assertThat(registrar.registerAll(T0)).containsEntry("alreadyRegistered", 2).doesNotContainKey("registered");
-        assertThat(state(programSource).kind()).isEqualTo("TUITION");
-        assertThat(state(programSource).programId()).isEqualTo(programId);
-        assertThat(state(source).kind()).isEqualTo("UNIVERSITY_INFO");
-        assertThat(state(source).adapterName()).isEqualTo("content-watch"); // home pages never raise review items
-        assertThat(state(programSource).adapterName()).isEqualTo("content-hash");
-
+    void theReportCountsMonitoredSourcesChecksAndCountries() {
+        long home = monitor("/", "content-watch", "CONTENT_HASH");
+        long fees = monitor("/tuition-fees", "content-hash", "CONTENT_HASH");
         transport.on(HOST + "/", FakeTransport.html(FakeTransport.page("home", "m")));
         transport.on(HOST + "/tuition-fees", FakeTransport.html(FakeTransport.page("fees", "m")));
         refresh.runDue(T0);
+        assertThat(state(home).lastSuccessAt()).isEqualTo(T0);
+        assertThat(state(fees).lastSuccessAt()).isEqualTo(T0);
         var r = report.generate(T0.plus(Duration.ofHours(1)));
         assertThat(r.monitoredSources()).isEqualTo(2);
         assertThat(r.successfulChecks7d()).isEqualTo(2);

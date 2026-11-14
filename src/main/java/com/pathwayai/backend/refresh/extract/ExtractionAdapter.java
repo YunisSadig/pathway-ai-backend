@@ -27,4 +27,13 @@ public interface ExtractionAdapter {
     default boolean raisesReviewItems() {
         return true;
     }
+
+    /**
+     * When the source itself states, explicitly, that the program no longer exists (for Studyinfo: the record's state is
+     * archived or deleted), the reason. Absence of a page, a timeout or an error is NEVER a discontinuation: those are
+     * failures and leave the program as it was. Empty for every adapter that cannot tell.
+     */
+    default java.util.Optional<String> discontinuation(CanonicalPage page) {
+        return java.util.Optional.empty();
+    }
 }
