@@ -109,6 +109,8 @@ Expected cost: **$0**. Billing conditions can change: read each sign-up page, an
 
 ## 4. Backups and recovery
 
+**Update 2026-11-14:** the workflow `.github/workflows/backup.yml` now makes an encrypted `pg_dump` of the hosted database (key: environment secret `BACKUP_PASSPHRASE`; only the encrypted file is stored, as a 30-day artifact) and restores it into a throwaway PostgreSQL container, comparing row counts and the Flyway version with a manifest taken at dump time. See `docs/deployment-api.md` section 7. The paragraph below is the original reasoning.
+
 Neon's free plan keeps a 6 hour restore window and takes no scheduled backups. The hosted database holds **no user data**: programs are
 re-created from the official API by `bootstrap`. What would be lost on a total loss: review decisions (`staged_change`), replaced-value
 history and the retired-catalogue archive. If that matters, add a weekly `pg_dump` to private storage later (do **not** upload dumps as
@@ -174,3 +176,19 @@ Required before the catalogue is public:
    and Studyinfo rows stay purgeable (identifiable by `program_external_id` and `program_field_provenance.mechanism = 'OFFICIAL_API'`).
 
 I am not a lawyer: if the answer is ambiguous or restrictive, take it to someone qualified before launch.
+
+## 8. Exact remaining steps to enable scheduled synchronization (state 2026-11-14)
+
+Already true and proven by real runs: protected environment `sync` (only `main`) holds `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`; `bootstrap`, `sync`, `force`, `run`, `verify` and `freshness` all succeed on the hosted database; the daily command (`run` then `freshness`) was run by hand and passed; a repeat sync is idempotent; the staged-change table holds only auto-applied audit rows.
+
+Still missing, in this order:
+
+1. **Healthchecks.io account** (free). Sign-up sends a link to your email: click it. (I cannot read your mailbox.)
+2. **Create a check** named `pathway-ai-sync`: period 1 day, grace 12 hours, an email integration to your address.
+3. **Store its ping URL** as the secret `HEALTHCHECK_PING_URL` of the GitHub environment `sync` (Settings, Environments, sync). Optional: `ALERT_WEBHOOK_URL`.
+4. **Test the pipe:** run workflow `Source refresh` with mode `run`; the last step pings the check; Healthchecks must show it as up.
+5. **Test the alarm once:** temporarily set the check to period 1 hour, grace 1 minute, send no ping, wait for the "down" email, then set period 1 day and grace 12 hours again. Do not rely on missed-run protection until this email has arrived.
+6. **Switch on:** add the repository variable `SYNC_ENABLED` = `true`. The next scheduled run is the following 05:17 UTC (Mondays also discover new programs).
+7. **Afterwards:** read the first scheduled run's summary and confirm Healthchecks shows it up.
+
+I can do steps 2 to 7 in the browser as soon as step 1 is done.
