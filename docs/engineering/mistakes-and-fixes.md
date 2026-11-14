@@ -340,3 +340,11 @@ Only problems that actually happened during development. Each entry was verified
 - **Fix:** mount the runner's CA bundle read-only into the container and set `PGSSLROOTCERT=/ca-bundle.crt`; refuse to run when the bundle is missing (guard test added). Verified without credentials: with the bundle the handshake succeeds and the attempt reaches "password authentication failed", which is the expected next step.
 - **Prevention rule:** a container is not a trust store; verify TLS from inside the same container image that will do the work.
 - **Status:** fixed (see the green run recorded in `docs/engineering/deployment-status.md`).
+
+## 43. The frontend proxy gave up before the sleeping backend woke up
+
+- **Evidence:** the measured cold start of the free Render instance was 84.6 s; the proxy's upstream timeout was 75 s, so the first visitor after an idle period would have received `502 The data service could not be reached`. No visitor was affected: found by measuring, before any public use.
+- **Root cause:** the timeout was chosen from Render's "about one minute" without a measurement.
+- **Fix:** frontend PR #26: upstream wait 130 s, `maxDuration = 150` (Fluid Compute is enabled on the Hobby project), a unit test that pins the wait above 100 s and below the function limit, and a loading state that explains a long wait after 6 s.
+- **Prevention rule:** timeouts come from measured values, and a documented figure is a hypothesis until measured.
+- **Status:** fixed; the end-to-end cold path through the live site is verified separately (see deployment-status).

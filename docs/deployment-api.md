@@ -8,7 +8,7 @@ Status (2026-11-14): **deployed and verified as PROTECTED STAGING** on Render's 
 
 | Fact (source: Render docs, `render.com/docs/free`, read 2026-11-14) | Consequence |
 | --- | --- |
-| A free web service **spins down after 15 minutes without inbound traffic**; waking it takes **about one minute** | The first request after idle is slow. Visitors see a loading state; the frontend must tolerate a 60 s first response. A paid always-on instance ($7/month, not purchased) removes it. |
+| A free web service **spins down after 15 minutes without inbound traffic**; Render says waking it takes **about one minute** (the dashboard says "50 seconds or more"). **Measured 2026-11-15: the first request after 17 idle minutes took 84.6 s (HTTP 200); the next two took 0.43 s and 0.13 s.** | The first request after idle is slow. Visitors see a loading state; the frontend must tolerate a 60 s first response. A paid always-on instance ($7/month, not purchased) removes it. |
 | **750 free instance hours per workspace per month** | One always-on service fits (720-744 h); it is shared by every free service in the workspace. |
 | No payment method is needed to create it; without one, exceeding bandwidth **suspends** the free services for the month instead of billing | No spend is possible without your action. |
 | Docker is supported through a Blueprint (`render.yaml`) | `Dockerfile` is used as is. |
