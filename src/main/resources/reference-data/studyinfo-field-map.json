@@ -1,0 +1,9 @@
+{
+  "_comment": "Reviewed mapping from Studyinfo field-of-education codes (national classification, ISCED-F based) to the Pathway AI taxonomy. Each entry was added only after the code and its official English label were seen in a real API response (labels below are verbatim). A code that is not listed yields no academic field; never add one from a program name. Known unmapped: 0811 (agriculture), which the taxonomy has no field for.",
+  "mappings": [
+    {"code": "061", "slug": "computer-and-data-science", "label": "Information and Communication Technologies (ICT)"},
+    {"code": "052", "slug": "natural-sciences", "label": "Environment"},
+    {"code": "053", "slug": "natural-sciences", "label": "Physical sciences, chemistry and geosciences"},
+    {"code": "054", "slug": "mathematics-and-statistics", "label": "Mathematics and statistics"}
+  ]
+}

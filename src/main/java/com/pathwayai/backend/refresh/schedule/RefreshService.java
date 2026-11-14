@@ -5,6 +5,7 @@ import com.pathwayai.backend.refresh.extract.ContentHashAdapter;
 import com.pathwayai.backend.refresh.extract.ExtractedFact;
 import com.pathwayai.backend.refresh.extract.ExtractionAdapter;
 import com.pathwayai.backend.refresh.extract.PageCanonicalizer;
+import com.pathwayai.backend.refresh.extract.ScopedExtractionAdapter;
 import com.pathwayai.backend.refresh.extract.PageCanonicalizer.CanonicalPage;
 import com.pathwayai.backend.refresh.fetch.PageFetcher;
 import com.pathwayai.backend.refresh.pipeline.ChangePipeline;
@@ -91,8 +92,17 @@ public class RefreshService {
 
     /** One batch: up to {@code batchSize} sources whose next check is due. */
     public RunSummary runDue(Instant now) {
+        return runDue(now, monitors.findDue(now, props.batchSize()));
+    }
+
+    /** Checks the due sources of one adapter only, for example the official-API connector. */
+    public RunSummary runDueForAdapter(String adapterName, Instant now) {
+        return runDue(now, monitors.findDue(now, props.batchSize(), adapterName));
+    }
+
+    private RunSummary runDue(Instant now, List<SourceMonitor> due) {
         RunSummary summary = RunSummary.EMPTY;
-        for (SourceMonitor m : monitors.findDue(now, props.batchSize())) {
+        for (SourceMonitor m : due) {
             RunSummary one;
             try {
                 one = tx.execute(status -> checkOne(m, now));
@@ -147,6 +157,10 @@ public class RefreshService {
         }
     }
 
+    public boolean hasAdapter(String name) {
+        return adapters.containsKey(name);
+    }
+
     private RunSummary handleContent(SourceMonitor m, PageFetcher.Result r, Instant now, boolean window) {
         CanonicalPage page = canonicalizer.canonicalize(r.body(), r.contentType());
         ExtractionAdapter adapter = adapters.getOrDefault(m.adapterName(), adapters.get(ContentHashAdapter.NAME));
@@ -159,8 +173,15 @@ public class RefreshService {
 
         ChangePipeline.Outcome result = new ChangePipeline.Outcome(0, 0, 0, 0, List.of());
         if (baseline || parserChanged || changed) {
-            List<ExtractedFact> facts = adapter.extract(page);
-            result = pipeline.process(m, facts, parser, now);
+            List<ExtractedFact> facts = List.of();
+            if (adapter instanceof ScopedExtractionAdapter scoped && m.programId() == null && m.universityId() != null) {
+                var perProgram = scoped.extractForPrograms(page);
+                result = processScoped(m, perProgram, parser, now);
+                facts = perProgram.values().stream().flatMap(List::stream).toList();
+            } else {
+                facts = adapter.extract(page);
+                result = pipeline.process(m, facts, parser, now);
+            }
             if (changed && facts.isEmpty() && adapter.raisesReviewItems()) {
                 if (pipeline.stageContentChange(m, page.hash(), parser, now)) {
                     result = new ChangePipeline.Outcome(0, 1, 0, 0, List.of());
@@ -174,6 +195,7 @@ public class RefreshService {
             f.lastModified = r.lastModified();
             f.contentHash = page.hash();
             f.hashParserVersion = parser;
+            f.adapterVersion = adapter.version(); // the version that actually read this page, not the one registered
             f.lastResult = outcome;
             if ("CHANGED".equals(outcome)) {
                 f.lastChangeAt = now;
@@ -184,6 +206,26 @@ public class RefreshService {
         RunSummary base = count(changed ? "changed" : baseline || parserChanged ? "baseline" : "unchanged");
         return new RunSummary(base.checked(), base.baseline(), base.unchanged(), 0, base.changed(), 0, 0, 0,
                 result.autoApplied(), result.pendingReview(), result.rejectedCount());
+    }
+
+    /** One pipeline pass per program the page states facts for; slugs this university does not have are ignored. */
+    private ChangePipeline.Outcome processScoped(SourceMonitor m, Map<String, List<ExtractedFact>> bySlug, String parser, Instant now) {
+        int auto = 0, pending = 0, unchanged = 0, seen = 0;
+        List<String> rejected = new java.util.ArrayList<>();
+        for (var entry : bySlug.entrySet()) {
+            Long programId = jdbc.sql("select id from degree_program where university_id = :u and slug = :s")
+                    .param("u", m.universityId()).param("s", entry.getKey()).query(Long.class).optional().orElse(null);
+            if (programId == null) {
+                continue;
+            }
+            var one = pipeline.process(m.withProgramId(programId), entry.getValue(), parser, now);
+            auto += one.autoApplied();
+            pending += one.pendingReview();
+            unchanged += one.unchanged();
+            seen += one.alreadySeen();
+            one.rejected().forEach(x -> rejected.add(entry.getKey() + ": " + x));
+        }
+        return new ChangePipeline.Outcome(auto, pending, unchanged, seen, rejected);
     }
 
     private RunSummary recordFailure(SourceMonitor m, Instant now, String error) {

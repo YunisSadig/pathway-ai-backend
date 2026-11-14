@@ -48,10 +48,12 @@ class UniversityCatalogueFileTest {
 
     @Test
     void theRequestedShortlistIsCompleteAndNothingElseIsAdded() {
-        assertThat(catalogue.universities()).hasSize(48);
+        // 48 from the original shortlist plus the University of Oulu, added with registry and site evidence because the
+        // Studyinfo connector imports its programs (an institution is only added when a program source exists for it)
+        assertThat(catalogue.universities()).hasSize(49);
         Map<String, Long> perCountry = catalogue.universities().stream()
                 .collect(Collectors.groupingBy(UniversityData::country, Collectors.counting()));
-        assertThat(perCountry).containsEntry("FI", 2L).containsEntry("PL", 2L).containsEntry("BG", 1L)
+        assertThat(perCountry).containsEntry("FI", 3L).containsEntry("PL", 2L).containsEntry("BG", 1L)
                 .containsEntry("CN", 1L).containsEntry("JP", 1L).containsEntry("KR", 1L);
     }
 
@@ -72,7 +74,7 @@ class UniversityCatalogueFileTest {
     @Test
     void everyEuInstitutionIsTiedToTheRegistryByAStableIdentifier() {
         List<UniversityData> eu = catalogue.universities().stream().filter(u -> EU.contains(u.country())).toList();
-        assertThat(eu).hasSize(45).allMatch(
+        assertThat(eu).hasSize(46).allMatch(
                 u -> u.externalIdsOrEmpty().stream().anyMatch(id -> id.scheme().equals("SCHAC_HOME_ORG")));
     }
 }

@@ -1,0 +1,516 @@
+{
+ "tila": "julkaistu",
+ "johtaaTutkintoon": true,
+ "koulutukset": [
+  {
+   "koodiUri": "koulutus_751301#12",
+   "nimi": {
+    "fi": "Dipl.ins., tietotekniikka",
+    "sv": "Dipl.ing., datateknik",
+    "en": "Master of Science (Technology), Information Technology"
+   }
+  }
+ ],
+ "tarjoajat": [
+  {
+   "paikkakunta": {
+    "koodiUri": "kunta_564",
+    "nimi": {
+     "fi": "Oulu",
+     "sv": "Uleåborg"
+    }
+   },
+   "nimi": {
+    "fi": "Oulun yliopisto",
+    "sv": "Uleåborgs universitet",
+    "en": "University of Oulu"
+   },
+   "oid": "1.2.246.562.10.38417217288"
+  }
+ ],
+ "toteutukset": [
+  {
+   "tila": "julkaistu",
+   "koulutukset": [
+    {
+     "koodiUri": "koulutus_751301#12",
+     "nimi": {
+      "en": "Master of Science (Technology), Information Technology",
+      "sv": "Dipl.ing., datateknik",
+      "fi": "Dipl.ins., tietotekniikka"
+     }
+    }
+   ],
+   "tarjoajat": [
+    {
+     "paikkakunta": {
+      "koodiUri": "kunta_564",
+      "nimi": {
+       "fi": "Oulu",
+       "sv": "Uleåborg"
+      }
+     },
+     "nimi": {
+      "fi": "Tieto- ja sähkötekniikan tiedekunta",
+      "sv": "Tieto- ja sähkötekniikan tiedekunta",
+      "en": "Faculty of Information Technology and Electrical Engineering"
+     },
+     "oid": "1.2.246.562.10.2014040310274375839224"
+    }
+   ],
+   "modified": "2026-09-23T14:18:51",
+   "koulutusOid": "1.2.246.562.13.00000000000000000973",
+   "nimi": {
+    "en": "Computer Science and Engineering, Master of Science (Technology) (2 years)"
+   },
+   "oid": "1.2.246.562.17.00000000000000001637",
+   "kielivalinta": [
+    "en"
+   ],
+   "haut": [
+    "1.2.246.562.29.00000000000000002175",
+    "1.2.246.562.29.00000000000000017097",
+    "1.2.246.562.29.00000000000000036122",
+    "1.2.246.562.29.00000000000000054530",
+    "1.2.246.562.29.00000000000000092075",
+    "1.2.246.562.29.00000000000000072413"
+   ],
+   "timestamp": 1794614612783,
+   "organisaatio": {
+    "paikkakunta": {
+     "koodiUri": "kunta_564",
+     "nimi": {
+      "fi": "Oulu",
+      "sv": "Uleåborg"
+     }
+    },
+    "nimi": {
+     "fi": "Tieto- ja sähkötekniikan tiedekunta",
+     "sv": "Tieto- ja sähkötekniikan tiedekunta",
+     "en": "Faculty of Information Technology and Electrical Engineering"
+    },
+    "oid": "1.2.246.562.10.2014040310274375839224"
+   },
+   "metadata": {
+    "isMuokkaajaOphVirkailija": false,
+    "isTyovoimakoulutus": false,
+    "hasJotpaRahoitus": false,
+    "isTaydennyskoulutus": false,
+    "opetus": {
+     "suunniteltuKestoVuodet": 2,
+     "onkoApuraha": true,
+     "suunniteltuKestoKuukaudet": 0,
+     "opetustapa": [
+      {
+       "koodiUri": "opetuspaikkakk_1#1",
+       "nimi": {
+        "fi": "Lähiopetus",
+        "sv": "Närundervisning",
+        "en": "Contact teaching"
+       }
+      },
+      {
+       "koodiUri": "opetuspaikkakk_5#1",
+       "nimi": {
+        "fi": "Itsenäinen opiskelu",
+        "sv": "Självständiga studier",
+        "en": "Independent learning"
+       }
+      },
+      {
+       "koodiUri": "opetuspaikkakk_4#1",
+       "nimi": {
+        "fi": "Monimuoto",
+        "sv": "Flerform",
+        "en": "Blended teaching"
+       }
+      },
+      {
+       "koodiUri": "opetuspaikkakk_3#1",
+       "nimi": {
+        "fi": "Verkko-opetus",
+        "sv": "Nätundervisning",
+        "en": "Online teaching"
+       }
+      }
+     ],
+     "opetuskieli": [
+      {
+       "koodiUri": "oppilaitoksenopetuskieli_4#2",
+       "nimi": {
+        "fi": "englanti",
+        "sv": "engelska",
+        "en": "English"
+       }
+      }
+     ],
+     "opetusaika": [
+      {
+       "koodiUri": "opetusaikakk_1#1",
+       "nimi": {
+        "fi": "Päiväopetus",
+        "sv": "Dagundervisning",
+        "en": "Day time teaching"
+       }
+      }
+     ]
+    },
+    "tyyppi": "yo"
+   },
+   "formatoituModified": {
+    "fi": "23.9.2026 klo 14:18",
+    "sv": "23.9.2026 kl. 14:18",
+    "en": "Sep. 23, 2026 at 02:18 PM UTC+3"
+   },
+   "koulutustyyppi": "yo"
+  }
+ ],
+ "koulutuskoodienAlatJaAsteet": [
+  {
+   "koulutusKoodiUri": "koulutus_751301#12",
+   "koulutusalaKoodiUrit": [
+    "kansallinenkoulutusluokitus2016koulutusalataso1_06",
+    "kansallinenkoulutusluokitus2016koulutusalataso2_061",
+    "kansallinenkoulutusluokitus2016koulutusalataso3_0618",
+    "okmohjauksenala_7"
+   ],
+   "koulutusasteKoodiUrit": [
+    "kansallinenkoulutusluokitus2016koulutusastetaso1_7",
+    "kansallinenkoulutusluokitus2016koulutusastetaso2_72"
+   ]
+  }
+ ],
+ "modified": "2026-09-23T14:19:09",
+ "hakukohteet": [
+  {
+   "kaytetaanHaunAikataulua": true,
+   "tila": "julkaistu",
+   "paateltyAlkamisajankohta": {
+    "alkamiskausityyppi": "alkamiskausi ja -vuosi",
+    "pvm": "2027-08-01",
+    "source": "1.2.246.562.29.00000000000000092075",
+    "henkilokohtainenSuunnitelma": false
+   },
+   "johtaaTutkintoon": true,
+   "odwKkTasot": {
+    "alempiKkAste": false,
+    "ylempiKkAste": true,
+    "kkTutkinnonTaso": 2,
+    "kkTutkinnonTasoSykli": 3
+   },
+   "kaytetaanHaunHakulomaketta": true,
+   "opetuskieliKoodiUrit": [
+    "oppilaitoksenopetuskieli_4#2"
+   ],
+   "pohjakoulutusvaatimus": [
+    {
+     "koodiUri": "pohjakoulutusvaatimuskouta_102#1",
+     "nimi": {
+      "fi": "Alempi korkeakoulututkinto",
+      "sv": "Lägre högskoleexamen",
+      "en": "University Bachelor's degree"
+     }
+    },
+    {
+     "koodiUri": "pohjakoulutusvaatimuskouta_101#1",
+     "nimi": {
+      "fi": "Ammattikorkeakoulututkinto",
+      "sv": "Yrkeshögskoleexamen",
+      "en": "University of applied sciences Bachelor's degree"
+     }
+    },
+    {
+     "koodiUri": "pohjakoulutusvaatimuskouta_119#1",
+     "nimi": {
+      "fi": "Ylempi ammattikorkeakoulututkinto",
+      "sv": "Högre yrkeshögskoleexamen",
+      "en": "University of applied sciences Master's degree"
+     }
+    },
+    {
+     "koodiUri": "pohjakoulutusvaatimuskouta_117#1",
+     "nimi": {
+      "fi": "Ulkomainen korkeakoulututkinto (Master)",
+      "sv": "Utländsk högskoleexamen (Master)",
+      "en": "Foreign Master's degree"
+     }
+    },
+    {
+     "koodiUri": "pohjakoulutusvaatimuskouta_116#1",
+     "nimi": {
+      "fi": "Ulkomainen korkeakoulututkinto (Bachelor)",
+      "sv": "Utländsk högskoleexamen (Bachelor)",
+      "en": "Foreign Bachelor's degree"
+     }
+    },
+    {
+     "koodiUri": "pohjakoulutusvaatimuskouta_103#1",
+     "nimi": {
+      "fi": "Ylempi korkeakoulututkinto",
+      "sv": "Högre högskoleexamen",
+      "en": "University Master's degree"
+     }
+    }
+   ],
+   "jarjestyspaikkaHierarkiaNimi": {
+    "fi": "Oulun yliopisto, Tieto- ja sähkötekniikan tiedekunta",
+    "sv": "Uleåborgs universitet, Tieto- ja sähkötekniikan tiedekunta",
+    "en": "University of Oulu, Faculty of Information Technology and Electrical Engineering"
+   },
+   "modified": "2026-09-15T11:35:29",
+   "paateltyAlkamiskausi": {
+    "alkamiskausityyppi": "alkamiskausi ja -vuosi",
+    "kausiUri": "kausi_s#1",
+    "vuosi": "2027",
+    "source": "1.2.246.562.29.00000000000000092075"
+   },
+   "toteutusOid": "1.2.246.562.17.00000000000000001637",
+   "salliikoHakukohdeHarkinnanvaraisuudenKysymisen": false,
+   "jarjestyspaikka": {
+    "paikkakunta": {
+     "koodiUri": "kunta_564",
+     "nimi": {
+      "fi": "Oulu",
+      "sv": "Uleåborg"
+     }
+    },
+    "nimi": {
+     "fi": "Tieto- ja sähkötekniikan tiedekunta",
+     "sv": "Tieto- ja sähkötekniikan tiedekunta",
+     "en": "Faculty of Information Technology and Electrical Engineering"
+    },
+    "oid": "1.2.246.562.10.2014040310274375839224",
+    "jarjestaaUrheilijanAmmKoulutusta": null
+   },
+   "toinenAsteOnkoKaksoistutkinto": false,
+   "nimi": {
+    "en": "Computer Science and Engineering, Master of Science (Technology) (2 years)"
+   },
+   "kuuluuYosinPiiriin": true,
+   "hakutapaKoodiUri": "hakutapa_01#1",
+   "oid": "1.2.246.562.20.00000000000000092870",
+   "externalId": "YHMAEN_TST_CSE",
+   "liitteetOnkoSamaToimitusaika": false,
+   "hakuajat": [
+    {
+     "alkaa": "2027-01-07T08:00",
+     "paattyy": "2027-01-21T15:00",
+     "formatoituPaattyy": {
+      "fi": "21.1.2027 klo 15:00",
+      "sv": "21.1.2027 kl. 15:00",
+      "en": "Jan. 21, 2027 at 03:00 PM UTC+2"
+     },
+     "formatoituAlkaa": {
+      "fi": "7.1.2027 klo 08:00",
+      "sv": "7.1.2027 kl. 08:00",
+      "en": "Jan. 7, 2027 at 08:00 AM UTC+2"
+     }
+    }
+   ],
+   "hakuOid": "1.2.246.562.29.00000000000000092075",
+   "liitteetOnkoSamaToimitusosoite": false,
+   "kielivalinta": [
+    "en"
+   ],
+   "hakuNimi": {
+    "en": "Joint Application to Higher Education, Spring 2027",
+    "fi": "Korkeakoulujen kevään 2027 ensimmäinen yhteishaku",
+    "sv": "Högskolornas första gemensamma ansökan, våren 2027"
+   },
+   "timestamp": 1794611634378,
+   "organisaatio": {
+    "paikkakunta": {
+     "koodiUri": "kunta_564",
+     "nimi": {
+      "fi": "Oulu",
+      "sv": "Uleåborg"
+     }
+    },
+    "nimi": {
+     "fi": "Tieto- ja sähkötekniikan tiedekunta",
+     "sv": "Tieto- ja sähkötekniikan tiedekunta",
+     "en": "Faculty of Information Technology and Electrical Engineering"
+    },
+    "oid": "1.2.246.562.10.2014040310274375839224"
+   },
+   "jarjestaaUrheilijanAmmKoulutusta": false,
+   "metadata": {
+    "valintakokeidenYleiskuvaus": {},
+    "kynnysehto": {},
+    "valintaperusteenValintakokeidenLisatilaisuudet": [],
+    "kaytetaanHaunAlkamiskautta": true,
+    "aloituspaikat": {
+     "lukumaara": 70,
+     "ensikertalaisille": 0
+    },
+    "uudenOpiskelijanUrl": {
+     "en": "https://www.oulu.fi/en/for-students/new-students-welcome-university-oulu/new-degree-students"
+    },
+    "isMuokkaajaOphVirkailija": false,
+    "jarjestaaUrheilijanAmmKoulutusta": false
+   },
+   "formatoituModified": {
+    "fi": "15.9.2026 klo 11:35",
+    "sv": "15.9.2026 kl. 11:35",
+    "en": "Sep. 15, 2026 at 11:35 AM UTC+3"
+   },
+   "voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita": false,
+   "koulutusasteKoodiUrit": [
+    "kansallinenkoulutusluokitus2016koulutusastetaso1_7",
+    "kansallinenkoulutusluokitus2016koulutusastetaso2_72"
+   ],
+   "koulutustyyppi": "yo"
+  }
+ ],
+ "nimi": {
+  "en": "Computer Science and Engineering, Master of Science (Technology) (2 years)"
+ },
+ "oid": "1.2.246.562.13.00000000000000000973",
+ "kielivalinta": [
+  "en"
+ ],
+ "haut": [
+  {
+   "tila": "julkaistu",
+   "hakulomaketyyppi": "ataru",
+   "modified": "2026-11-13T09:44:57",
+   "hakutapa": {
+    "koodiUri": "hakutapa_01",
+    "nimi": {
+     "fi": "Yhteishaku",
+     "sv": "Gemensam ansökan",
+     "en": "Joint application"
+    }
+   },
+   "nimi": {
+    "fi": "Korkeakoulujen kevään 2027 ensimmäinen yhteishaku",
+    "sv": "Högskolornas första gemensamma ansökan, våren 2027",
+    "en": "Joint Application to Higher Education, Spring 2027"
+   },
+   "maksullinenKkHaku": true,
+   "oid": "1.2.246.562.29.00000000000000092075",
+   "hakuajat": [
+    {
+     "alkaa": "2027-01-07T08:00",
+     "paattyy": "2027-01-21T15:00",
+     "formatoituPaattyy": {
+      "fi": "21.1.2027 klo 15:00",
+      "sv": "21.1.2027 kl. 15:00",
+      "en": "Jan. 21, 2027 at 03:00 PM UTC+2"
+     },
+     "formatoituAlkaa": {
+      "fi": "7.1.2027 klo 08:00",
+      "sv": "7.1.2027 kl. 08:00",
+      "en": "Jan. 7, 2027 at 08:00 AM UTC+2"
+     }
+    }
+   ],
+   "hakuvuosi": 2027,
+   "kohdejoukko": {
+    "koodiUri": "haunkohdejoukko_12#1",
+    "nimi": {
+     "fi": "Korkeakoulutus",
+     "sv": "Högskoleutbildning"
+    }
+   },
+   "hakukohteenLiittajaOrganisaatiot": [],
+   "kielivalinta": [
+    "fi",
+    "sv",
+    "en"
+   ],
+   "hakukausi": "kausi_k#1",
+   "timestamp": 1794570949640,
+   "organisaatio": {
+    "paikkakunta": {
+     "koodiUri": null,
+     "nimi": {}
+    },
+    "nimi": {
+     "fi": "Opetushallitus",
+     "sv": "Utbildningsstyrelsen",
+     "en": "Finnish National Agency for Education"
+    },
+    "oid": "1.2.246.562.10.00000000001"
+   },
+   "metadata": {
+    "tulevaisuudenAikataulu": [],
+    "koulutuksenAlkamiskausi": {
+     "alkamiskausityyppi": "alkamiskausi ja -vuosi",
+     "koulutuksenAlkamiskausi": {
+      "koodiUri": "kausi_s",
+      "nimi": {
+       "fi": "Syksy",
+       "sv": "Höst",
+       "en": "Autumn"
+      }
+     },
+     "koulutuksenAlkamisvuosi": "2027",
+     "henkilokohtaisenSuunnitelmanLisatiedot": {}
+    },
+    "varasijatayttoPaattyy": "2027-08-03T15:00",
+    "isMuokkaajaOphVirkailija": true
+   },
+   "formatoituModified": {
+    "fi": "13.11.2026 klo 09:44",
+    "sv": "13.11.2026 kl. 09:44",
+    "en": "Nov. 13, 2026 at 09:44 AM UTC+2"
+   }
+  }
+ ],
+ "timestamp": 1790162368786,
+ "organisaatio": {
+  "paikkakunta": {
+   "koodiUri": "kunta_564",
+   "nimi": {
+    "fi": "Oulu",
+    "sv": "Uleåborg"
+   }
+  },
+  "nimi": {
+   "fi": "Tieto- ja sähkötekniikan tiedekunta",
+   "sv": "Tieto- ja sähkötekniikan tiedekunta",
+   "en": "Faculty of Information Technology and Electrical Engineering"
+  },
+  "oid": "1.2.246.562.10.2014040310274375839224"
+ },
+ "metadata": {
+  "opintojenLaajuusyksikko": {
+   "koodiUri": "opintojenlaajuusyksikko_2#1",
+   "nimi": {
+    "fi": "opintopistettä",
+    "sv": "studiepoäng",
+    "en": "ECTS credits"
+   }
+  },
+  "koulutusala": [
+   {
+    "koodiUri": "kansallinenkoulutusluokitus2016koulutusalataso2_061#1",
+    "nimi": {
+     "fi": "Tietojenkäsittely ja tietoliikenne (ICT)",
+     "sv": "Databehandling och kommunikation (IKT) ",
+     "en": "Information and Communication Technologies (ICT) "
+    }
+   }
+  ],
+  "opintojenLaajuusNumero": 120,
+  "isMuokkaajaOphVirkailija": false,
+  "tyyppi": "yo",
+  "tutkintonimike": [
+   {
+    "koodiUri": "tutkintonimikekk_130#2",
+    "nimi": {
+     "fi": "Diplomi-insinööri",
+     "sv": "Diplomingenjör",
+     "en": "Master of Science (Technology)"
+    }
+   }
+  ]
+ },
+ "formatoituModified": {
+  "fi": "23.9.2026 klo 14:19",
+  "sv": "23.9.2026 kl. 14:19",
+  "en": "Sep. 23, 2026 at 02:19 PM UTC+3"
+ },
+ "koulutustyyppi": "yo"
+}

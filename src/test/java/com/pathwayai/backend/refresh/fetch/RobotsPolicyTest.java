@@ -28,6 +28,29 @@ class RobotsPolicyTest {
     }
 
     @Test
+    void crawlDelayIsReadFromTheGroupThatAppliesToUs() {
+        var generic = policy(new FakeTransport().on(ROBOTS, FakeTransport.text("text/plain", "User-agent: *\nCrawl-delay: 30\n")));
+        generic.check(URI.create("https://www.uni.example/a"));
+        assertThat(generic.crawlDelay("www.uni.example")).isEqualTo(Duration.ofSeconds(30));
+
+        var own = policy(new FakeTransport().on(ROBOTS, FakeTransport.text("text/plain",
+                "User-agent: *\nCrawl-delay: 30\n\nUser-agent: pathwayaibot\nCrawl-delay: 5\nDisallow: /x\n")));
+        own.check(URI.create("https://www.uni.example/a"));
+        assertThat(own.crawlDelay("www.uni.example")).isEqualTo(Duration.ofSeconds(5));
+    }
+
+    @Test
+    void noCrawlDelayMeansZeroAndAnUnparsableOneIsIgnored() {
+        var none = policy(new FakeTransport().on(ROBOTS, FakeTransport.text("text/plain", "User-agent: *\nDisallow: /x\n")));
+        none.check(URI.create("https://www.uni.example/a"));
+        assertThat(none.crawlDelay("www.uni.example")).isZero();
+        var junk = policy(new FakeTransport().on(ROBOTS, FakeTransport.text("text/plain", "User-agent: *\nCrawl-delay: soon\n")));
+        junk.check(URI.create("https://www.uni.example/a"));
+        assertThat(junk.crawlDelay("www.uni.example")).isZero();
+        assertThat(junk.crawlDelay("never-loaded.example")).isZero();
+    }
+
+    @Test
     void aMissingRobotsFileAllowsEverything() {
         assertThat(allowed(policy(new FakeTransport().on(ROBOTS, FakeTransport.status(404))), "/anything")).isTrue();
     }

@@ -203,6 +203,42 @@ class PageFetcherTest {
     }
 
     @Test
+    void aPublishedCrawlDelayIsHonouredEvenWhenTheConfiguredSpacingIsShorter() {
+        // seen live: opintopolku.fi publishes "crawl-delay: 30"
+        transport.on("https://www.uni.example/robots.txt", FakeTransport.text("text/plain", "User-agent: *\nDisallow: /private/\ncrawl-delay: 30\n"));
+        fetcher = build(props(1000, 0));
+        transport.on(PAGE, FakeTransport.html("<main>a</main>"));
+        transport.on("https://www.uni.example/other", FakeTransport.html("<main>b</main>"));
+        fetcher.fetch(PAGE, null, null);
+        sleeps.clear();
+        fetcher.fetch("https://www.uni.example/other", null, null);
+        assertThat(sleeps).containsExactly(Duration.ofSeconds(30));
+    }
+
+    @Test
+    void aCrawlDelayLongerThanWeWillWaitIsNeverSilentlyShortenedTheHostIsNotFetched() {
+        transport.on("https://www.uni.example/robots.txt", FakeTransport.text("text/plain", "User-agent: *\nCrawl-delay: 86400\n"));
+        fetcher = build(props(1000, 0));
+        transport.on(PAGE, FakeTransport.html("<main>a</main>"));
+        var r = fetcher.fetch(PAGE, null, null);
+        assertThat(r.kind()).isEqualTo(Kind.FAILED);
+        assertThat(r.error()).contains("Crawl-delay of 86400 s").contains("never sped up");
+        assertThat(transport.countFor(PAGE)).as("no request was made").isZero();
+    }
+
+    @Test
+    void aCrawlDelayOfFiveMinutesOrLessIsWaitedForExactly() {
+        transport.on("https://www.uni.example/robots.txt", FakeTransport.text("text/plain", "User-agent: *\nCrawl-delay: 300\n"));
+        fetcher = build(props(1000, 0));
+        transport.on(PAGE, FakeTransport.html("<main>a</main>"));
+        transport.on("https://www.uni.example/other", FakeTransport.html("<main>b</main>"));
+        fetcher.fetch(PAGE, null, null);
+        sleeps.clear();
+        fetcher.fetch("https://www.uni.example/other", null, null);
+        assertThat(sleeps).containsExactly(Duration.ofSeconds(300));
+    }
+
+    @Test
     void anUnreachableRobotsTxtIsATemporaryFailureNotAPermanentBlock() {
         // seen against live sites: a transient robots.txt 5xx must be retried later, never mark the source unsupported
         transport.on("https://www.uni.example/robots.txt", FakeTransport.status(503));

@@ -1,0 +1,18 @@
+{
+  "provider": {
+    "name": "Studyinfo (Opintopolku) external API",
+    "publisher": "Finnish National Agency for Education (Opetushallitus)",
+    "apiBase": "https://opintopolku.fi/konfo-backend/external",
+    "programPageBase": "https://opintopolku.fi/konfo/en/toteutus/",
+    "programPageFallbackBase": "https://opintopolku.fi/konfo/en/koulutus/"
+  },
+  "universities": [
+    {
+      "slug": "zz-studyinfo-u",
+      "organisationOid": "1.2.246.562.10.38417217288",
+      "officialName": "University of Oulu",
+      "maxPrograms": 2,
+      "createIfMissing": {"name": "Synthetic Studyinfo University", "countryCode": "ZS", "city": "Oulu"}
+    }
+  ]
+}

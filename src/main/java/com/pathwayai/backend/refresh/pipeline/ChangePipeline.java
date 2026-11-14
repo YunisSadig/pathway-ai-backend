@@ -34,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChangePipeline {
 
     public static final String AUTO_ACTOR = "system:auto";
-    private static final Set<FactType> LOW_RISK = Set.of(FactType.DURATION_MONTHS, FactType.LANGUAGES);
+    private static final Set<FactType> LOW_RISK = Set.of(FactType.DURATION_MONTHS, FactType.LANGUAGES, FactType.CAMPUS_CITY);
 
     /** What one pass did, with the reasons for anything rejected. */
     public record Outcome(int autoApplied, int pendingReview, int unchanged, int alreadySeen, List<String> rejected) {
@@ -55,6 +55,17 @@ public class ChangePipeline {
 
     @Transactional
     public Outcome process(SourceMonitor monitor, List<ExtractedFact> extracted, String parserVersion, Instant now) {
+        return process(monitor, extracted, parserVersion, now, false);
+    }
+
+    /**
+     * {@code initialImport} is true only when an operator-run import has just created the program: every fact the
+     * official source states for a still-empty field is then published (and audited in staged_change). It never
+     * overrides a value that is already there: any difference is still staged for review.
+     */
+    @Transactional
+    public Outcome process(SourceMonitor monitor, List<ExtractedFact> extracted, String parserVersion, Instant now,
+                           boolean initialImport) {
         LocalDate today = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC);
         List<String> rejected = new ArrayList<>();
         // NORMALIZE
@@ -85,11 +96,11 @@ public class ChangePipeline {
                 continue;
             }
             // STAGE + APPLY OR REVIEW
-            boolean auto = cmp.kind() == Kind.NEW && LOW_RISK.contains(f.type())
-                    && !"CONTENT_HASH".equals(monitor.extractionMethod());
+            boolean auto = cmp.kind() == Kind.NEW
+                    && (initialImport || LOW_RISK.contains(f.type()) && !"CONTENT_HASH".equals(monitor.extractionMethod()));
             String reason = cmp.kind() == Kind.CONFLICT
                     ? "differs from the published value (" + cmp.existing() + "): review before replacing"
-                    : auto ? "empty field filled from structured data" : "new " + f.type() + " read from a monitored page: review before publishing";
+                    : auto ? (initialImport ? "initial import of a new program from the official source" : "empty field filled from structured data") : "new " + f.type() + " read from a monitored page: review before publishing";
             Long stagedId = stage(monitor, f, cmp.existing(), auto ? "LOW" : "HIGH", auto ? "AUTO_APPLIED" : "PENDING_REVIEW",
                     reason, parserVersion, now, auto);
             if (stagedId == null) {
@@ -97,7 +108,7 @@ public class ChangePipeline {
                 continue;
             }
             if (auto) {
-                facts.apply(monitor.programId(), monitor.sourceId(), f.type(), f.values());
+                facts.apply(monitor.programId(), monitor.sourceId(), f.type(), f.values(), now, parserVersion);
                 autoApplied++;
             } else {
                 pending++;

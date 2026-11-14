@@ -21,6 +21,7 @@ public final class FactValidator {
     private static final Pattern ACADEMIC_YEAR = Pattern.compile("^(\\d{4})/(\\d{4})$");
     private static final Set<String> BILLING = Set.of("PER_YEAR", "PER_SEMESTER", "PER_PROGRAM");
     private static final Set<String> CATEGORY = Set.of("DOMESTIC", "INTERNATIONAL");
+    private static final Set<String> DEGREE_LEVELS = Set.of("BACHELOR", "MASTER");
     private static final BigDecimal MAX_FEE = new BigDecimal("1000000");
 
     private FactValidator() {
@@ -60,6 +61,26 @@ public final class FactValidator {
             case REQUIREMENT -> {
                 if (blank(v.get("description")) || blank(v.get("type")) || blank(v.get("applicationCycle"))) {
                     e.add("a requirement needs a type, an application cycle and a description");
+                }
+            }
+            case PROGRAM_NAME -> {
+                if (blank(v.get("name")) || v.get("name").length() > 250) {
+                    e.add("name is required (max 250 characters)");
+                }
+            }
+            case DEGREE_LEVEL -> {
+                if (!DEGREE_LEVELS.contains(v.get("level"))) {
+                    e.add("level must be BACHELOR or MASTER: " + v.get("level"));
+                }
+            }
+            case ACADEMIC_FIELD -> {
+                if (v.get("field") == null || !v.get("field").matches("[a-z0-9]+(-[a-z0-9]+)*")) {
+                    e.add("field must be a taxonomy slug: " + v.get("field"));
+                }
+            }
+            case CAMPUS_CITY -> {
+                if (blank(v.get("city")) || v.get("city").length() > 120) {
+                    e.add("city is required (max 120 characters)");
                 }
             }
         }
