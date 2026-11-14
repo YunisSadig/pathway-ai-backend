@@ -38,3 +38,6 @@ build/
 *.local.yaml
 *.local.yml
 .claude/settings.local.json
+
+# browser-tool scratch output
+.playwright-mcp/
