@@ -269,3 +269,36 @@ Only problems that actually happened during development. Each entry was verified
 - **Fix:** comment removed (the strict reader stays strict), pins updated for V8 and the additive `synchronization` object, the Aalto mapping location made configurable so the test supplies its own synthetic mapping.
 - **Prevention rule:** run the complete `verify` and read every failure BEFORE any destructive database step. Build in a scratch copy when a developer's own server is running from the working tree.
 - **Status:** fixed; full `verify` 332 tests green before the cleanup was executed.
+
+## 34. The first hosted run failed: `./mvnw: Permission denied`
+
+- **Evidence:** Actions run 43599319418, step `./mvnw -B -q package -DskipTests`, exit 126.
+- **Root cause:** the wrapper was committed from Windows as mode `100644`; `ci.yml` had its own `chmod +x`, the new refresh workflow did not, and the workflow had never run before the first hosted attempt.
+- **Files:** `mvnw` (now `100755`), `source-refresh.yml`, new `scripts/ci/check-exec-bits.sh` (CI fails when a CI-executed file loses the bit).
+- **Verification:** CI green with the guard; hosted run 43601512304 passed the build step.
+- **Prevention rule:** a workflow that has never run is untested; run every new workflow once manually before relying on it. Commit scripts with `git add --chmod=+x`.
+- **Status:** fixed.
+
+## 35. `sslmode=verify-full` failed on the hosted runner: `Could not open SSL root certificate file /home/runner/.postgresql/root.crt`
+
+- **Evidence:** run 43601512304, three attempts, Flyway `FlywaySqlUnableToConnectToDbException`.
+- **Root cause:** pgJDBC's `verify-full` reads `~/.postgresql/root.crt` and ignores the JVM trust store unless an `sslfactory` says otherwise. The earlier "verify-full is mandatory" research checked the verification semantics but never ran a handshake.
+- **Fix:** `sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory` (JVM CA bundle; the host name is still verified), appended by `run-refresh.sh` and set in `application-prod.yaml`; a caller-supplied `sslfactory`/`sslrootcert`/`sslhostnameverifier` is refused (a `NonValidatingFactory` would silently disable verification).
+- **Verification:** run 43610948377 connected to Neon (PostgreSQL 17.12), applied V1-V8 and synchronized.
+- **Prevention rule:** a TLS configuration is verified only by a real handshake against the real endpoint (the fixtures in `test-run-refresh.sh` prove the guards, not the connection).
+- **Status:** fixed.
+
+## 36. A BOM was written in front of every secret piped to the GitHub CLI (local owner tool)
+
+- **Evidence:** the stub test of the unrun `set-sync-secrets.ps1`: stdin bytes began `EF BB BF`.
+- **Root cause:** under a UTF-8 console code page, .NET Framework wraps a child's stdin in a UTF-8 `StreamWriter` that emits a preamble, even when bytes are written through `BaseStream`.
+- **Fix:** the console input code page is switched to 437 only while the child starts, then restored. Verified byte-for-byte with a compiled stub (37 non-secret tests).
+- **Prevention rule:** test secret-handling code with a byte-exact stub before it touches a real credential.
+- **Status:** fixed (the tool is local-only and git-ignored: `/scripts/ops/`).
+
+## 37. `git add -A scripts` swept an untracked local-only tool into a commit
+
+- **Evidence:** the PR for `verify-data` listed `scripts/ops/set-sync-secrets.ps1`.
+- **Fix:** removed from the branch before merge and `/scripts/ops/` added to `.gitignore`. Nothing secret was in the file.
+- **Prevention rule:** stage explicit paths, never `-A` over a directory that holds local tools; read `git show --stat` before pushing.
+- **Status:** fixed.
