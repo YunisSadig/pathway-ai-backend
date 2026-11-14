@@ -31,9 +31,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "run | sync | force (re-read all Studyinfo programs now) | bootstrap (first run on an empty database) | freshness"
+        description: "run | sync | force (re-read all Studyinfo programs now) | bootstrap (first run on an empty database) | freshness | verify (read-only data audit)"
         type: choice
-        options: [run, sync, force, bootstrap, freshness]
+        options: [run, sync, force, bootstrap, freshness, verify]
         default: run
 
 permissions: {}

@@ -31,6 +31,8 @@ import org.springframework.stereotype.Component;
  *   --app.refresh.command=freshness-check [--app.refresh.max-age-hours=240]
  *                                                     last-success monitoring: exits non-zero unless EVERY program kept current by an
  *                                                     extractor was read successfully within that many hours (default 240 = 10 days)
+ *   --app.refresh.command=verify-data                read-only audit of the connected database: counts, write fingerprint and integrity invariants
+ *                                                     (exits non-zero on a violation; prints no connection details)
  *   --app.refresh.fail-on-failures=true [--app.refresh.failure-ratio-threshold=0.5]
  *                                                     exit non-zero when more than that share of the checks failed or were
  *                                                     blocked (default 0 = any failure); a single flaky site stays visible in
@@ -51,6 +53,7 @@ public class RefreshCli implements ApplicationRunner {
     private final StagedChangeService review;
     private final SourceMonitorRepository monitors;
     private final Clock clock;
+    private final DataIntegrityReport integrity;
     private final String command;
     private final Long id;
     private final String actor;
@@ -65,7 +68,7 @@ public class RefreshCli implements ApplicationRunner {
     private final long maxAgeHours;
 
     public RefreshCli(RefreshService refresh, SyncOrchestrator orchestrator, MonitoringReportService report,
-                      StagedChangeService review, SourceMonitorRepository monitors, Clock clock, @Value("${app.refresh.command}") String command,
+                      StagedChangeService review, SourceMonitorRepository monitors, Clock clock, DataIntegrityReport integrity, @Value("${app.refresh.command}") String command,
                       @Value("${app.refresh.id:#{null}}") Long id, @Value("${app.refresh.actor:cli}") String actor,
                       @Value("${app.refresh.reason:#{null}}") String reason, StudyinfoImporter studyinfo,
                       @Value("${app.refresh.dry-run:false}") boolean dryRun,
@@ -81,6 +84,7 @@ public class RefreshCli implements ApplicationRunner {
         this.review = review;
         this.monitors = monitors;
         this.clock = clock;
+        this.integrity = integrity;
         this.command = command;
         this.id = id;
         this.actor = actor;
@@ -117,6 +121,15 @@ public class RefreshCli implements ApplicationRunner {
                             + " extractor-maintained program(s) were not read successfully within " + maxAgeHours + " hours"
                             + (f.total() == 0 ? " (there are none)" : ""));
                 }
+            }
+            case "verify-data" -> {
+                var r = integrity.run();
+                r.lines().forEach(System.out::println);
+                if (!r.violations().isEmpty()) {
+                    r.violations().forEach(v -> System.out.println("VIOLATION: " + v));
+                    throw new IllegalStateException(r.violations().size() + " data integrity violation(s)");
+                }
+                System.out.println("verify-data: all invariants hold");
             }
             case "run" -> finish("Refresh run: ", refresh.runAllDue(clock.instant()));
             case "report" -> System.out.println(report.generate(clock.instant()).render());

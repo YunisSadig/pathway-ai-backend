@@ -32,7 +32,7 @@ MAX_AGE_HOURS="${MAX_AGE_HOURS:-240}"
 
 die() { echo "ERROR: $*" >&2; exit "${2:-2}"; }
 
-case "$MODE" in run|sync|force|bootstrap|freshness) ;; *) die "unknown mode '$MODE' (run|sync|force|bootstrap|freshness)";; esac
+case "$MODE" in run|sync|force|bootstrap|freshness|verify) ;; *) die "unknown mode '$MODE' (run|sync|force|bootstrap|freshness|verify)";; esac
 
 for v in DB_URL DB_USERNAME DB_PASSWORD; do
   [ -n "${!v:-}" ] || die "$v is not set (on GitHub it comes from a repository secret)"
@@ -104,6 +104,7 @@ case "$MODE" in
   run)       with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=run "${fail_flags[@]}"; rc=$? ;;
   sync)      with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=sync "${fail_flags[@]}"; rc=$? ;;
   force)     with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=studyinfo-sync "${fail_flags[@]}"; rc=$? ;;
+  verify)    with_retries 2 "$((BASE < 60 ? BASE : 60))" app --app.refresh.command=verify-data; rc=$? ;;
   freshness) with_retries 2 "$((BASE < 60 ? BASE : 60))" app --app.refresh.command=freshness-check "--app.refresh.max-age-hours=$MAX_AGE_HOURS"; rc=$? ;;
   bootstrap)
     # step 1 loads only the taxonomy and the three reviewed universities (the application exits after startup), step 2 syncs the programs
