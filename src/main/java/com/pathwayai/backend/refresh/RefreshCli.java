@@ -24,8 +24,14 @@ import org.springframework.stereotype.Component;
  *   --app.refresh.command=studyinfo-import [--app.refresh.dry-run=true] [--app.refresh.university=slug] [--app.refresh.limit=N]
  *                                                     import programs from the Studyinfo official API (reviewed university list)
  *   --app.refresh.command=studyinfo-sync              re-read every Studyinfo program now and publish or stage what changed
- *   --app.refresh.command=assign-adapter --app.refresh.id=SOURCE_ID --app.refresh.adapter=NAME
- *                                                     read one source with a named extraction adapter (re-baselines it)
+ *   --app.refresh.command=assign-adapter --app.refresh.id=SOURCE_ID --app.refresh.adapter=NAME [--app.refresh.university=slug]
+ *                                                     read one source with a named extraction adapter (re-baselines it;
+ *                                                     a university binds a source that states facts for several programs)
+ *   --app.refresh.command=sync-adapter --app.refresh.adapter=NAME   re-read every active source of one adapter now
+ *   --app.refresh.fail-on-failures=true [--app.refresh.failure-ratio-threshold=0.5]
+ *                                                     exit non-zero when more than that share of the checks failed or were
+ *                                                     blocked (default 0 = any failure); a single flaky site stays visible in
+ *                                                     the report (FAILING) without failing the job
  *   --app.refresh.command=review-list                list changes awaiting review
  *   --app.refresh.command=review-approve --app.refresh.id=N [--app.refresh.actor=name]
  *   --app.refresh.command=review-reject  --app.refresh.id=N [--app.refresh.reason=text] [--app.refresh.actor=name]
@@ -51,6 +57,8 @@ public class RefreshCli implements ApplicationRunner {
     private final String university;
     private final Integer limit;
     private final String adapter;
+    private final boolean failOnFailures;
+    private final double failureRatioThreshold;
 
     public RefreshCli(RefreshService refresh, MonitorRegistrar registrar, MonitoringReportService report,
                       StagedChangeService review, SourceMonitorRepository monitors, Clock clock, @Value("${app.refresh.command}") String command,
@@ -59,7 +67,9 @@ public class RefreshCli implements ApplicationRunner {
                       @Value("${app.refresh.dry-run:false}") boolean dryRun,
                       @Value("${app.refresh.university:#{null}}") String university,
                       @Value("${app.refresh.limit:#{null}}") Integer limit,
-                      @Value("${app.refresh.adapter:#{null}}") String adapter) {
+                      @Value("${app.refresh.adapter:#{null}}") String adapter,
+                      @Value("${app.refresh.fail-on-failures:false}") boolean failOnFailures,
+                      @Value("${app.refresh.failure-ratio-threshold:0.0}") double failureRatioThreshold) {
         this.refresh = refresh;
         this.registrar = registrar;
         this.report = report;
@@ -75,13 +85,15 @@ public class RefreshCli implements ApplicationRunner {
         this.university = university;
         this.limit = limit;
         this.adapter = adapter;
+        this.failOnFailures = failOnFailures;
+        this.failureRatioThreshold = failureRatioThreshold;
     }
 
     @Override
     public void run(ApplicationArguments args) {
         switch (command) {
             case "register" -> System.out.println("Registered sources: " + registrar.registerAll(clock.instant()));
-            case "run" -> System.out.println("Refresh run: " + refresh.runAllDue(clock.instant()));
+            case "run" -> finish("Refresh run: ", refresh.runAllDue(clock.instant()));
             case "report" -> System.out.println(report.generate(clock.instant()).render());
             case "reactivate" -> System.out.println("Reactivated sources: " + monitors.reactivate(id, clock.instant()));
             case "studyinfo-import" -> {
@@ -94,14 +106,26 @@ public class RefreshCli implements ApplicationRunner {
             case "studyinfo-sync" -> {
                 int due = monitors.markDue(StudyinfoAdapter.NAME, clock.instant());
                 System.out.println("Studyinfo programs made due: " + due);
-                System.out.println("Refresh run: " + refresh.runDueForAdapter(StudyinfoAdapter.NAME, clock.instant()));
+                finish("Refresh run: ", refresh.runDueForAdapter(StudyinfoAdapter.NAME, clock.instant()));
             }
             case "assign-adapter" -> {
                 if (adapter == null || !refresh.hasAdapter(adapter)) {
                     throw new IllegalArgumentException("--app.refresh.adapter must name a registered adapter, got: " + adapter);
                 }
+                Long uni = null;
+                if (university != null) {
+                    uni = monitors.universityIdBySlug(university)
+                            .orElseThrow(() -> new IllegalArgumentException("no university with slug " + university));
+                }
                 System.out.println("Source " + requireId() + " now read by " + adapter + ": "
-                        + monitors.assignAdapter(requireId(), adapter, "1", clock.instant()) + " row(s)");
+                        + monitors.assignAdapter(requireId(), adapter, "1", uni, clock.instant()) + " row(s)");
+            }
+            case "sync-adapter" -> {
+                if (adapter == null || !refresh.hasAdapter(adapter)) {
+                    throw new IllegalArgumentException("--app.refresh.adapter must name a registered adapter, got: " + adapter);
+                }
+                System.out.println("Sources made due: " + monitors.markDue(adapter, clock.instant()));
+                finish("Refresh run: ", refresh.runDueForAdapter(adapter, clock.instant()));
             }
             case "review-list" -> {
                 var items = review.pending();
@@ -119,6 +143,16 @@ public class RefreshCli implements ApplicationRunner {
                 System.out.println("Rejected #" + id);
             }
             default -> throw new IllegalArgumentException("unknown app.refresh.command: " + command);
+        }
+    }
+
+    /** Prints the summary and, when asked, turns failed checks into a failing exit code so a scheduler can alert. */
+    private void finish(String label, RefreshService.RunSummary summary) {
+        System.out.println(label + summary);
+        int bad = summary.failed() + summary.blocked();
+        if (failOnFailures && summary.checked() > 0 && (double) bad / summary.checked() > failureRatioThreshold) {
+            throw new IllegalStateException("refresh finished with failures: " + bad + " of " + summary.checked()
+                    + " checks failed or were blocked (threshold " + failureRatioThreshold + "), rejectedFacts=" + summary.rejectedFacts());
         }
     }
 

@@ -97,7 +97,7 @@ public class ProgramService {
                 .orElseThrow(() -> new ResourceNotFoundException("Program", identifier));
         if (discovery.restricts() && programs.count(discovery.programs()
                 .and((root, query, cb) -> cb.equal(root.get("id"), program.getId()))) == 0) {
-            throw new ResourceNotFoundException("Program", identifier); // not verified, or its sources are stale
+            throw new com.pathwayai.backend.common.discovery.ProgramWithheldException(identifier, discovery.maxSourceAgeDays());
         }
         return mapper.toDetail(
                 program,

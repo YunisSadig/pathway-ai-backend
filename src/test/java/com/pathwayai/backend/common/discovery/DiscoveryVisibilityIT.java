@@ -1,6 +1,10 @@
 package com.pathwayai.backend.common.discovery;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -94,6 +98,67 @@ class DiscoveryVisibilityIT {
                 "zz-disc-unv--at-unverified-university"}) {
             mockMvc.perform(get("/api/v1/programs/" + hidden)).andExpect(status().isNotFound());
         }
+    }
+
+    @Test
+    void aWithheldProgramSaysWhyInsteadOfPretendingItDoesNotExist() throws Exception {
+        mockMvc.perform(get("/api/v1/programs/zz-disc-u--stale")).andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", containsString("Program withheld")))
+                .andExpect(jsonPath("$.message", containsString("45 days")));
+        mockMvc.perform(get("/api/v1/programs/zz-disc-u--does-not-exist")).andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", not(containsString("withheld"))));
+    }
+
+    @Test
+    void theStatusEndpointExplainsWhatIsHeldBackAndWhy() throws Exception {
+        mockMvc.perform(get("/api/v1/discovery/status")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.restricted", is(true)))
+                .andExpect(jsonPath("$.maxSourceAgeDays", is(45)))
+                .andExpect(jsonPath("$.programsWithheld", greaterThanOrEqualTo(4)))
+                .andExpect(jsonPath("$.withheldBecause.sourcesStale", greaterThanOrEqualTo(1)))
+                .andExpect(jsonPath("$.withheldBecause.neverChecked", greaterThanOrEqualTo(1)))
+                .andExpect(jsonPath("$.withheldBecause.notVerified", greaterThanOrEqualTo(2)))
+                .andExpect(jsonPath("$.lastSuccessfulSourceCheck").exists())
+                .andExpect(jsonPath("$.message", containsString("held back")));
+    }
+
+    @Test
+    void aFailingFactExtractorWithholdsTheProgramEvenWhenAnotherOfItsPagesWasReadToday() throws Exception {
+        mockMvc.perform(get("/api/v1/programs/zz-disc-u--fresh")).andExpect(status().isOk());
+        long program = jdbc.queryForObject("select id from degree_program where slug = 'fresh'", Long.class);
+        long university = jdbc.queryForObject("select id from university where slug = 'zz-disc-u'", Long.class);
+        long source = jdbc.queryForObject("""
+                insert into source (url, title, publisher, source_type, retrieved_on)
+                values ('https://www.zz-disc.example/fresh-api', 'Synthetic API', 'Synthetic', 'GOVERNMENT', current_date) returning id""",
+                Long.class);
+        monitors.register(source, new SourceMonitor.Spec("https://www.zz-disc.example/fresh-api", university, program, "PROGRAM", "",
+                "ADAPTER", "some-extractor", "1", 7), "VERIFIED", Instant.now());
+        jdbc.update("update source_monitor set status = 'FAILING', last_success_at = now() - interval '3 days' where source_id = ?", source);
+
+        // the content-hash page of the same program is still fresh, but the monitor that maintains its facts is failing
+        mockMvc.perform(get("/api/v1/programs/zz-disc-u--fresh")).andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", containsString("a source that maintains its facts is failing")));
+        mockMvc.perform(get("/api/v1/discovery/status")).andExpect(jsonPath("$.withheldBecause.extractorFailing", greaterThanOrEqualTo(1)));
+
+        jdbc.update("update source_monitor set status = 'ACTIVE', last_success_at = now() where source_id = ?", source);
+        mockMvc.perform(get("/api/v1/programs/zz-disc-u--fresh")).andExpect(status().isOk());
+    }
+
+    @Test
+    void ifTheRefreshJobStopsEverythingGoesStaleAndTheApiSaysSo() throws Exception {
+        // simulate a scheduled job that has not succeeded for three months
+        jdbc.update("update source_monitor set last_success_at = now() - interval '90 days' where domain = 'www.zz-disc.example'");
+        mockMvc.perform(get("/api/v1/programs").param("size", "100"))
+                .andExpect(jsonPath("$.content[?(@.identifier =~ /zz-disc.*/)]", hasSize(0)));
+        mockMvc.perform(get("/api/v1/programs/zz-disc-u--fresh")).andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", containsString("Program withheld")));
+        mockMvc.perform(get("/api/v1/discovery/status")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.state", not("FRESH")))
+                .andExpect(jsonPath("$.programsWithheld", greaterThanOrEqualTo(5)))
+                .andExpect(jsonPath("$.lastSuccessfulSourceCheck").exists());
+        // and the facts are not deleted: they return as soon as a source is read again
+        jdbc.update("update source_monitor set last_success_at = now() where domain = 'www.zz-disc.example'");
+        mockMvc.perform(get("/api/v1/programs/zz-disc-u--fresh")).andExpect(status().isOk());
     }
 
     @Test

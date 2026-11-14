@@ -233,3 +233,16 @@ Only problems that actually happened during development. Each entry was verified
 - **Fix:** the delay is honoured exactly up to 5 minutes; above that the host is not fetched and the failure says why. It is never shortened.
 - **Prevention rule:** a safety limit must refuse, not quietly weaken.
 - **Status:** fixed (`PageFetcherTest`).
+
+## 29. The scoped Aalto extractor could not be attached to the existing fee monitor
+
+- **Evidence:** the development fee monitor (source 14) has no university, so the extractor would have had no program to attach facts to; before the fix this degraded into a vague "page changed" review item.
+- **Fix:** `assign-adapter` can bind a university; a scoped adapter on an unbound source now fails visibly (a recorded failure, nothing staged); verified live (2 facts extracted, 2 unchanged) and in `AaltoTuitionSyncIT`.
+- **Prevention rule:** a misconfigured source must fail loudly, never fall through to a generic review item.
+- **Status:** fixed.
+
+## 30. "Fresh" meant any page of the program, so a broken extractor could stay hidden
+
+- **Evidence:** discovery counted any successful source check; a program whose fact-extracting monitor was failing stayed listed because an admissions page was still read.
+- **Fix:** a failing, unsupported or stale extractor monitor withholds the program (`DiscoveryVisibilityIT`).
+- **Status:** fixed.

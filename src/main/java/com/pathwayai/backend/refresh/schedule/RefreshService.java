@@ -174,7 +174,12 @@ public class RefreshService {
         ChangePipeline.Outcome result = new ChangePipeline.Outcome(0, 0, 0, 0, List.of());
         if (baseline || parserChanged || changed) {
             List<ExtractedFact> facts = List.of();
-            if (adapter instanceof ScopedExtractionAdapter scoped && m.programId() == null && m.universityId() != null) {
+            if (adapter instanceof ScopedExtractionAdapter && m.universityId() == null) {
+                // a misconfigured source must fail visibly, not turn into a vague "page changed" review item
+                throw new IllegalStateException("adapter " + adapter.name() + " states facts for several programs and needs a source bound to a university"
+                        + " (assign-adapter --app.refresh.university=<slug>)");
+            }
+            if (adapter instanceof ScopedExtractionAdapter scoped && m.programId() == null) {
                 var perProgram = scoped.extractForPrograms(page);
                 result = processScoped(m, perProgram, parser, now);
                 facts = perProgram.values().stream().flatMap(List::stream).toList();
@@ -182,6 +187,9 @@ public class RefreshService {
                 facts = adapter.extract(page);
                 result = pipeline.process(m, facts, parser, now);
             }
+            log.info("Source {} read by {}: {} fact(s) extracted; {} unchanged, {} auto-applied, {} staged for review, {} already seen, {} rejected",
+                    m.sourceId(), parser, facts.size(), result.unchanged(), result.autoApplied(), result.pendingReview(),
+                    result.alreadySeen(), result.rejectedCount());
             if (changed && facts.isEmpty() && adapter.raisesReviewItems()) {
                 if (pipeline.stageContentChange(m, page.hash(), parser, now)) {
                     result = new ChangePipeline.Outcome(0, 1, 0, 0, List.of());

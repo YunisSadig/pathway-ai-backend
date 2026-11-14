@@ -58,13 +58,19 @@ public class SourceMonitorRepository {
      * Operator action: switches one source to an adapter and clears its stored hash, so the next check re-reads the page
      * with the new adapter as a baseline instead of reporting a phantom change.
      */
-    public int assignAdapter(long sourceId, String adapterName, String adapterVersion, Instant now) {
+    public int assignAdapter(long sourceId, String adapterName, String adapterVersion, Long universityId, Instant now) {
         return jdbc.sql("""
                 update source_monitor set extraction_method = 'ADAPTER', adapter_name = :an, adapter_version = :av,
+                    university_id = coalesce(:uni, university_id),
                     content_hash = null, hash_parser_version = null, etag = null, last_modified = null,
                     status = 'ACTIVE', unsupported_reason = null, failure_count = 0, next_check_at = :now, updated_at = now()
                 where source_id = :id""")
-                .param("an", adapterName).param("av", adapterVersion).param("now", Timestamp.from(now)).param("id", sourceId).update();
+                .param("an", adapterName).param("av", adapterVersion).param("uni", universityId)
+                .param("now", Timestamp.from(now)).param("id", sourceId).update();
+    }
+
+    public Optional<Long> universityIdBySlug(String slug) {
+        return jdbc.sql("select id from university where slug = :s").param("s", slug).query(Long.class).optional();
     }
 
     /** Operator action: makes the active sources of one adapter due now. Returns how many. */

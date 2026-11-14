@@ -26,6 +26,12 @@ public class ProgramFreshness {
     @Column(name = "last_success_at")
     private Instant lastSuccessAt;
 
+    @Column(name = "extraction_method")
+    private String extractionMethod;
+
+    @Column(name = "status")
+    private String status;
+
     protected ProgramFreshness() {
     }
 

@@ -65,7 +65,7 @@ class AaltoTuitionSyncIT {
         fee(mechId, "17000", "2025-08-01", null);
         fee(mechId, "15000", null, "2024-08-01");
         monitors.register(sourceId, new SourceMonitor.Spec(PAGE, uni, null, "TUITION", "", "CONTENT_HASH", "content-hash", "1", 7), "VERIFIED", T0);
-        monitors.assignAdapter(sourceId, AaltoTuitionAdapter.NAME, AaltoTuitionAdapter.VERSION, T0);
+        monitors.assignAdapter(sourceId, AaltoTuitionAdapter.NAME, AaltoTuitionAdapter.VERSION, null, T0);
         approvedHosts.refresh();
         serve(AaltoTuitionAdapterTest.html());
     }
@@ -182,6 +182,25 @@ class AaltoTuitionSyncIT {
         assertThat(run.pendingReview()).isEqualTo(1);
         assertThat(jdbc.queryForObject("select fact_type from staged_change where status = 'PENDING_REVIEW'", String.class)).isEqualTo("SOURCE_CONTENT");
         assertThat(fees()).isEqualTo(before);
+    }
+
+    @Test
+    void aSourceNotBoundToAUniversityFailsVisiblyAndWorksOnceBound() {
+        long uni = jdbc.queryForObject("select id from university where slug = 'zz-aalto-u'", Long.class);
+        jdbc.update("update source_monitor set university_id = null where source_id = ?", sourceId);
+        var before = fees();
+
+        var broken = run(T0.plusSeconds(60));
+        assertThat(broken.failed()).as("a misconfigured source is a recorded failure, not a vague review item").isEqualTo(1);
+        assertThat(jdbc.queryForObject("select count(*) from staged_change", Long.class)).isZero();
+        assertThat(jdbc.queryForObject("select last_result from source_monitor where source_id = ?", String.class, sourceId)).isEqualTo("FAILED");
+
+        monitors.assignAdapter(sourceId, AaltoTuitionAdapter.NAME, AaltoTuitionAdapter.VERSION, uni, T0.plusSeconds(120));
+        var fixed = run(T1);
+        assertThat(fixed.failed()).isZero();
+        assertThat(fixed.pendingReview()).isZero();
+        assertThat(fees()).isEqualTo(before);
+        assertThat(monitors.findBySourceId(sourceId).orElseThrow().universityId()).isEqualTo(uni);
     }
 
     @Test

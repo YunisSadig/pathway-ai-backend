@@ -20,13 +20,22 @@ Boundaries (all enforced in code, not by convention): https, host `opintopolku.f
 `Crawl-delay: 30` (the fetcher now honours `Crawl-delay` for every host, capped at 60 s), robots.txt, size cap,
 bounded retries, 429/Retry-After handling. A program costs one request, so 30 programs take roughly 15 minutes.
 
-**Open point: licence (unresolved).** The provider's code is EUPL-1.2. Searches of the Agency's own pages found **no
+**Open point: licence (unresolved; a publicly reachable API is not a licence).** The provider's code is EUPL-1.2. Searches of the Agency's own pages found **no
 statement of the licence or terms of use of the Studyinfo data or of its external API**; the Agency's site terms only
 say that using the site means accepting them. Until the Agency confirms in writing: treat the data as *not licensed
 for republication*; use it for the internal catalogue and refresh only; do not republish the provider's free text
 (none is read or stored); keep attribution to Opetushallitus (stored as the source publisher of every record); do not
 build a commercial offer that depends on bulk redistribution of this data. Ask the Agency (Opintopolku / konfo-backend
 maintainers) which licence covers `/konfo-backend/external/*` before public launch.
+
+What was checked (2026-11-14): the provider's repositories (code licence only), OPH's Opintopolku service page (no API,
+reuse or licence statement; footer "© Opetushallitus 2026"), the national open-data portal searches (no dataset or
+licence for the course offering), and the API's own OpenAPI file (served empty). Public accessibility, the `external`
+name and an unauthenticated endpoint are **not** a grant of redistribution rights, and Finnish law also protects
+catalogues and databases made with substantial investment, so bulk redistribution needs the Agency's permission.
+**Restrictions to apply until then:** internal catalogue and refresh only; no mirror or bulk export of provider data;
+no provider free text; attribution kept; keep request volume at the published crawl delay; be ready to purge Studyinfo-
+sourced rows (they are identifiable by `program_external_id` and `program_field_provenance.mechanism = 'OFFICIAL_API'`).
 
 ### What it supplies, and how it is validated
 
@@ -124,10 +133,28 @@ the EU, EEA and Switzerland in programmes taught in English. `AaltoTuitionAdapte
 * University of Amsterdam admissions pages are readable, but deadlines are prose where the academic year is not tied
   to the deadline sentence, so a deadline extractor would have to infer a year. Not built.
 
+## 2b. Aalto extractor on the development monitor (2026-11-14)
+
+Source 14 (the fee page) was bound to Aalto and switched to `aalto-tuition` with `assign-adapter`, then read once:
+2 facts extracted (Architecture 20 000 EUR, Mechanical Engineering 17 000 EUR, international, per year, from 2025-08-01),
+2 unchanged against the stored fees, 0 staged, tuition rows byte-identical. What can genuinely be maintained: those two
+programs. The two Aalto programs imported from Studyinfo have **no** fee group in the reviewed mapping (their school is
+not evidenced), so their fee is unknown; no academic year, category or price is ever inferred. A source that states
+facts for several programs but is not bound to a university now fails visibly (it used to degrade into a vague
+"page changed" review item).
+
 ## 4. Public discovery
 
 `app.discovery.restrict-to-verified-fresh` (default **true**) and `app.discovery.max-source-age-days` (default 45).
 A program is listed only if it is VERIFIED, its university is VERIFIED, and at least one of its sources was read
-successfully within the window. Held-back programs are not deleted and reappear after the next successful refresh.
+successfully within the window **and no fact-extracting monitor of the program (`ADAPTER`/`JSON_LD`) is failing,
+unsupported or stale** (a fresh admissions page must not keep a program listed while the monitor that maintains its
+facts is broken). Held-back programs are not deleted and reappear after the next successful refresh. A withheld
+program's detail answers the same 404 with a specific message ("Program withheld: ..."), and
+`GET /api/v1/discovery/status` returns `state` (`FRESH`, `PARTIAL`, `STALE`, `EMPTY`, `UNRESTRICTED`), listed/withheld
+counts, the reasons (`notVerified`, `sourcesStale`, `neverChecked`, `extractorFailing`), the last successful source
+check and a plain-language message for a frontend to show. Facts bound to a period keep their own `temporalStatus`
+(`CURRENT`, `HISTORICAL`, `UNKNOWN_YEAR`), so an expired deadline is never shown as current even from a fresh source.
+Legacy programs drop out on 2026-12-26 and Studyinfo programs on 2026-12-29 if nothing refreshes.
 UNVERIFIED universities are not listed. Response shapes are unchanged; only fewer rows can appear. If the scheduler
 stops, discovery empties after 45 days by design: that is the freshness guarantee, so monitor the refresh job.

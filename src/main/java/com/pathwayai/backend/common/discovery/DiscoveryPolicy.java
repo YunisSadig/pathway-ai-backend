@@ -46,6 +46,19 @@ public class DiscoveryPolicy {
         return restrict;
     }
 
+    public int maxSourceAgeDays() {
+        return (int) maxSourceAge.toDays();
+    }
+
+    /** A source read successfully before this instant no longer counts as fresh. */
+    public Instant cutoff() {
+        return clock.instant().minus(maxSourceAge);
+    }
+
+    public Instant now() {
+        return clock.instant();
+    }
+
     public Specification<DegreeProgram> programs() {
         if (!restrict) {
             return (root, query, cb) -> cb.conjunction();
@@ -56,10 +69,18 @@ public class DiscoveryPolicy {
             Root<ProgramFreshness> f = recent.from(ProgramFreshness.class);
             recent.select(f.get("sourceId")).where(cb.equal(f.get("programId"), root.get("id")),
                     cb.greaterThanOrEqualTo(f.<Instant>get("lastSuccessAt"), cutoff));
+            // a monitor that extracts facts (not a mere page-change alarm) that is failing, unsupported or stale means the
+            // facts it maintains cannot be called current, even when some other page of the program was read recently
+            Subquery<Long> brokenExtractor = query.subquery(Long.class);
+            Root<ProgramFreshness> b = brokenExtractor.from(ProgramFreshness.class);
+            brokenExtractor.select(b.get("sourceId")).where(cb.equal(b.get("programId"), root.get("id")),
+                    b.<String>get("extractionMethod").in("ADAPTER", "JSON_LD"),
+                    cb.or(b.<String>get("status").in("FAILING", "UNSUPPORTED"), cb.isNull(b.get("lastSuccessAt")),
+                            cb.lessThan(b.<Instant>get("lastSuccessAt"), cutoff)));
             return cb.and(
                     cb.equal(root.get("verificationStatus"), com.pathwayai.backend.program.entity.VerificationStatus.VERIFIED),
                     cb.equal(root.get("university").get("verificationStatus"), "VERIFIED"),
-                    cb.exists(recent));
+                    cb.exists(recent), cb.not(cb.exists(brokenExtractor)));
         };
     }
 
