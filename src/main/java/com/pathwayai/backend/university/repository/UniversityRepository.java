@@ -8,6 +8,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface UniversityRepository extends JpaRepository<University, Long>, JpaSpecificationExecutor<University> {
 
-    @EntityGraph(attributePaths = {"country", "programs"})
+    @EntityGraph(attributePaths = {"country", "programs", "programs.academicField"})
     Optional<University> findBySlug(String slug);
 }

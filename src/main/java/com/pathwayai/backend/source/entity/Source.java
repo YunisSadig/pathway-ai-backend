@@ -56,6 +56,14 @@ public class Source {
         createdAt = Instant.now();
     }
 
+    /** Records a newer check of the same official page (the URL is the identity). */
+    public void refresh(String title, String publisher, SourceType sourceType, LocalDate retrievedOn) {
+        this.title = title;
+        this.publisher = publisher;
+        this.sourceType = sourceType;
+        this.retrievedOn = retrievedOn;
+    }
+
     public Long getId() { return id; }
     public String getUrl() { return url; }
     public String getTitle() { return title; }

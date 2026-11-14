@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "countries": [{ "iso2": "XA", "name": "Synthetic Land A" }],
+  "fields": [
+    { "slug": "synthetic-science", "name": "Synthetic Science" },
+    { "slug": "synthetic-computing", "name": "Synthetic Computing", "parent": "synthetic-science" }
+  ],
+  "sources": [
+    { "url": "https://example.invalid/import/program", "title": "Synthetic program page", "publisher": "Synthetic University", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-01-02" },
+    { "url": "https://example.invalid/import/apply", "title": "Synthetic apply page", "publisher": "Synthetic University", "type": "UNIVERSITY_WEBSITE", "retrievedOn": "2026-01-02" }
+  ],
+  "universities": [
+    { "slug": "synthetic-import-university", "country": "XA", "name": "Synthetic Import University", "websiteUrl": "https://example.invalid/import" }
+  ],
+  "programs": [
+    {
+      "university": "synthetic-import-university",
+      "slug": "full-program",
+      "name": "Synthetic Full Program",
+      "degreeLevel": "MASTER",
+      "field": "synthetic-computing",
+      "studyMode": "FULL_TIME",
+      "durationMonths": 24,
+      "teachingLanguage": "English",
+      "languages": ["en", "de"],
+      "officialProgramUrl": "https://example.invalid/import/program",
+      "officialApplicationUrl": "https://example.invalid/import/apply",
+      "verification": { "status": "VERIFIED", "verifiedOn": "2026-01-02" },
+      "sources": ["https://example.invalid/import/program", "https://example.invalid/import/apply"],
+      "intakes": [
+        { "label": "Autumn", "academicYear": "2027/2028", "applicationDeadline": "2027-01-15", "source": "https://example.invalid/import/apply" },
+        { "label": "Autumn", "academicYear": "2027/2028", "applicationDeadline": "2027-03-01", "applicantCategory": "DOMESTIC", "source": "https://example.invalid/import/apply" }
+      ],
+      "tuition": [
+        { "academicYear": "2027/2028", "studentCategory": "INTERNATIONAL", "amount": 1234.50, "currency": "EUR", "billingPeriod": "PER_YEAR", "source": "https://example.invalid/import/program" }
+      ],
+      "requirements": [
+        { "applicationCycle": "2027", "type": "LANGUAGE_TEST", "description": "Synthetic language test requirement", "minimumValue": 6.5, "valueUnit": "IELTS overall", "source": "https://example.invalid/import/program" }
+      ]
+    },
+    {
+      "university": "synthetic-import-university",
+      "slug": "sparse-program",
+      "name": "Synthetic Sparse Program",
+      "degreeLevel": "BACHELOR"
+    }
+  ]
+}

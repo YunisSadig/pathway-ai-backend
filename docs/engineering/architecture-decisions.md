@@ -26,3 +26,24 @@ Name search is case-insensitive "contains" with `%`/`_` escaped so user input is
 
 ## ADR-9 Configuration and secrets
 Datasource from environment (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`), optional git-ignored `.env`. No default password exists anywhere. Compose refuses to start without `DB_PASSWORD`. Default host DB port is 5433 to avoid clashing with native PostgreSQL.
+
+## ADR-10 Program-first model (Milestone 3A)
+Programs are first-class: the new `/api/v1/programs` resource returns programs together with the university that offers them. Program-specific facts never move onto the university. Everything new on `degree_program` is nullable (or defaulted) so incomplete but legitimate programs can be imported; unknown stays `NULL`. V2 is purely additive and V1 is untouched. `DegreeLevel` keeps all five values (`DIPLOMA`, `CERTIFICATE` included); bachelor and master are filters like the rest, not special cases.
+
+## ADR-11 Reference data is imported, not migrated
+Migrations create structure only. Facts live in `reference-data/programs.json` and are loaded by `ReferenceDataImporter`: validated first, applied in one transaction, idempotent by natural keys, additive (never deletes), and it refuses to overwrite a conflicting tuition figure. It runs only when `IMPORT_REFERENCE_DATA=true`. `ReferenceDataFileTest` guards the shipped file (sources, dates, verification, no placeholder URLs).
+
+## ADR-12 Verification and official application links
+`verification_status` + `verified_on` live on the program; each tuition, intake and requirement row cites a `source` whose `retrieved_on` is the date that fact was read. `official_application_url` can only be set for a `VERIFIED` program, enforced by a database CHECK, the entity and the importer, so a client can trust any link the API returns. "Verified" means checked against the cited pages on that date, not a guarantee they stay current.
+
+## ADR-13 Academic fields are rows with a parent
+`academic_field(slug, name, parent_id)`. A new subject is a new row. The API filter matches a field and its direct children (two levels). Deeper trees would need a recursive query; not needed yet. The V1 free-text `field_of_study` stays only as a fallback for the university-detail view.
+
+## ADR-14 Stable, globally unique program identifier without a new column
+Program slugs are unique per university only. The public identifier is `<university-slug>--<program-slug>`. Slug format forbids `--` (database CHECK, added `NOT VALID` for the program slug so existing rows cannot block the migration), so the split is unambiguous and the identifier is unique by construction. Renaming a slug changes the identifier: treat slugs as permanent.
+
+## ADR-15 Tuition filter semantics
+`tuitionMax` needs `tuitionCurrency`; it compares only same-currency, `PER_YEAR` amounts (optionally one applicant category) and excludes programs whose tuition is unknown. Unknown is not "free" and different currencies are never converted or mixed.
+
+## ADR-16 Query efficiency is asserted
+List pages fetch university, country and field in the page query and batch the language collection (`@BatchSize`); the detail view loads to-one associations in one entity-graph query and the collections with a fixed number of queries. `ProgramQueryCountIT` fails if statement counts grow with page size. Indexes are kept only if measured as used (V3 dropped `idx_program_name_lower`).

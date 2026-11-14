@@ -84,3 +84,38 @@ Only problems that actually happened during development. Each entry was verified
 - **Verification:** pending the PR's CI run (result recorded in the PR description).
 - **Prevention rule:** check latest action majors whenever CI is touched.
 - **Status:** changed; not considered verified until the PR CI run is green.
+
+## 10. `DegreeProgram.describe(...)` emptied its own language set
+
+- **Evidence:** `ProgramApiIT.detailReturnsFactsEachWithItsOfficialSource` failed with `No value at JSON path "$.teachingLanguages[0]"`, and `filtersByCountryUniversityAndLanguage` counted 2 instead of 3.
+- **Root cause:** a test fixture called `describe(p, ..., p.getTeachingLanguageCodes(), ...)`. The method did `teachingLanguageCodes.clear()` and then `addAll(languageCodes)`; the argument was the same collection, so `clear()` erased it before `addAll`.
+- **Affected files:** `program/entity/DegreeProgram.java`, `support/ProgramFixtures.java`.
+- **Fix:** copy the argument into a new set before clearing.
+- **Verification:** both tests pass; `mvnw clean verify` is green.
+- **Prevention rule:** a method that replaces an owned collection from a parameter must copy the parameter first.
+- **Status:** fixed.
+
+## 11. Several test-only mistakes caught on the first run
+
+- `ReferenceDataFileTest` threw `NullPointerException`: records bound from JSON leave omitted lists `null`. Fixed by normalising them to empty lists in a compact constructor of `ReferenceData.ProgramData`.
+- `ProgramControllerTest` expected 400 for a 133-character identifier but the limit is 245. The test, not the code, was wrong; it now uses 250 characters.
+- `ProgramSchemaConstraintsIT` helper inserted the program into every university, so a second university hit `uq_program_university_slug`. The helper now targets one university.
+- **Prevention rule:** run new tests before assuming the failure is in production code; keep expected limits next to the constraints they test.
+- **Status:** fixed.
+
+## 12. A speculative index was measured as unused
+
+- **Evidence:** with 20,008 programs, `pg_stat_user_indexes` showed `idx_program_name_lower` at 0 scans and `EXPLAIN ANALYZE` showed a sequential scan for `lower(name) LIKE '%x%'`.
+- **Root cause:** a btree on `lower(name)` cannot serve a leading-wildcard search; I added it in V2 without measuring.
+- **Fix:** `V3__drop_unused_program_name_index.sql` (V2 was already applied locally and is immutable). No trigram index was added because 5.5 ms does not justify it.
+- **Verification:** `FlywayMigrationIT` asserts the index is gone; the live app migrated V2 to V3 cleanly.
+- **Prevention rule:** add an index only after `EXPLAIN` shows it is used for the real query shape.
+- **Status:** fixed.
+
+## 13. Some official pages could not be fetched
+
+- **Evidence:** automated requests to the Helsinki Economics and Data Science admissions pages returned HTTP 403; guessed ETH Zurich and TU Delft URLs returned 404 or lacked the facts; the Oxford page returned 403.
+- **Root cause:** bot blocking and URL guesses.
+- **Fix:** those programs were not added (ETH, TU Delft, Oxford) or were added without an application URL (Helsinki Economics and Data Science). No fact was taken from search snippets or memory.
+- **Prevention rule:** record a fact only from a page that was actually read; omit the application URL when the apply page was not read.
+- **Status:** fixed (limitation recorded in known issue 14).

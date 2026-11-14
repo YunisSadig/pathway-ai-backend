@@ -37,11 +37,16 @@ public class UniversityMapper {
     }
 
     private ProgramSummaryResponse toProgramSummary(DegreeProgram program) {
+        // The normalised academic field wins; the legacy free-text column is only a fallback.
+        String field = program.getAcademicField() != null
+                ? program.getAcademicField().getName()
+                : program.getFieldOfStudy();
         return new ProgramSummaryResponse(
+                program.getIdentifier(),
                 program.getSlug(),
                 program.getName(),
                 program.getDegreeLevel(),
-                program.getFieldOfStudy(),
+                field,
                 program.getDurationMonths(),
                 program.getTeachingLanguage());
     }
