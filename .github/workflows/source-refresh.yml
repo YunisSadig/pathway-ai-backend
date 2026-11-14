@@ -64,7 +64,7 @@ jobs:
           java-version: 21
           cache: maven
       # no database secret is present in this step: the build runs repository and plugin code
-      - run: ./mvnw -B -q package -DskipTests
+      - run: chmod +x mvnw && ./mvnw -B -q package -DskipTests
 
       - name: Choose the mode
         id: mode
