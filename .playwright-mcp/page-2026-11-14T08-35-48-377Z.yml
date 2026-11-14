@@ -1,0 +1,433 @@
+- generic [ref=e3]:
+  - link "Siirry sisältöön" [ref=e5] [cursor=pointer]:
+    - /url: /konfo/fi/sivu/opintopolku-fi-rajapinnat#app-main-content
+  - generic [ref=e8]:
+    - generic [ref=e9]:
+      - heading "Tietoa sivustolla käytetyistä evästeistä" [level=4] [ref=e10]
+      - paragraph [ref=e11]: Käytämme sivustollamme evästeitä kerätäksemme ja analysoidaksemme sivuston suorituskykyä ja käyttöä sekä parantaaksemme Opintopolun sisältöjä.
+    - generic [ref=e12]:
+      - button "Evästeasetukset" [ref=e13] [cursor=pointer]
+      - group [ref=e14]:
+        - button "Salli vain välttämättömät evästeet" [ref=e15] [cursor=pointer]
+        - button "Salli kaikki evästeet" [ref=e16] [cursor=pointer]
+  - generic [ref=e17]:
+    - banner [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - button "Avaa tai sulje valikko" [ref=e21] [cursor=pointer]:
+            - paragraph [ref=e26]: Valikko
+          - link "Siirry Opintopolun etusivulle" [ref=e27] [cursor=pointer]:
+            - /url: /konfo/fi/
+        - link "Oma Opintopolku" [ref=e64] [cursor=pointer]:
+          - /url: https://opintopolku.fi/oma-opintopolku
+        - button "Valitse kieli, tämän sivun kieli on suomi" [ref=e70] [cursor=pointer]:
+          - paragraph [aria-hidden] [ref=e76]: Suomi
+    - generic [ref=e81]:
+      - main [ref=e82]:
+        - generic [ref=e84]:
+          - text: Etsi koulutuksia tai oppilaitoksia...
+          - generic [ref=e86]:
+            - status [ref=e87]
+            - generic [ref=e88]: Hakuehdotuksen valitseminen avaa koulutuksen tai oppilaitoksen sivun. Hakusanan syöttämisen jälkeen Enter tai Hae-napin painaminen avaa hakutulosivun.
+            - generic "Syötä ainakin kolme merkkiä" [ref=e89]:
+              - combobox "Etsi koulutuksia tai oppilaitoksia..." [ref=e91]
+            - button "Hae" [ref=e92] [cursor=pointer]
+          - link "En tiedä mitä haluaisin opiskella" [ref=e97] [cursor=pointer]:
+            - /url: /konfo/fi/ohjaava-haku
+        - generic [ref=e98]:
+          - generic [ref=e100]:
+            - navigation "Murupolku" [ref=e101]:
+              - list [ref=e102]:
+                - listitem [ref=e103]:
+                  - link "Etusivu" [ref=e105] [cursor=pointer]:
+                    - /url: /konfo/fi/
+                - listitem [ref=e109]:
+                  - generic [ref=e110]: Ohjeet ja tuki
+                - listitem [ref=e114]:
+                  - generic [ref=e115]: Ohjeita ohjelmistokehittäjille
+                - listitem [ref=e119]:
+                  - generic [ref=e120]: Koulutustarjonnan ja...
+                - listitem [ref=e124]:
+                  - generic [ref=e125]: Opintopolku.fi rajapinnat
+            - heading "Opintopolku.fi rajapinnat" [level=1] [ref=e129]
+            - paragraph
+          - generic [ref=e130]:
+            - generic [ref=e132]:
+              - 'link "Ankkurilinkki: Rajapinnat" [ref=e133] [cursor=pointer]':
+                - /url: /konfo/fi/sivu/opintopolku-fi-rajapinnat#rajapinnat
+                - text: Rajapinnat
+              - 'link "Ankkurilinkki: Rajapintojen tarkemmat kuvaukset" [ref=e134] [cursor=pointer]':
+                - /url: /konfo/fi/sivu/opintopolku-fi-rajapinnat#rajapintojen-tarkemmat-kuvaukset
+                - text: Rajapintojen tarkemmat kuvaukset
+              - 'link "Ankkurilinkki: Käytetyt koodistot" [ref=e135] [cursor=pointer]':
+                - /url: /konfo/fi/sivu/opintopolku-fi-rajapinnat#kaytetyt-koodistot
+                - text: Käytetyt koodistot
+              - 'link "Ankkurilinkki: Esimerkkitoteutuksia" [ref=e136] [cursor=pointer]':
+                - /url: /konfo/fi/sivu/opintopolku-fi-rajapinnat#esimerkkitoteutuksia
+                - text: Esimerkkitoteutuksia
+            - generic [ref=e140]:
+              - generic [ref=e141]: Opintopolku.fi:ssä julkaistua koulutustarjontaa on mahdollista hakea esitettäväksi kolmannen osapuolen verkkopalveluun avoimen ulkoisen rajapinnan kautta. Julkaistu koulutustarjontadata on avointa dataa. Lisäksi on mahdollista käyttää rajapintojen kautta opintopolku.fi:n koulutushakua, sekä hakurajaimia.
+              - heading "Rajapinnat" [level=2] [ref=e142]
+              - strong [ref=e144]: "Huom! Automaattisesti päivittyvän rajapintadokumentaation löydät alla olevista linkeistä!):"
+              - list [ref=e145]:
+                - listitem [ref=e146]:
+                  - link "Rajapinnan redoc-kuvaus (avautuu-uuteen-valilehteen)" [ref=e147] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/redoc/index.html#tag/External
+                    - text: Rajapinnan redoc-kuvaus
+                    - generic [ref=e148]: (avautuu-uuteen-valilehteen)
+                  - text: (Redocissa voi tarkastella rajapintojen tietomallia jossa se on paremmin visualisoitu kuin swaggerissä.)
+                - listitem [ref=e152]:
+                  - link "Rajapinnan swagger-kuvaus (avautuu-uuteen-valilehteen)" [ref=e153] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/swagger/index.html#/External
+                    - text: Rajapinnan swagger-kuvaus
+                    - generic [ref=e154]: (avautuu-uuteen-valilehteen)
+                  - text: (Swaggerillä voi käyttöliittymän kautta tehdä pyyntöjä palveluun ja tarkastella rajapintojen tietomallia.)
+              - heading "Rajapintojen tarkemmat kuvaukset" [level=2] [ref=e158]
+              - heading "Tietojen hakurajapinnat" [level=3] [ref=e159]
+              - generic [ref=e160]: Alla olevilla rajapinnoilla voit hakea yksittäisten koulutusten, toteutusten, hakukohteiden ja hakujen tietoja
+              - 'heading "GET: /external/koulutus/{oid}" [level=4] [ref=e161]'
+              - generic [ref=e162]: Hae koulutuksen ja tarvittaessa siihen liittyvien toteutusten ja hakujen tiedot. Hakuparametreinä pakollisena on koulutuksen oid ja valinnaisina tiedot linkityksistä muihin koulutustarjontaelementteihin.
+              - generic [ref=e163]: "Rajapintakuvaukset:"
+              - list [ref=e164]:
+                - listitem [ref=e165]:
+                  - link "Swagger (avautuu-uuteen-valilehteen)" [ref=e166] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/swagger/index.html#/External/Hae%20koulutus
+                    - text: Swagger
+                    - generic [ref=e167]: (avautuu-uuteen-valilehteen)
+                - listitem [ref=e171]:
+                  - link "Redoc (avautuu-uuteen-valilehteen)" [ref=e172] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/redoc/index.html#tag/External/operation/Hae%20koulutus
+                    - text: Redoc
+                    - generic [ref=e173]: (avautuu-uuteen-valilehteen)
+              - 'heading "GET: /external/toteutus/{oid}" [level=4] [ref=e177]'
+              - generic [ref=e178]: Hae toteutuksen ja tarvittaessa siihen liittyvien hakukohteiden ja koulutusten tiedot. Hakuparametreinä pakollisena on toteutuksen oid ja valinnaisina tiedot tiedot linkityksistä muihin koulutustarjontaelementteihin.
+              - generic [ref=e179]: "Rajapintakuvaukset:"
+              - list [ref=e180]:
+                - listitem [ref=e181]:
+                  - link "Swagger (avautuu-uuteen-valilehteen)" [ref=e182] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/swagger/index.html#/External/Hae%20toteutus
+                    - text: Swagger
+                    - generic [ref=e183]: (avautuu-uuteen-valilehteen)
+                - listitem [ref=e187]:
+                  - link "Redoc (avautuu-uuteen-valilehteen)" [ref=e188] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/redoc/index.html#tag/External/operation/Hae%20toteutus
+                    - text: Redoc
+                    - generic [ref=e189]: (avautuu-uuteen-valilehteen)
+              - 'heading "GET: /external/hakukohde/{oid}" [level=4] [ref=e193]'
+              - generic [ref=e194]: Hae hakukohteen ja tarvittaessa siihen liittyvien hakujen ja koulutusten tiedot. Hakuparametreinä pakollisena on hakukohteen oid ja valinnaisina tiedot tiedot linkityksistä muihin koulutustarjontaelementteihin.
+              - generic [ref=e195]: "Rajapintakuvaukset:"
+              - list [ref=e196]:
+                - listitem [ref=e197]:
+                  - link "Swagger (avautuu-uuteen-valilehteen)" [ref=e198] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/swagger/index.html#/External/Hae%20hakukohde
+                    - text: Swagger
+                    - generic [ref=e199]: (avautuu-uuteen-valilehteen)
+                - listitem [ref=e203]:
+                  - link "Redoc (avautuu-uuteen-valilehteen)" [ref=e204] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/redoc/index.html#tag/External/operation/Hae%20hakukohde
+                    - text: Redoc
+                    - generic [ref=e205]: (avautuu-uuteen-valilehteen)
+              - 'heading "GET: /external/haku/{oid}" [level=4] [ref=e209]'
+              - generic [ref=e210]: Hae haun ja tarvittaessa siihen liittyvien hakukohteiden, koulutusten ja toteutusten tiedot. Hakuparametreinä pakollisena on haun oid ja valinnaisina tiedot tiedot linkityksistä muihin koulutustarjontaelementteihin.
+              - generic [ref=e211]: "Rajapintakuvaukset:"
+              - list [ref=e212]:
+                - listitem [ref=e213]:
+                  - link "Swagger (avautuu-uuteen-valilehteen)" [ref=e214] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/swagger/index.html#/External/Hae%20haku
+                    - text: Swagger
+                    - generic [ref=e215]: (avautuu-uuteen-valilehteen)
+                - listitem [ref=e219]:
+                  - link "Redoc (avautuu-uuteen-valilehteen)" [ref=e220] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/redoc/index.html#tag/External/operation/Hae%20haku
+                    - text: Redoc
+                    - generic [ref=e221]: (avautuu-uuteen-valilehteen)
+              - heading "Tietojen etsimisrajapinnat" [level=3] [ref=e225]
+              - generic [ref=e226]: Alla olevilla rajapinnoilla voit hakea hakusuodattimet sekä etsiä niiden avulla koulutuksia ja toteutuksia
+              - 'heading "GET: /external/search/oppilaitos/{oid}/tarjonta" [level=4] [ref=e227]'
+              - generic [ref=e228]: Hakee tietyn oppilaitoksen tarjonnan
+              - list [ref=e229]:
+                - listitem [ref=e230]:
+                  - link "Swagger (avautuu-uuteen-valilehteen)" [ref=e231] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/swagger/index.html#/External/get_external_search_oppilaitos__oid__tarjonta
+                    - text: Swagger
+                    - generic [ref=e232]: (avautuu-uuteen-valilehteen)
+                - listitem [ref=e236]:
+                  - link "Redoc (avautuu-uuteen-valilehteen)" [ref=e237] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/redoc/index.html#tag/External/paths/~1external~1search~1oppilaitos~1%7Boid%7D~1tarjonta/get
+                    - text: Redoc
+                    - generic [ref=e238]: (avautuu-uuteen-valilehteen)
+              - 'heading "GET: /external/search/toteutukset-koulutuksittain" [level=4] [ref=e242]'
+              - generic [ref=e243]: Hakee toteutuksia koulutuksittain jaoteltuna annetulla hakusanalla
+              - list [ref=e244]:
+                - listitem [ref=e245]:
+                  - link "Swagger (avautuu-uuteen-valilehteen)" [ref=e246] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/swagger/index.html#/External/get_external_search_toteutukset_koulutuksittain
+                    - text: Swagger
+                    - generic [ref=e247]: (avautuu-uuteen-valilehteen)
+                - listitem [ref=e251]:
+                  - link "Redoc (avautuu-uuteen-valilehteen)" [ref=e252] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/redoc/index.html#tag/External/paths/~1external~1search~1toteutukset-koulutuksittain/get
+                    - text: Redoc
+                    - generic [ref=e253]: (avautuu-uuteen-valilehteen)
+              - 'heading "GET: /external/search/filters" [level=4] [ref=e257]'
+              - generic [ref=e258]: Palauttaa kaikkien käytössä olevien hakurajainten koodit ja nimet.
+              - list [ref=e259]:
+                - listitem [ref=e260]:
+                  - link "Swagger (avautuu-uuteen-valilehteen)" [ref=e261] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/swagger/index.html#/External/get_external_search_filters
+                    - text: Swagger
+                    - generic [ref=e262]: (avautuu-uuteen-valilehteen)
+                - listitem [ref=e266]:
+                  - link "Redoc (avautuu-uuteen-valilehteen)" [ref=e267] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/redoc/index.html#tag/External/paths/~1external~1search~1filters/get
+                    - text: Redoc
+                    - generic [ref=e268]: (avautuu-uuteen-valilehteen)
+              - heading [level=4] [ref=e272]:
+                - text: "GET: /external/search/filters"
+                - emphasis [ref=e273]: as
+                - text: array
+              - generic [ref=e274]: Palauttaa kaikkien käytössä olevien hakurajainten koodit ja nimet taulukkomuodossa.
+              - list [ref=e275]:
+                - listitem [ref=e276]:
+                  - link "Swagger (avautuu-uuteen-valilehteen)" [ref=e277] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/swagger/index.html#/External/get_external_search_filters_as_array
+                    - text: Swagger
+                    - generic [ref=e278]: (avautuu-uuteen-valilehteen)
+                - listitem [ref=e282]:
+                  - link "Redoc (avautuu-uuteen-valilehteen)" [ref=e283] [cursor=pointer]:
+                    - /url: https://opintopolku.fi/konfo-backend/redoc/index.html#tag/External/paths/~1external~1search~1filters_as_array/get
+                    - text: Redoc
+                    - generic [ref=e284]: (avautuu-uuteen-valilehteen)
+              - heading "Käytetyt koodistot" [level=2] [ref=e288]
+              - heading "Koulutustyyppi" [level=3] [ref=e289]
+              - generic [ref=e290]: "Koulutustyyppi-arvot ovat kovakoodattuja, alla niiden selitteet:"
+              - table [ref=e291]:
+                - rowgroup [ref=e292]:
+                  - row [ref=e293]:
+                    - columnheader "Koodi" [ref=e294]
+                    - columnheader "Selite" [ref=e295]
+                    - columnheader "Tutkintoon johtavaa?" [ref=e296]
+                - rowgroup [ref=e297]:
+                  - row [ref=e298]:
+                    - cell [ref=e299]:
+                      - code [ref=e300]: aikuisten-perusopetus
+                    - cell "Aikuisten perusopetus" [ref=e301]
+                    - cell "ei" [ref=e302]
+                  - row [ref=e303]:
+                    - cell [ref=e304]:
+                      - code [ref=e305]: amk
+                    - cell "Ammattikorkeakoulututkinnot" [ref=e306]
+                    - cell "kyllä" [ref=e307]
+                  - row [ref=e308]:
+                    - cell [ref=e309]:
+                      - code [ref=e310]: amm
+                    - cell "Ammatilliset tutkinnot" [ref=e311]
+                    - cell "kyllä" [ref=e312]
+                  - row [ref=e313]:
+                    - cell [ref=e314]:
+                      - code [ref=e315]: amm-muu
+                    - cell "Muu ammatillinen koulutus" [ref=e316]
+                    - cell "ei" [ref=e317]
+                  - row [ref=e318]:
+                    - cell [ref=e319]:
+                      - code [ref=e320]: amm-ope-erityisope-ja-opo
+                    - cell "Ammatillinen opettaja-, erityisopettajan- ja opinto-ohjaajankoulutus" [ref=e321]
+                    - cell "ei" [ref=e322]
+                  - row [ref=e323]:
+                    - cell [ref=e324]:
+                      - code [ref=e325]: amm-osaamisala
+                    - cell "Ammatillisen osaamisala" [ref=e326]
+                    - cell "ei" [ref=e327]
+                  - row [ref=e328]:
+                    - cell [ref=e329]:
+                      - code [ref=e330]: amm-tutkinnon-osa
+                    - cell "Ammatillisen tutkinnon osa" [ref=e331]
+                    - cell "ei" [ref=e332]
+                  - row [ref=e333]:
+                    - cell [ref=e334]:
+                      - code [ref=e335]: ope-pedag-opinnot
+                    - cell "Opettajien pedagogiset opinnot" [ref=e336]
+                    - cell "ei" [ref=e337]
+                  - row [ref=e338]:
+                    - cell [ref=e339]:
+                      - code [ref=e340]: erikoislaakari
+                    - cell "Erikoislääkäri, -hammaslääkäri ja -eläinlääkärikoulutukset" [ref=e341]
+                    - cell "ei" [ref=e342]
+                  - row [ref=e343]:
+                    - cell [ref=e344]:
+                      - code [ref=e345]: kk-opintojakso
+                    - cell "Korkeakoulujen opintojakso (ml. avoin)" [ref=e346]
+                    - cell "ei" [ref=e347]
+                  - row [ref=e348]:
+                    - cell [ref=e349]:
+                      - code [ref=e350]: kk-opintokokonaisuus
+                    - cell "Korkekaoulujen opintokokonaisuus (ml. avoin)" [ref=e351]
+                    - cell "ei" [ref=e352]
+                  - row [ref=e353]:
+                    - cell [ref=e354]:
+                      - code [ref=e355]: erikoistumiskoulutus
+                    - cell "Korkeakoulujen erikoistumiskoulutukset" [ref=e356]
+                    - cell "ei" [ref=e357]
+                  - row [ref=e358]:
+                    - cell [ref=e359]:
+                      - code [ref=e360]: lk
+                    - cell "Lukiokoulutukset" [ref=e361]
+                    - cell "kyllä" [ref=e362]
+                  - row [ref=e363]:
+                    - cell [ref=e364]:
+                      - code [ref=e365]: muu
+                    - cell "Muut koulutukset" [ref=e366]
+                    - cell "ei" [ref=e367]
+                  - row [ref=e368]:
+                    - cell [ref=e369]:
+                      - code [ref=e370]: taiteen-perusopetus
+                    - cell "Taiteen perusopetus" [ref=e371]
+                    - cell "ei" [ref=e372]
+                  - row [ref=e373]:
+                    - cell [ref=e374]:
+                      - code [ref=e375]: telma
+                    - cell "Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)" [ref=e376]
+                    - cell "ei" [ref=e377]
+                  - row [ref=e378]:
+                    - cell [ref=e379]:
+                      - code [ref=e380]: tuva
+                    - cell "Tutkintokoulutukseen valmentava koulutus (TUVA)" [ref=e381]
+                    - cell "ei" [ref=e382]
+                  - row [ref=e383]:
+                    - cell [ref=e384]:
+                      - code [ref=e385]: vapaa-sivistystyo-muu
+                    - cell "Muut vapaan sivistystyön koulutukset" [ref=e386]
+                    - cell "ei" [ref=e387]
+                  - row [ref=e388]:
+                    - cell [ref=e389]:
+                      - code [ref=e390]: vapaa-sivistystyo-opistovuosi
+                    - cell "Opistovuosi oppivelvollisille" [ref=e391]
+                    - cell "ei" [ref=e392]
+                  - row [ref=e393]:
+                    - cell [ref=e394]:
+                      - code [ref=e395]: vapaa-sivistystyo-osaamismerkki
+                    - cell "Kansalliset perustaitojen osaamismerkit" [ref=e396]
+                    - cell "ei" [ref=e397]
+                  - row [ref=e398]:
+                    - cell [ref=e399]:
+                      - code [ref=e400]: yo
+                    - cell "Yliopistotutkinnot" [ref=e401]
+                    - cell "kyllä" [ref=e402]
+              - generic [ref=e403]:
+                - text: "Koodiarvoille löytyy myös tarkemmat selitteet koodistopalvelusta:"
+                - link "koulutustyyppi (avautuu-uuteen-valilehteen)" [ref=e404] [cursor=pointer]:
+                  - /url: https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/koulutustyyppikouta/latest?kieli=fi
+                  - text: koulutustyyppi
+                  - generic [ref=e405]: (avautuu-uuteen-valilehteen)
+              - heading "Koodistopalvelun koodistot" [level=3] [ref=e409]
+              - generic [ref=e410]:
+                - text: "Viittaus koodistoihin tapahtuu seuraavasti:"
+                - code [ref=e411]: koodistouri_koodiarvo
+              - generic [ref=e412]: "Esimerkiksi:"
+              - generic [ref=e413]:
+                - text: "Koulutusala, taso 2: Biologia ja lääketieteet ="
+                - code [ref=e414]: kansallinenkoulutusluokitus2016koulutusalataso2_051
+              - heading "Sijainti" [level=4] [ref=e415]
+              - list [ref=e416]:
+                - listitem [ref=e417]:
+                  - link "Kunta (kunta) (avautuu-uuteen-valilehteen)" [ref=e418] [cursor=pointer]:
+                    - /url: https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/kunta/latest?kieli=fi
+                    - text: Kunta (kunta)
+                    - generic [ref=e419]: (avautuu-uuteen-valilehteen)
+                - listitem [ref=e423]:
+                  - link "Maakunta (maakunta) (avautuu-uuteen-valilehteen)" [ref=e424] [cursor=pointer]:
+                    - /url: https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/maakunta/latest?kieli=fi
+                    - text: Maakunta (maakunta)
+                    - generic [ref=e425]: (avautuu-uuteen-valilehteen)
+              - heading "Opetuskieli" [level=4] [ref=e429]
+              - list [ref=e430]:
+                - listitem [ref=e431]:
+                  - link "Opetuskieli (oppilaitoksenopetuskieli) (avautuu-uuteen-valilehteen)" [ref=e432] [cursor=pointer]:
+                    - /url: https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/oppilaitoksenopetuskieli/latest?kieli=fi
+                    - text: Opetuskieli (oppilaitoksenopetuskieli)
+                    - generic [ref=e433]: (avautuu-uuteen-valilehteen)
+              - heading "Koulutusala" [level=4] [ref=e437]
+              - list [ref=e438]:
+                - listitem [ref=e439]:
+                  - link "Koulutusala, taso 1 (kansallinenkoulutusluokitus2016koulutusalataso1) (avautuu-uuteen-valilehteen)" [ref=e440] [cursor=pointer]:
+                    - /url: https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/kansallinenkoulutusluokitus2016koulutusalataso1/latest?kieli=fi
+                    - text: Koulutusala, taso 1 (kansallinenkoulutusluokitus2016koulutusalataso1)
+                    - generic [ref=e441]: (avautuu-uuteen-valilehteen)
+                - listitem [ref=e445]:
+                  - link "Koulutusala, taso 2 (kansallinenkoulutusluokitus2016koulutusalataso2) (avautuu-uuteen-valilehteen)" [ref=e446] [cursor=pointer]:
+                    - /url: https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/kansallinenkoulutusluokitus2016koulutusalataso2/latest?kieli=fi
+                    - text: Koulutusala, taso 2 (kansallinenkoulutusluokitus2016koulutusalataso2)
+                    - generic [ref=e447]: (avautuu-uuteen-valilehteen)
+              - heading "Opetustapa" [level=4] [ref=e451]
+              - list [ref=e452]:
+                - listitem [ref=e453]:
+                  - link "Opetustapa (opetuspaikkakk) (avautuu-uuteen-valilehteen)" [ref=e454] [cursor=pointer]:
+                    - /url: https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/opetuspaikkakk/latest?kieli=fi
+                    - text: Opetustapa (opetuspaikkakk)
+                    - generic [ref=e455]: (avautuu-uuteen-valilehteen)
+              - heading "Valintatapa" [level=4] [ref=e459]
+              - list [ref=e460]:
+                - listitem [ref=e461]:
+                  - link "Valintatapa (valintatapajono) (avautuu-uuteen-valilehteen)" [ref=e462] [cursor=pointer]:
+                    - /url: https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/valintatapajono/latest?kieli=fi
+                    - text: Valintatapa (valintatapajono)
+                    - generic [ref=e463]: (avautuu-uuteen-valilehteen)
+              - heading "Hakutapa" [level=4] [ref=e467]
+              - list [ref=e468]:
+                - listitem [ref=e469]:
+                  - link "Hakutapa (hakutapa) (avautuu-uuteen-valilehteen)" [ref=e470] [cursor=pointer]:
+                    - /url: https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/hakutapa/latest?kieli=fi
+                    - text: Hakutapa (hakutapa)
+                    - generic [ref=e471]: (avautuu-uuteen-valilehteen)
+              - heading "Pohjakoulutusvaatimus" [level=4] [ref=e475]
+              - list [ref=e476]:
+                - listitem [ref=e477]:
+                  - link "Pohjakoulutusvaatimus (pohjakoulutusvaatimuskonfo) (avautuu-uuteen-valilehteen)" [ref=e478] [cursor=pointer]:
+                    - /url: https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/pohjakoulutusvaatimuskonfo/latest?kieli=fi
+                    - text: Pohjakoulutusvaatimus (pohjakoulutusvaatimuskonfo)
+                    - generic [ref=e479]: (avautuu-uuteen-valilehteen)
+              - heading "Esimerkkitoteutuksia" [level=2] [ref=e483]
+              - list [ref=e484]:
+                - listitem [ref=e485]:
+                  - link "Osaamispolku - Ohjaajan osio - ohjaajille sopivat ammatillisen kehittymisen koulutukset (avautuu-uuteen-valilehteen)" [ref=e486] [cursor=pointer]:
+                    - /url: https://osaamispolku.fi/ohjaaja/fi/ammatillinen-kehittyminen/ohjausalan-koulutukset
+                    - text: Osaamispolku - Ohjaajan osio - ohjaajille sopivat ammatillisen kehittymisen koulutukset
+                    - generic [ref=e487]: (avautuu-uuteen-valilehteen)
+                  - text: Osaamispolun ohjaajan osioon haetaan julkisesta koulutustarjonnasta koulutuksen järjestäjien erikseen merkitsemät ohjaajille sopivat koulutukset.
+        - generic [ref=e492]:
+          - heading "Ohjeet ja tuki" [level=2] [ref=e493]
+          - generic [ref=e494]:
+            - generic [ref=e496] [cursor=pointer]:
+              - heading "Neuvonta ja ohjaus" [level=3] [ref=e501]
+              - generic [ref=e502]: Löydä kootusti koulutuksen ja ammatin valintaan liittyvien ohjaus- ja neuvontapalveluiden yhteystietoja.
+            - generic [ref=e505] [cursor=pointer]:
+              - heading "Kysytyimmät kysymykset" [level=3] [ref=e510]
+              - generic [ref=e511]: Löydä vastaukset opiskelijoiden useimmin kysyttyihin kysymyksiin kätevästi yhdestä paikasta.
+            - generic [ref=e514] [cursor=pointer]:
+              - heading "Opinto-ohjaajille" [level=3] [ref=e519]
+              - generic [ref=e520]: Opinto-ohjaajan työkalupakista löydät ohjauksen tueksi tarvittavaa materiaalia.
+      - contentinfo [ref=e522]:
+        - generic [ref=e523]:
+          - navigation "Alatunnisteen valikko." [ref=e527]:
+            - generic [ref=e528]:
+              - generic [ref=e531]:
+                - generic [ref=e532]: Opintopolku sisältää tietoa tutkinnoista, ammateista sekä opiskelusta eri oppilaitoksissa. Sen kautta voi sekä löytää koulutusvaihtoehtoja että hakea niihin.
+                - link "Mikä on Opintopolku?" [ref=e534] [cursor=pointer]:
+                  - /url: https://opintopolku.fi/konfo/fi/sivu/mika-on-opintopolku
+                - link "Opintopolun yhteystiedot" [ref=e536] [cursor=pointer]:
+                  - /url: https://opintopolku.fi/konfo/fi/sivu/yhteystiedot
+              - generic [ref=e539]:
+                - link "Tietosuojaselosteet ja evästeet" [ref=e541] [cursor=pointer]:
+                  - /url: /konfo/fi/sivu/tietosuojaselosteet-ja-evasteet
+                - link "Saavutettavuusselosteet" [ref=e543] [cursor=pointer]:
+                  - /url: https://opintopolku.fi/konfo/fi/sivu/saavutettavuusselosteet
+                - generic [ref=e544]:
+                  - img "Selkeästi meille tunnus" [ref=e546]
+                  - link "Siirry Selkeästi meille -hankkeen sivuille" [ref=e547] [cursor=pointer]:
+                    - /url: https://www.selkeastimeille.fi/
+              - generic [ref=e550]:
+                - img "Sinun Eurooppasi -tunnuksessa on sinisellä pohjalla EU:n tähtilogo ja teksti Your Europe." [ref=e552]
+                - text: Tämä verkkopalvelu on osa Euroopan komission portaalia Your Europe. Löysitkö etsimäsi?
+                - link "Anna palautetta" [ref=e553] [cursor=pointer]:
+                  - /url: https://foq.youreurope.europa.eu/info-service-noft?lang=fi
+          - generic [ref=e557]: Opintopolku-portaalia ylläpitää Opetushallitus. Koulutuksen järjestäjät ja korkeakoulut ylläpitävät tietoja koulutuksistaan Opintopolku.fi-palvelussa. Tietojen oikeellisuuden voit tarkistaa kyseisestä oppilaitoksesta tai korkeakoulusta.

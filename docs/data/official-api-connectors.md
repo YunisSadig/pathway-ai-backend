@@ -20,22 +20,27 @@ Boundaries (all enforced in code, not by convention): https, host `opintopolku.f
 `Crawl-delay: 30` (the fetcher now honours `Crawl-delay` for every host, capped at 60 s), robots.txt, size cap,
 bounded retries, 429/Retry-After handling. A program costs one request, so 30 programs take roughly 15 minutes.
 
-**Open point: licence (unresolved; a publicly reachable API is not a licence).** The provider's code is EUPL-1.2. Searches of the Agency's own pages found **no
-statement of the licence or terms of use of the Studyinfo data or of its external API**; the Agency's site terms only
-say that using the site means accepting them. Until the Agency confirms in writing: treat the data as *not licensed
-for republication*; use it for the internal catalogue and refresh only; do not republish the provider's free text
-(none is read or stored); keep attribution to Opetushallitus (stored as the source publisher of every record); do not
-build a commercial offer that depends on bulk redistribution of this data. Ask the Agency (Opintopolku / konfo-backend
-maintainers) which licence covers `/konfo-backend/external/*` before public launch.
+**Data-reuse position: partly documented, no licence named.** The Agency's own guidance page for API callers
+(<https://opintopolku.fi/konfo/fi/sivu/opintopolku-fi-rajapinnat>, linked from the API's OpenAPI description, read
+2026-11-14) says, in Finnish: *"Opintopolku.fi:ssä julkaistua koulutustarjontaa on mahdollista hakea esitettäväksi
+kolmannen osapuolen verkkopalveluun avoimen ulkoisen rajapinnan kautta. Julkaistu koulutustarjontadata on avointa
+dataa."* (Published education offerings can be fetched for display in a third-party web service through the open external
+API; the published offering data is open data.) The provider's README likewise calls the external API one "for services
+independent of OPH". The API's source and OpenAPI text carry the EUPL-1.2 notice, which covers the *code*.
 
-What was checked (2026-11-14): the provider's repositories (code licence only), OPH's Opintopolku service page (no API,
-reuse or licence statement; footer "© Opetushallitus 2026"), the national open-data portal searches (no dataset or
-licence for the course offering), and the API's own OpenAPI file (served empty). Public accessibility, the `external`
-name and an unauthenticated endpoint are **not** a grant of redistribution rights, and Finnish law also protects
-catalogues and databases made with substantial investment, so bulk redistribution needs the Agency's permission.
-**Restrictions to apply until then:** internal catalogue and refresh only; no mirror or bulk export of provider data;
-no provider free text; attribution kept; keep request volume at the published crawl delay; be ready to purge Studyinfo-
-sourced rows (they are identifiable by `program_external_id` and `program_field_provenance.mechanism = 'OFFICIAL_API'`).
+* **Established:** the intended use (fetching published offerings to display them in independent third-party services)
+  and that the Agency calls the data "open data".
+* **Not established:** a named data licence (for example CC BY 4.0) or attribution wording; permission to keep a persistent
+  synchronised copy beyond display, to build a derived dataset or to redistribute in bulk; rate limits beyond the published
+  `Crawl-delay: 30`; any stability guarantee; the position under Finnish catalogue/database protection. "Open data" without
+  a named licence is not a licence, and a publicly reachable API is not one either.
+* **Our use** (periodic reads of selected programs, shown in our own service with the source and attribution) is the closest fit
+  to the stated purpose. A public bulk export, a mirror, or re-offering the data as an API goes beyond it.
+* **Action:** ask the contact named in the API documentation (`palaute@opintopolku.fi`) to confirm in writing the licence name,
+  attribution wording, whether a persistent refreshed copy is allowed and any rate limits. Until then: keep attribution to
+  Opetushallitus (stored as each record's source publisher), no bulk redistribution, honour the crawl delay, store none of the
+  provider's free text, and keep the ability to purge Studyinfo-sourced rows (they are identifiable by `program_external_id`
+  and `program_field_provenance.mechanism = 'OFFICIAL_API'`).
 
 ### What it supplies, and how it is validated
 
@@ -117,7 +122,11 @@ group, **for the period it names** ("rights to study beginning on or after 1 Aug
 the EU, EEA and Switzerland in programmes taught in English. `AaltoTuitionAdapter` reads exactly those statements.
 
 * The audience sentence must be present, otherwise no fee is produced.
-* The period is the stated date, never derived from the day the page was read; no end date is invented.
+* The period is the stated date, never derived from the day the page was read; no end date is invented. A fee that states
+  only a start date is the current fee only until the source states a later start date that has arrived; after that the API
+  labels the earlier period `HISTORICAL` and the price filter ignores it (`TuitionSupersessionIT`). The 2025-08-01 start of
+  today's table is therefore never presented as proof of a specific 2026/27 fee: the response carries `effectiveFrom`, no
+  `effectiveTo`, the scope note quoting the page and the source's `retrievedOn`.
 * Only programs in the reviewed `aalto-fee-groups.json` (program, level, fee group, evidence page) get a fee; a
   program that is not listed keeps an unknown fee. The adapter never creates a program.
 * One page feeds several programs through `ScopedExtractionAdapter`; each program goes through the normal pipeline
