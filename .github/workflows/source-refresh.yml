@@ -1,11 +1,23 @@
-# TEMPLATE for unattended source monitoring. It does nothing until you opt in:
+# TEMPLATE for unattended source refresh (official APIs and monitored pages). It does nothing until you opt in:
 #   - it only runs when started by hand (workflow_dispatch);
 #   - the daily schedule below is commented out on purpose.
 #
 # To enable (needs your approval and a hosted PostgreSQL that this runner can reach; none is provisioned here):
 #   1. Add repository secrets DB_URL, DB_USERNAME, DB_PASSWORD for the hosted database.
-#   2. Uncomment the `schedule` block.
+#      Optional: ALERT_WEBHOOK_URL (a Slack/Teams-style incoming webhook) for a second alert channel.
+#   2. Run the schema once (the app applies Flyway on start) and seed with the operator commands in
+#      docs/data/official-api-connectors.md (catalogue, reference data, studyinfo-import).
+#   3. Uncomment the `schedule` block.
 # See docs/data/automated-refresh.md. The job is safe to run twice or late: due-ness is stored in the database.
+#
+# Failure handling:
+#   - a run is retried up to 3 times with growing pauses (database or network blips); a source that keeps failing is
+#     marked FAILING in the registry and shown in the report, it does not fail the job on its own;
+#   - the job fails (and alerts) when more than half of the checks failed or were blocked, or the app cannot run at all;
+#   - on failure a GitHub issue is opened (or commented on) and, if ALERT_WEBHOOK_URL is set, a webhook is called;
+#   - public discovery also protects itself: programs whose sources have not been read for 45 days are withheld and
+#     GET /api/v1/discovery/status says so, so point an external uptime check at that endpoint (state must not be
+#     STALE) as the alarm for "the scheduler itself stopped" (GitHub disables schedules after 60 days of repo silence).
 name: Source refresh
 
 on:
@@ -15,6 +27,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: source-refresh
@@ -23,7 +36,11 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
+    env:
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -32,21 +49,41 @@ jobs:
           java-version: 21
           cache: maven
       - run: ./mvnw -B -q package -DskipTests
-      - name: Check every source that is due
-        env:
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: >
-          java -jar target/pathway-ai-backend-0.0.1-SNAPSHOT.jar
-          --spring.main.web-application-type=none
-          --app.refresh.command=run
+      - name: Refresh every source that is due (3 attempts)
+        run: |
+          for attempt in 1 2 3; do
+            if java -jar target/pathway-ai-backend-0.0.1-SNAPSHOT.jar \
+                 --spring.main.web-application-type=none \
+                 --app.refresh.command=run \
+                 --app.refresh.fail-on-failures=true \
+                 --app.refresh.failure-ratio-threshold=0.5; then
+              exit 0
+            fi
+            echo "::warning::refresh attempt $attempt failed"
+            [ "$attempt" -lt 3 ] && sleep $((attempt * 300))
+          done
+          exit 1
       - name: Report
-        env:
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        if: always()
         run: >
           java -jar target/pathway-ai-backend-0.0.1-SNAPSHOT.jar
           --spring.main.web-application-type=none
           --app.refresh.command=report
+      - name: Alert on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Source refresh failed"
+          body="The scheduled source refresh failed after 3 attempts. Run: ${RUN_URL}"
+          existing=$(gh issue list --repo "${{ github.repository }}" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "${{ github.repository }}" --body "$body"
+          else
+            gh issue create --repo "${{ github.repository }}" --title "$title" --body "$body"
+          fi
+          if [ -n "$ALERT_WEBHOOK_URL" ]; then
+            curl -fsS -X POST -H 'Content-Type: application/json' -d "{\"text\":\"$title. $RUN_URL\"}" "$ALERT_WEBHOOK_URL" || true
+          fi

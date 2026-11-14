@@ -45,6 +45,10 @@ public class University {
     @Column(columnDefinition = "text")
     private String description;
 
+    /** Read-only: written by the catalogue importer, used only to decide public discovery, never returned in a DTO. */
+    @Column(name = "verification_status", insertable = false, updatable = false)
+    private String verificationStatus;
+
     @OneToMany(mappedBy = "university")
     private List<DegreeProgram> programs = new ArrayList<>();
 
@@ -92,6 +96,7 @@ public class University {
     public String getName() { return name; }
     public String getCity() { return city; }
     public String getWebsiteUrl() { return websiteUrl; }
+    public String getVerificationStatus() { return verificationStatus; }
     public String getDescription() { return description; }
     public List<DegreeProgram> getPrograms() { return programs; }
     public Instant getCreatedAt() { return createdAt; }

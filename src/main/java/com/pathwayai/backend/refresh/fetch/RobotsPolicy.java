@@ -26,7 +26,8 @@ public class RobotsPolicy {
         }
     }
 
-    private record Rules(List<String> allow, List<String> disallow, boolean disallowAll, Instant fetchedAt) {
+    private record Rules(List<String> allow, List<String> disallow, boolean disallowAll, Duration crawlDelay,
+                         Instant fetchedAt) {
     }
 
     private static final Duration TTL = Duration.ofHours(24);
@@ -72,14 +73,14 @@ public class RobotsPolicy {
             var response = transport.get(URI.create("https://" + host + "/robots.txt"),
                     Map.of("User-Agent", userAgent, "Accept", "text/plain"), timeout, maxBytes);
             if (response.status() >= 500 || response.status() == 429) {
-                return new Rules(List.of(), List.of(), true, now);
+                return new Rules(List.of(), List.of(), true, Duration.ZERO, now);
             }
             if (response.status() != 200 || response.tooLarge()) {
-                return new Rules(List.of(), List.of(), false, now); // no usable robots.txt: no restrictions
+                return new Rules(List.of(), List.of(), false, Duration.ZERO, now); // no usable robots.txt: no restrictions
             }
             return parse(new String(response.body(), StandardCharsets.UTF_8), now);
         } catch (IOException e) {
-            return new Rules(List.of(), List.of(), true, now);
+            return new Rules(List.of(), List.of(), true, Duration.ZERO, now);
         }
     }
 
@@ -87,6 +88,7 @@ public class RobotsPolicy {
         List<String> ownAllow = new ArrayList<>(), ownDisallow = new ArrayList<>();
         List<String> anyAllow = new ArrayList<>(), anyDisallow = new ArrayList<>();
         boolean sawOwn = false;
+        Duration ownDelay = null, anyDelay = null;
         List<String> agents = new ArrayList<>();
         boolean groupHasRules = false;
         for (String raw : text.split("\\R")) {
@@ -124,11 +126,44 @@ public class RobotsPolicy {
                         anyTarget.add(value);
                     }
                 }
+                case "crawl-delay" -> {
+                    groupHasRules = true;
+                    Duration d = parseDelay(value);
+                    if (d != null) {
+                        if (agents.contains(productToken)) {
+                            ownDelay = d;
+                            sawOwn = true;
+                        }
+                        if (agents.contains("*")) {
+                            anyDelay = d;
+                        }
+                    }
+                }
                 default -> {
                 }
             }
         }
-        return sawOwn ? new Rules(ownAllow, ownDisallow, false, now) : new Rules(anyAllow, anyDisallow, false, now);
+        return sawOwn ? new Rules(ownAllow, ownDisallow, false, ownDelay == null ? Duration.ZERO : ownDelay, now)
+                : new Rules(anyAllow, anyDisallow, false, anyDelay == null ? Duration.ZERO : anyDelay, now);
+    }
+
+    /** Crawl-delay is not part of RFC 9309 but widely published; it is honoured exactly as published. */
+    private static Duration parseDelay(String value) {
+        try {
+            double seconds = Double.parseDouble(value.trim());
+            if (seconds <= 0) {
+                return null;
+            }
+            return Duration.ofMillis((long) (seconds * 1000));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /** The Crawl-delay a host published (zero if none); valid once {@link #check} has loaded its robots.txt. */
+    public Duration crawlDelay(String host) {
+        Rules rules = cache.get(host.toLowerCase(Locale.ROOT));
+        return rules == null ? Duration.ZERO : rules.crawlDelay();
     }
 
     /** Length of the longest matching rule (supporting * and trailing $), or -1 if none matches. */

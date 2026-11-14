@@ -18,7 +18,12 @@ public record ExtractedFact(FactType type, String key, Map<String, String> value
         LANGUAGES,
         TUITION,
         DEADLINE,
-        REQUIREMENT
+        REQUIREMENT,
+        /** Identity and classification facts, read from an official API that states them explicitly. */
+        PROGRAM_NAME,
+        DEGREE_LEVEL,
+        ACADEMIC_FIELD,
+        CAMPUS_CITY
     }
 
     public ExtractedFact {

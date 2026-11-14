@@ -43,6 +43,8 @@ public class PageFetcher {
 
     private static final Set<String> TEXT_TYPES = Set.of("text/html", "application/xhtml+xml", "application/json",
             "application/ld+json", "application/vnd.api+json", "text/plain", "application/xml", "text/xml");
+    /** A published Crawl-delay above this is not waited for in-process and not shortened either: the host is not fetched. */
+    static final Duration MAX_CRAWL_DELAY = Duration.ofMinutes(5);
     private static final Pattern CHALLENGE = Pattern.compile(
             "(?i)<title[^>]*>\\s*(just a moment|attention required|one moment, please|access denied|please wait|"
                     + "checking your browser|are you a robot|verify you are human)");
@@ -81,6 +83,10 @@ public class PageFetcher {
                 if (!decision.allowed()) {
                     // an unreachable robots.txt is temporary: retry later, never mark the source unsupported for it
                     return Result.of(decision.temporary() ? Kind.FAILED : Kind.BLOCKED, 0, decision.reason(), ms(start));
+                }
+                if (robots.crawlDelay(uri.getHost()).compareTo(MAX_CRAWL_DELAY) > 0) {
+                    return Result.of(Kind.FAILED, 0, "robots.txt Crawl-delay of " + robots.crawlDelay(uri.getHost()).toSeconds()
+                            + " s exceeds the " + MAX_CRAWL_DELAY.toSeconds() + " s this crawler will wait; not fetched, never sped up", ms(start));
                 }
                 Result outcome = requestWithRetries(uri, hop == 0 ? etag : null, hop == 0 ? lastModified : null, start, redirect);
                 if (outcome != null) {
@@ -169,7 +175,12 @@ public class PageFetcher {
         Instant now = clock.instant();
         Instant last = lastRequestByHost.get(host);
         if (last != null) {
-            Duration wait = Duration.ofMillis(props.minHostIntervalMs()).minus(Duration.between(last, now));
+            Duration interval = Duration.ofMillis(props.minHostIntervalMs());
+            Duration published = robots.crawlDelay(host); // the host's own Crawl-delay, when it states one
+            if (published.compareTo(interval) > 0) {
+                interval = published;
+            }
+            Duration wait = interval.minus(Duration.between(last, now));
             if (!wait.isNegative() && !wait.isZero()) {
                 sleeper.sleep(wait);
             }

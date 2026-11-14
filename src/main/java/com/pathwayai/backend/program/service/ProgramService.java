@@ -1,5 +1,6 @@
 package com.pathwayai.backend.program.service;
 
+import com.pathwayai.backend.common.discovery.DiscoveryPolicy;
 import static com.pathwayai.backend.program.repository.ProgramSpecifications.atLevel;
 import static com.pathwayai.backend.program.repository.ProgramSpecifications.atUniversity;
 import static com.pathwayai.backend.program.repository.ProgramSpecifications.fetchAssociations;
@@ -22,6 +23,7 @@ import com.pathwayai.backend.program.repository.ProgramIntakeRepository;
 import com.pathwayai.backend.requirement.repository.AcademicRequirementRepository;
 import com.pathwayai.backend.tuition.repository.TuitionFeeRepository;
 import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,10 +38,20 @@ public class ProgramService {
     private final AcademicRequirementRepository requirements;
     private final ProgramMapper mapper;
     private final AcademicCalendar calendar;
+    private final DiscoveryPolicy discovery;
 
+    /** Without a discovery restriction (hand-built services in unit tests). */
     public ProgramService(DegreeProgramRepository programs, ProgramIntakeRepository intakes,
                           TuitionFeeRepository tuitionFees, AcademicRequirementRepository requirements,
                           ProgramMapper mapper, AcademicCalendar calendar) {
+        this(programs, intakes, tuitionFees, requirements, mapper, calendar, DiscoveryPolicy.openToAll());
+    }
+
+    @Autowired
+    public ProgramService(DegreeProgramRepository programs, ProgramIntakeRepository intakes,
+                          TuitionFeeRepository tuitionFees, AcademicRequirementRepository requirements,
+                          ProgramMapper mapper, AcademicCalendar calendar, DiscoveryPolicy discovery) {
+        this.discovery = discovery;
         this.calendar = calendar;
         this.programs = programs;
         this.intakes = intakes;
@@ -67,6 +79,7 @@ public class ProgramService {
                 .and(inCountry(c.countryCode()))
                 .and(atUniversity(c.universitySlug()))
                 .and(taughtIn(c.languageCode()))
+                .and(discovery.programs())
                 .and(tuitionAtMost(c.tuitionMax(), c.tuitionCurrency(), c.tuitionCategory(),
                         calendar.currentStartYear(), calendar.today()));
         return PageResponse.from(programs.findAll(spec, pageable), mapper::toListItem);
@@ -82,6 +95,10 @@ public class ProgramService {
         String programSlug = identifier.substring(split + DegreeProgram.IDENTIFIER_SEPARATOR.length());
         DegreeProgram program = programs.findByUniversitySlugAndSlug(universitySlug, programSlug)
                 .orElseThrow(() -> new ResourceNotFoundException("Program", identifier));
+        if (discovery.restricts() && programs.count(discovery.programs()
+                .and((root, query, cb) -> cb.equal(root.get("id"), program.getId()))) == 0) {
+            throw new com.pathwayai.backend.common.discovery.ProgramWithheldException(identifier, discovery.maxSourceAgeDays());
+        }
         return mapper.toDetail(
                 program,
                 intakes.findByProgramIdOrderByAcademicYearDescApplicationDeadlineAscIdAsc(program.getId()),

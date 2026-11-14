@@ -5,6 +5,7 @@ import com.pathwayai.backend.program.dto.ProgramDetailResponse;
 import com.pathwayai.backend.program.dto.ProgramDetailResponse.Intake;
 import com.pathwayai.backend.program.dto.ProgramDetailResponse.Requirement;
 import com.pathwayai.backend.program.dto.ProgramDetailResponse.SourceRef;
+import com.pathwayai.backend.program.calendar.TemporalStatus;
 import com.pathwayai.backend.program.dto.ProgramDetailResponse.Tuition;
 import com.pathwayai.backend.program.dto.ProgramListItemResponse;
 import com.pathwayai.backend.program.dto.ProgramListItemResponse.FieldRef;
@@ -37,6 +38,23 @@ public class ProgramMapper {
                 new Verification(p.getVerificationStatus(), p.getVerifiedOn()));
     }
 
+    /**
+     * An open-ended fee ("for study rights beginning on or after D", no end stated) is only the current fee until the source
+     * states a later start date for the same fee series and that date has arrived; from then on the earlier period is
+     * HISTORICAL. A start date alone never proves a fee applies to a later academic year.
+     */
+    private TemporalStatus tuitionStatus(TuitionFee t, List<TuitionFee> all) {
+        TemporalStatus status = calendar.tuition(t.getAcademicYear(), t.getEffectiveFrom(), t.getEffectiveTo());
+        boolean openEnded = t.getAcademicYear() == null && t.getEffectiveTo() == null && t.getEffectiveFrom() != null;
+        if (status == TemporalStatus.CURRENT && openEnded && all.stream().anyMatch(o -> o != t && o.getAcademicYear() == null
+                && o.getStudentCategory() == t.getStudentCategory() && o.getBillingPeriod() == t.getBillingPeriod()
+                && o.getEffectiveFrom() != null && o.getEffectiveFrom().isAfter(t.getEffectiveFrom())
+                && !o.getEffectiveFrom().isAfter(calendar.today()))) {
+            return TemporalStatus.HISTORICAL;
+        }
+        return status;
+    }
+
     public ProgramDetailResponse toDetail(DegreeProgram p, List<ProgramIntake> intakes, List<TuitionFee> tuition,
                                           List<AcademicRequirement> requirements) {
         return new ProgramDetailResponse(
@@ -53,7 +71,7 @@ public class ProgramMapper {
                 tuition.stream().map(t -> new Tuition(t.getAcademicYear(), t.getEffectiveFrom(), t.getEffectiveTo(),
                         t.getScopeNote(), t.getStudentCategory(), t.getAmount(), t.getCurrency(),
                         t.getBillingPeriod(),
-                        calendar.tuition(t.getAcademicYear(), t.getEffectiveFrom(), t.getEffectiveTo()),
+                        tuitionStatus(t, tuition),
                         source(t.getSource()))).toList(),
                 requirements.stream().map(r -> new Requirement(r.getApplicationCycle(), r.getRequirementType(),
                         r.getDescription(), r.getMinimumValue(), r.getValueUnit(),

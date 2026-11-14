@@ -27,9 +27,9 @@ class FlywayMigrationIT {
         assertThat(flyway.info().pending()).isEmpty();
         MigrationInfo current = flyway.info().current();
         assertThat(current).isNotNull();
-        assertThat(current.getVersion().getVersion()).isEqualTo("6");
+        assertThat(current.getVersion().getVersion()).isEqualTo("7");
         assertThat(flyway.info().applied()).extracting(m -> m.getVersion().getVersion())
-                .containsExactly("1", "2", "3", "4", "5", "6");
+                .containsExactly("1", "2", "3", "4", "5", "6", "7");
         assertThat(current.getState().isApplied()).isTrue();
     }
 
@@ -67,6 +67,8 @@ class FlywayMigrationIT {
         // V5: external_id->university, alias->university, university_source->(university, source)
         // V6: source_monitor->(source, university, program), source_check->source,
         //     staged_change->(source, university, program)
-        assertThat(fkCount).isEqualTo(13 + 4 + 7);
+        // V7: program_external_id->program, program_field_provenance->(program, source),
+        //     program_fact_history->(program, source, source)
+        assertThat(fkCount).isEqualTo(13 + 4 + 7 + 6);
     }
 }

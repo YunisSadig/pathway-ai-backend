@@ -16,6 +16,13 @@ public record SourceMonitor(
     public static final String PAUSED = "PAUSED";
 
 
+    /** The same monitor bound to one program, for a page that states facts for several programs. */
+    public SourceMonitor withProgramId(Long program) {
+        return new SourceMonitor(sourceId, url, universityId, program, domain, kind, extractionMethod, adapterName,
+                adapterVersion, status, unsupportedReason, verificationStatus, checkIntervalDays, lastAttemptAt, lastSuccessAt,
+                lastChangeAt, etag, lastModified, contentHash, hashParserVersion, lastResult, failureCount, nextCheckAt);
+    }
+
     /** Mutable copy of the columns a check may change; see {@link #with}. */
     public static final class Fields {
         public String status, unsupportedReason, etag, lastModified, contentHash, hashParserVersion, lastResult;

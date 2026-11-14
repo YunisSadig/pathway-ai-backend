@@ -202,3 +202,47 @@ Only problems that actually happened during development. Each entry was verified
 - **Evidence:** `JAVA_HOME` pointed at `jdk-25.0.2` while `java -version` reported 21.
 - **Fix:** set `JAVA_HOME` to the JDK 21 directory for every Maven call (CLAUDE.md rule already says so).
 - **Status:** fixed (process).
+
+## 25. A parser fix was invisible because the adapter version was not bumped
+
+- **Evidence:** after changing how the Studyinfo parser reads program names, `studyinfo-sync` reported `unchanged=9` and re-read nothing: the page hash and the parser version string were both identical, so no extraction ran and the stored names kept an intake term ("..., Autumn 2027").
+- **Root cause:** the monitor only re-extracts when the content hash or `canon+adapter@version` changes. The adapter `VERSION` constant was not bumped with the parser change, although its own javadoc says to.
+- **Files:** `StudyinfoAdapter`.
+- **Fix:** `VERSION` 1 -> 2. The next sync re-baselined all nine programs and staged exactly the four affected name changes for review (verified by SELECT: 9 baselines, 4 `PENDING_REVIEW`).
+- **Prevention rule:** any change to what an adapter, parser or field mapping returns bumps that adapter's version in the same commit.
+- **Status:** fixed; the four name changes await a human review decision.
+
+## 26. Program names carried the intake term, so they would have changed every cycle
+
+- **Evidence:** the live import stored "Master's Programme in Agricultural Sciences, Autumn 2027" for Helsinki.
+- **Root cause:** the provider's implementation name includes the intake season and year. Stored as the name, it would change every cycle and flood the review queue.
+- **Fix:** a trailing season+year is removed from the name (it is intake information, not identity); slugs also drop apostrophes ("masters-programme-...", not "master-s-programme-..."). Existing slugs of the first four Helsinki programs predate this and were not renamed (identifiers are a decision for the owner).
+- **Prevention rule:** read the first live response of a new provider before fixing the shape of an identity field.
+- **Status:** fixed for new records; four existing names pending review.
+
+## 27. Joint and sub-unit programs were all rejected for Aalto
+
+- **Evidence:** first live import: 0 of 9 Aalto candidates imported ("expected exactly one providing institution, found 2" and a provider oid that is not the university's).
+- **Root cause:** the record's provider list names a unit inside the university, or several universities for joint degrees; only the provider's own search is keyed by the university.
+- **Fix:** a record is accepted when it names exactly one provider and either names the configured institution or was listed under it by the provider's own search. Joint programs (two or more providers) stay refused: their city, duration and ownership are not single-valued.
+- **Status:** fixed (2 Aalto programs imported; 7 joint programs skipped by design).
+
+## 28. A published Crawl-delay was silently capped
+
+- **Evidence:** first implementation capped any `Crawl-delay` at 60 s.
+- **Fix:** the delay is honoured exactly up to 5 minutes; above that the host is not fetched and the failure says why. It is never shortened.
+- **Prevention rule:** a safety limit must refuse, not quietly weaken.
+- **Status:** fixed (`PageFetcherTest`).
+
+## 29. The scoped Aalto extractor could not be attached to the existing fee monitor
+
+- **Evidence:** the development fee monitor (source 14) has no university, so the extractor would have had no program to attach facts to; before the fix this degraded into a vague "page changed" review item.
+- **Fix:** `assign-adapter` can bind a university; a scoped adapter on an unbound source now fails visibly (a recorded failure, nothing staged); verified live (2 facts extracted, 2 unchanged) and in `AaltoTuitionSyncIT`.
+- **Prevention rule:** a misconfigured source must fail loudly, never fall through to a generic review item.
+- **Status:** fixed.
+
+## 30. "Fresh" meant any page of the program, so a broken extractor could stay hidden
+
+- **Evidence:** discovery counted any successful source check; a program whose fact-extracting monitor was failing stayed listed because an admissions page was still read.
+- **Fix:** a failing, unsupported or stale extractor monitor withholds the program (`DiscoveryVisibilityIT`).
+- **Status:** fixed.

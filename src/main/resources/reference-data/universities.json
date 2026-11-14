@@ -2596,6 +2596,56 @@
           "retrievedOn": "2026-11-11"
         }
       ]
+    },
+    {
+      "slug": "university-of-oulu",
+      "name": "University of Oulu",
+      "country": "FI",
+      "city": "Oulu",
+      "nativeName": "Oulun yliopisto",
+      "websiteUrl": "https://www.oulu.fi/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "oulu.fi"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "SF OULU01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208661"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999844670"
+        }
+      ],
+      "aliases": [
+        "OULUN YLIOPISTO",
+        "Oulun Yliopisto"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-14",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/oulu.fi/hei",
+          "title": "HEI registry record: OULUN YLIOPISTO",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-14"
+        },
+        {
+          "url": "https://www.oulu.fi/en",
+          "title": "University of Oulu",
+          "publisher": "University of Oulu",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-14"
+        }
+      ]
     }
   ]
 }

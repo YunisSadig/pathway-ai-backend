@@ -111,12 +111,22 @@ public final class ProgramSpecifications {
         return (root, query, cb) -> {
             Subquery<Long> sub = query.subquery(Long.class);
             Root<TuitionFee> fee = sub.from(TuitionFee.class);
+            // an open-ended fee is superseded once a later start date of the same fee series has arrived
+            Subquery<Long> later = sub.subquery(Long.class);
+            Root<TuitionFee> newer = later.from(TuitionFee.class);
+            later.select(newer.<Long>get("id")).where(
+                    cb.equal(newer.get("program"), fee.get("program")),
+                    cb.equal(newer.get("studentCategory"), fee.get("studentCategory")),
+                    cb.equal(newer.get("billingPeriod"), fee.get("billingPeriod")),
+                    cb.isNull(newer.get("academicYear")),
+                    cb.greaterThan(newer.<LocalDate>get("effectiveFrom"), fee.<LocalDate>get("effectiveFrom")),
+                    cb.lessThanOrEqualTo(newer.<LocalDate>get("effectiveFrom"), today));
             var current = cb.or(
                     cb.and(cb.isNotNull(fee.get("academicYear")),
                             cb.greaterThanOrEqualTo(fee.<String>get("academicYear"), currentYear)),
                     cb.and(cb.isNull(fee.get("academicYear")),
                             cb.or(cb.isNotNull(fee.get("effectiveFrom")), cb.isNotNull(fee.get("effectiveTo"))),
-                            cb.or(cb.isNull(fee.get("effectiveTo")),
+                            cb.or(cb.and(cb.isNull(fee.get("effectiveTo")), cb.not(cb.exists(later))),
                                     cb.greaterThanOrEqualTo(fee.<LocalDate>get("effectiveTo"), today))));
             var where = cb.and(
                     cb.equal(fee.get("program"), root),

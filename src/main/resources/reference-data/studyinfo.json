@@ -1,0 +1,30 @@
+{
+  "provider": {
+    "name": "Studyinfo (Opintopolku) external API",
+    "publisher": "Finnish National Agency for Education (Opetushallitus)",
+    "apiBase": "https://opintopolku.fi/konfo-backend/external",
+    "programPageBase": "https://opintopolku.fi/konfo/en/toteutus/",
+    "programPageFallbackBase": "https://opintopolku.fi/konfo/en/koulutus/"
+  },
+  "universities": [
+    {
+      "slug": "university-of-helsinki",
+      "organisationOid": "1.2.246.562.10.39218317368",
+      "officialName": "University of Helsinki",
+      "maxPrograms": 4
+    },
+    {
+      "slug": "aalto-university",
+      "organisationOid": "1.2.246.562.10.72985435253",
+      "officialName": "Aalto University",
+      "maxPrograms": 3
+    },
+    {
+      "slug": "university-of-oulu",
+      "organisationOid": "1.2.246.562.10.38417217288",
+      "officialName": "University of Oulu",
+      "maxPrograms": 3,
+      "createIfMissing": {"name": "University of Oulu", "countryCode": "FI", "city": "Oulu"}
+    }
+  ]
+}
