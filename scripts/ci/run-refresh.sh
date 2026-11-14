@@ -60,6 +60,13 @@ if [ "$is_local" = false ]; then
     *[?\&]sslmode=verify-full|*[?\&]sslmode=verify-full\&*) ;;
     *) die "a remote database must be reached with sslmode=verify-full (sslmode=require encrypts but does not verify the server)";;
   esac
+  # pgJDBC's verify-full looks for ~/.postgresql/root.crt and ignores the JVM trust store unless told otherwise (hosted run 43601512304 failed
+  # with "Could not open SSL root certificate file"). DefaultJavaSSLFactory validates the chain against the JVM's CA bundle (Neon chains to
+  # ISRG Root X1) and sslmode=verify-full still checks the host name. A caller may not supply another trust mechanism: sslfactory
+  # NonValidatingFactory would silently turn verification off.
+  case "$DB_URL" in *sslfactory=*|*sslrootcert=*|*sslhostnameverifier=*) die "DB_URL must not set sslfactory, sslrootcert or sslhostnameverifier: the script adds the verifying factory itself";; esac
+  DB_URL="$DB_URL&sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory"
+  export DB_URL
 fi
 [ "${APP_REFERENCE_DATA_ALLOW_STATIC_RECORDS:-}" != "true" ] || die "static academic records are not allowed through the unattended path"
 
