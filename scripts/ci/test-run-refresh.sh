@@ -34,6 +34,8 @@ case_ "remote with ssl=true only"                        2 "sslmode=verify-full"
 case_ "remote with two sslmode parameters"               2 "exactly once"                       DB_URL="$R?sslmode=verify-full&sslmode=require"
 case_ "static records override"                          2 "static academic records"            DB_URL="$L" APP_REFERENCE_DATA_ALLOW_STATIC_RECORDS=true
 case_ "positive: verify-full passes TLS, stops at jar"   2 "jar not found"                      DB_URL="$R?sslmode=verify-full"
+case_ "remote with a non-validating sslfactory"           2 "must not set sslfactory"             DB_URL="$R?sslmode=verify-full&sslfactory=org.postgresql.ssl.NonValidatingFactory"
+case_ "remote with an sslrootcert override"              2 "must not set sslfactory"             DB_URL="$R?sslmode=verify-full&sslrootcert=/tmp/x"
 case_ "positive: verify-full as a middle parameter"      2 "jar not found"                      DB_URL="$R?user=u&sslmode=verify-full&channel_binding=require"
 case_ "positive: local database needs no TLS"            2 "jar not found"                      DB_URL="$L"
 
