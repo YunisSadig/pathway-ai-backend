@@ -97,3 +97,15 @@ failure rolls everything back. The PostgreSQL volume, Flyway history and other d
   importer enabled yields only the three universities and no programs, fees, deadlines or monitors).
 * To add a university or program, add a **connector** first (an official API, or a permitted per-site extractor with a
   recorded fixture and one live run), then register it; never a JSON record.
+
+## 6. Unattended operation: prepared, not yet switched on (2026-11-14)
+
+Everything needed to run synchronization with the owner's computer off is in the repository and tested locally, but **no hosted
+database exists and no account was created**, so it is not operational. Facts and the owner's steps: [../deployment-sync.md](../deployment-sync.md).
+
+* `.github/workflows/source-refresh.yml` runs daily (`run`), weekly (`sync`) and a last-success watchdog (`freshness`); it does nothing
+  until the repository variable `SYNC_ENABLED` is `true` and the `DB_*` secrets exist.
+* `scripts/ci/run-refresh.sh` is the single entry point (retries with growing pauses, verified TLS (`sslmode=verify-full`) required for a remote database, localhost refused
+  on a hosted runner, importers switched off except in `bootstrap`).
+* `--app.refresh.command=freshness-check` fails unless every extractor-maintained program was read successfully within the threshold.
+* The API sends bounded cache headers (default 5 minutes) with ETag revalidation so synchronized changes reach the frontend.

@@ -1,5 +1,8 @@
 # Deployment
 
+> **Unattended synchronization (hosted database + scheduled job), its limits, security and the steps that need the owner's accounts:
+> [deployment-sync.md](deployment-sync.md).** This page keeps the general CI/CD plan.
+
 CI and CD are separate concerns. **Nothing in this document has been provisioned, published or paid for.**
 
 ## CI (implemented, automatic)
@@ -19,7 +22,7 @@ The service is a plain executable Spring Boot jar (`target/pathway-ai-backend-0.
 ### Environment variables (set in the host's secret store, never in git)
 | Variable | Production value |
 |---|---|
-| `DB_URL` | `jdbc:postgresql://<host>:5432/<db>?sslmode=require` |
+| `DB_URL` | `jdbc:postgresql://<host>:5432/<db>?sslmode=verify-full` (never `require`: it encrypts but does not verify the server; see deployment-sync.md) |
 | `DB_USERNAME` / `DB_PASSWORD` | managed-DB credentials |
 | `CORS_ALLOWED_ORIGINS` | the exact deployed frontend origin(s), e.g. `https://app.example.com` (comma separated; wildcards are refused at startup) |
 | `PORT` | usually injected by the platform |

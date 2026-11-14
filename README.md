@@ -198,6 +198,7 @@ Invoke-RestMethod "http://localhost:8080/api/v1/universities?q=tech&country=de&s
 | `POSTGRES_DB` / `POSTGRES_PORT` | `pathway_ai` / `5433` | Used by Docker Compose |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:3000` | Comma-separated explicit browser origins allowed to call `/api/**` (no wildcards) |
 | `IMPORT_REFERENCE_DATA` | `false` | `true` runs the idempotent reference-data import at startup |
+| `APP_API_CACHE_MAX_AGE_SECONDS` | `300` | How long a browser or CDN may reuse a list/detail answer before it must revalidate (ETag); errors are never cached |
 | `REFERENCE_DATA_LOCATION` | `classpath:reference-data/taxonomy.json` | The taxonomy file (countries and academic fields only; a file with academic records is refused) |
 | `PORT` | `8080` | HTTP port (injected by most hosts) |
 

@@ -1,2 +1,5 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+
+# shell scripts must keep LF line endings even on Windows checkouts (a CRLF shebang breaks bash)
+*.sh text eol=lf

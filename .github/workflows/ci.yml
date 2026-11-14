@@ -28,6 +28,10 @@ jobs:
       - name: Make Maven Wrapper executable
         run: chmod +x mvnw
 
+      # the unattended-sync script's safety guards (TLS verification, no localhost on a hosted runner, importers off, masking)
+      - name: Scheduler script guards
+        run: bash scripts/ci/test-run-refresh.sh
+
       # verify = compile + unit tests (surefire) + package + integration tests (failsafe, Testcontainers PostgreSQL;
       # Docker is preinstalled on ubuntu-latest). No secrets are needed: tests create their own database.
       - name: Build and test
