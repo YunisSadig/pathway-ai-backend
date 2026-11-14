@@ -1,6 +1,6 @@
 # Production image of the Pathway AI API. Build: docker build -t pathway-ai-api .   Run needs DB_URL, DB_USERNAME, DB_PASSWORD and
 # STAGING_ACCESS_KEY (or PUBLIC_LAUNCH=true), CORS_ALLOWED_ORIGINS; see docs/deployment-api.md. Nothing local to a laptop is used.
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:24-jdk AS build
 WORKDIR /src
 COPY mvnw pom.xml ./
 COPY .mvn .mvn
@@ -9,7 +9,7 @@ COPY src src
 RUN ./mvnw -B -q package -DskipTests \
  && cp "$(ls target/pathway-ai-backend-*.jar | grep -v -- '-plain' | head -1)" /app.jar
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 RUN addgroup -S app && adduser -S -G app -H -s /sbin/nologin app
 WORKDIR /app
 COPY --from=build /app.jar /app/app.jar
