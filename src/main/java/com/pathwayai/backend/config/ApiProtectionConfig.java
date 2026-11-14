@@ -84,8 +84,15 @@ public class ApiProtectionConfig {
             boolean ok = supplied != null && MessageDigest.isEqual(supplied.getBytes(StandardCharsets.UTF_8), key);
             if (!ok) {
                 response.setHeader("Cache-Control", "no-store");
+                // lets the website's proxy tell "the staging key was refused" (a deployment fault) from "you are not signed in"
+                response.setHeader("X-Pathway-Gate", "rejected");
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
+            }
+            // the website's proxy tells us the visitor's address; it is believed only because the key proved the call came from the proxy
+            String forwarded = request.getHeader("X-Client-IP");
+            if (forwarded != null && forwarded.matches("^[0-9a-fA-F:.]{3,45}$")) {
+                request.setAttribute(com.pathwayai.backend.account.ClientIp.TRUSTED_ATTRIBUTE, forwarded);
             }
             chain.doFilter(request, response);
         }
@@ -121,7 +128,7 @@ public class ApiProtectionConfig {
                     window = current;
                 }
             }
-            int used = counts.computeIfAbsent(request.getRemoteAddr(), k -> new AtomicInteger()).incrementAndGet();
+            int used = counts.computeIfAbsent(com.pathwayai.backend.account.ClientIp.of(request), k -> new AtomicInteger()).incrementAndGet();
             if (used > perMinute) {
                 long retryAfter = Math.max(1, ((current + 1) * 60_000 - now + 999) / 1000);
                 response.setHeader("Retry-After", Long.toString(retryAfter));

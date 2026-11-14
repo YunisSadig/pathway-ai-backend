@@ -32,8 +32,9 @@ public class ApiCacheConfig {
 
     @Bean
     FilterRegistrationBean<ApiCacheControlFilter> apiCacheControlFilter(
-            @Value("${app.api.cache-max-age-seconds:300}") long maxAgeSeconds) {
-        var registration = new FilterRegistrationBean<>(new ApiCacheControlFilter(maxAgeSeconds));
+            @Value("${app.api.cache-max-age-seconds:300}") long maxAgeSeconds,
+            @Value("${app.access.catalogue-public:false}") boolean cataloguePublic) {
+        var registration = new FilterRegistrationBean<>(new ApiCacheControlFilter(maxAgeSeconds, cataloguePublic));
         registration.addUrlPatterns("/api/v1/*");
         registration.setOrder(Ordered.LOWEST_PRECEDENCE - 20); // outside the ETag filter
         return registration;
@@ -51,19 +52,24 @@ public class ApiCacheConfig {
 
         private final String cacheable;
 
-        ApiCacheControlFilter(long maxAgeSeconds) {
-            this.cacheable = "public, max-age=" + Math.max(0, maxAgeSeconds) + ", must-revalidate";
+        ApiCacheControlFilter(long maxAgeSeconds, boolean cataloguePublic) {
+            // while the catalogue is gated, a shared cache must never store it (it would hand it to visitors who may not see it)
+            this.cacheable = (cataloguePublic ? "public" : "private") + ", max-age=" + Math.max(0, maxAgeSeconds) + ", must-revalidate";
         }
 
         @Override
         protected boolean shouldNotFilter(HttpServletRequest request) {
-            return !("GET".equals(request.getMethod()) || "HEAD".equals(request.getMethod()));
+            return !("GET".equals(request.getMethod()) || "HEAD".equals(request.getMethod()))
+                    && !request.getRequestURI().startsWith("/api/v1/account/");
         }
 
         @Override
         protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
                 throws ServletException, IOException {
-            response.setHeader("Cache-Control", request.getRequestURI().startsWith("/api/v1/discovery/") ? "no-cache" : cacheable);
+            String uri = request.getRequestURI();
+            // personal data is never cached by anyone, for any method
+            response.setHeader("Cache-Control", uri.startsWith("/api/v1/account/") ? "no-store"
+                    : uri.startsWith("/api/v1/discovery/") ? "no-cache" : cacheable);
             chain.doFilter(request, new HttpServletResponseWrapper(response) {
                 @Override
                 public void setStatus(int status) {
