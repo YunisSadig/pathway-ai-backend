@@ -25,6 +25,7 @@ case_ "remote without sslmode"                    2 "sslmode=verify-full"       
 case_ "remote with sslmode=require"               2 "sslmode=verify-full"       BACKUP_PASSPHRASE="$PW" DB_URL="$R?sslmode=require" DB_USERNAME=u DB_PASSWORD=p bash "$S" dump
 case_ "two sslmode parameters"                    2 "exactly once"              BACKUP_PASSPHRASE="$PW" DB_URL="$R?sslmode=verify-full&sslmode=require" DB_USERNAME=u DB_PASSWORD=p bash "$S" dump
 case_ "localhost on a hosted runner"              2 "refusing to back up"       GITHUB_ACTIONS=true BACKUP_PASSPHRASE="$PW" DB_URL="jdbc:postgresql://localhost:5432/pathway_ai" DB_USERNAME=u DB_PASSWORD=p bash "$S" dump
+case_ "remote with a missing CA bundle"            2 "CA bundle not found"       CA_BUNDLE=/nonexistent/bundle.crt BACKUP_PASSPHRASE="$PW" DB_URL="$R?sslmode=verify-full" DB_USERNAME=u DB_PASSWORD=p bash "$S" dump
 case_ "restore-test with no backup present"       2 "no backup file found"      OUT_DIR="$(mktemp -d)" BACKUP_PASSPHRASE="$PW" bash "$S" restore-test
 
 # the password must never be echoed

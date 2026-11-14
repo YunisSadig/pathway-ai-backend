@@ -46,15 +46,21 @@ if [ "$MODE" = dump ]; then
     [ "$is_local" = false ] || die "refusing to back up a localhost database on a hosted runner"
     for derived in "$host" "$db"; do echo "::add-mask::$derived"; done
   fi
+  ca_mount=()
   if [ "$is_local" = false ]; then
     [ "$(printf '%s' "$DB_URL" | grep -o 'sslmode=' | wc -l)" -eq 1 ] || die "DB_URL must contain sslmode=verify-full exactly once"
     case "$DB_URL" in *[?\&]sslmode=verify-full|*[?\&]sslmode=verify-full\&*) ;; *) die "a remote database must be reached with sslmode=verify-full";; esac
-    export PGSSLMODE=verify-full PGSSLROOTCERT=system
+    # the postgres image ships WITHOUT a CA bundle (sslrootcert=system finds nothing: 'certificate verify failed', backup run 43633074004),
+    # so the host's bundle is mounted read-only and libpq is pointed at it
+    CA_BUNDLE="${CA_BUNDLE:-/etc/ssl/certs/ca-certificates.crt}"
+    [ -r "$CA_BUNDLE" ] || die "CA bundle not found at $CA_BUNDLE (set CA_BUNDLE)"
+    ca_mount=(-v "$CA_BUNDLE:/ca-bundle.crt:ro")
+    export PGSSLMODE=verify-full PGSSLROOTCERT=/ca-bundle.crt
   fi
   export PGPASSWORD="$DB_PASSWORD"
   stamp="$(date -u +%Y%m%dT%H%M%SZ)"
   file="$OUT_DIR/pathway_ai-$stamp.dump.enc"
-  pg() { docker run --rm -i --network "$PG_DOCKER_NETWORK" -e PGPASSWORD -e PGSSLMODE -e PGSSLROOTCERT "$PG_IMAGE" "$@"; }
+  pg() { docker run --rm -i --network "$PG_DOCKER_NETWORK" "${ca_mount[@]}" -e PGPASSWORD -e PGSSLMODE -e PGSSLROOTCERT "$PG_IMAGE" "$@"; }
 
   echo "== backup: dumping database '${db:0:2}...' (read-only) to an encrypted file"
   pg pg_dump -h "$host" -p "$port" -U "$DB_USERNAME" -d "$db" -Fc --no-owner --no-privileges | enc -out "$file"
