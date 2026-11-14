@@ -1,0 +1,24 @@
+# Render Blueprint for the API (free web service, Frankfurt, next to the Neon database). Secrets are entered once in the Render
+# dashboard (sync: false) and never live in this repository. See docs/deployment-api.md.
+services:
+  - type: web
+    name: pathway-ai-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health/readiness
+    autoDeployTrigger: checksPass     # deploy a push to main only after its GitHub checks passed
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: STAGING_ACCESS_KEY
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
