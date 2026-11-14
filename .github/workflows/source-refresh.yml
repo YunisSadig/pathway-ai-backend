@@ -31,9 +31,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "run | sync | force (re-read all Studyinfo programs now) | bootstrap (first run on an empty database) | freshness | verify (read-only data audit)"
+        description: "run | sync | force (re-read all Studyinfo programs now) | bootstrap (first run on an empty database) | freshness | verify (read-only data audit) | api-smoke (boot the API on the runner and read it over HTTP)"
         type: choice
-        options: [run, sync, force, bootstrap, freshness, verify]
+        options: [run, sync, force, bootstrap, freshness, verify, api-smoke]
         default: run
 
 permissions: {}

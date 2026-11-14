@@ -32,7 +32,7 @@ MAX_AGE_HOURS="${MAX_AGE_HOURS:-240}"
 
 die() { echo "ERROR: $*" >&2; exit "${2:-2}"; }
 
-case "$MODE" in run|sync|force|bootstrap|freshness|verify) ;; *) die "unknown mode '$MODE' (run|sync|force|bootstrap|freshness|verify)";; esac
+case "$MODE" in run|sync|force|bootstrap|freshness|verify|api-smoke) ;; *) die "unknown mode '$MODE' (run|sync|force|bootstrap|freshness|verify|api-smoke)";; esac
 
 for v in DB_URL DB_USERNAME DB_PASSWORD; do
   [ -n "${!v:-}" ] || die "$v is not set (on GitHub it comes from a repository secret)"
@@ -77,7 +77,7 @@ if [ -z "$JAR" ]; then JAR="$(ls target/pathway-ai-backend-*.jar 2>/dev/null | g
 # nothing but the taxonomy and the reviewed universities may be loaded at startup, and only by `bootstrap`
 export IMPORT_REFERENCE_DATA=false IMPORT_UNIVERSITY_CATALOGUE=false
 
-LOG="$(mktemp)"; trap 'rm -f "$LOG"' EXIT
+LOG="$(mktemp)"; trap 'rm -f "$LOG" "$LOG.api"' EXIT
 app() { java -jar "$JAR" --spring.main.web-application-type=none "$@" 2>&1 | tee -a "$LOG"; return "${PIPESTATUS[0]}"; }
 
 with_retries() {  # with_retries <attempts> <base> command...
@@ -94,6 +94,38 @@ with_retries() {  # with_retries <attempts> <base> command...
   done
 }
 
+# api-smoke: boots the REAL API (production profile, so its guards apply) against this database with a throwaway staging key that exists
+# only in this process, and reads it over HTTP. Proves the API code serves what the synchronization wrote. Prints counts only.
+api_smoke() {
+  local port=18080 key pid up=false code count ucount first body fail=0
+  key="$(head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+  STAGING_ACCESS_KEY="$key" SPRING_PROFILES_ACTIVE=prod java -jar "$JAR" --server.port="$port" >"$LOG.api" 2>&1 &
+  pid=$!
+  for _ in $(seq 1 60); do
+    if [ "$(curl -s -o /dev/null -m 5 -w '%{http_code}' "http://127.0.0.1:$port/actuator/health/readiness")" = 200 ]; then up=true; break; fi
+    kill -0 "$pid" 2>/dev/null || break
+    sleep 3
+  done
+  if [ "$up" != true ]; then
+    echo "api-smoke: the API did not become ready; last log lines:"; tail -n 15 "$LOG.api" | cut -c1-240; kill "$pid" 2>/dev/null; return 1
+  fi
+  code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$port/api/v1/programs"); echo "api-smoke: without the key -> HTTP $code (expect 401)"
+  [ "$code" = 401 ] || fail=1
+  body=$(curl -s -H "X-Staging-Key: $key" "http://127.0.0.1:$port/api/v1/programs?size=100")
+  count=$(printf '%s' "$body" | sed -n 's/.*"totalElements":\([0-9]*\).*/\1/p'); echo "api-smoke: programs served by the API = ${count:-unreadable}"
+  { [ -n "$count" ] && [ "$count" -ge 1 ]; } || fail=1
+  ucount=$(curl -s -H "X-Staging-Key: $key" "http://127.0.0.1:$port/api/v1/universities?size=100" | sed -n 's/.*"totalElements":\([0-9]*\).*/\1/p')
+  echo "api-smoke: universities served by the API = ${ucount:-unreadable}"
+  first=$(printf '%s' "$body" | sed -n 's/.*"identifier":"\([^"]*\)".*/\1/p' | head -1)
+  if [ -n "$first" ]; then
+    code=$(curl -s -o /dev/null -w '%{http_code}' -H "X-Staging-Key: $key" "http://127.0.0.1:$port/api/v1/programs/$first")
+    echo "api-smoke: one program detail -> HTTP $code"; [ "$code" = 200 ] || fail=1
+  fi
+  echo "api-smoke: actuator/env -> HTTP $(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$port/actuator/env") (expect 404)"
+  kill "$pid" 2>/dev/null; wait "$pid" 2>/dev/null
+  return "$fail"
+}
+
 started=$(date -u +%FT%TZ)
 host_label="hosted database"; [ "$is_local" = true ] && host_label="local database"
 echo "== Pathway AI refresh: mode=$MODE database=$host_label attempts=$ATTEMPTS started=$started"
@@ -104,6 +136,7 @@ case "$MODE" in
   run)       with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=run "${fail_flags[@]}"; rc=$? ;;
   sync)      with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=sync "${fail_flags[@]}"; rc=$? ;;
   force)     with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=studyinfo-sync "${fail_flags[@]}"; rc=$? ;;
+  api-smoke) with_retries 1 1 api_smoke; rc=$? ;;
   verify)    with_retries 2 "$((BASE < 60 ? BASE : 60))" app --app.refresh.command=verify-data; rc=$? ;;
   freshness) with_retries 2 "$((BASE < 60 ? BASE : 60))" app --app.refresh.command=freshness-check "--app.refresh.max-age-hours=$MAX_AGE_HOURS"; rc=$? ;;
   bootstrap)
