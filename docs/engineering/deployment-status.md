@@ -1,25 +1,50 @@
-# Deployment status (state of 2026-11-14)
+# Deployment status (state of 2026-11-14, evening)
 
-COMPLETE = proven by a real run (link or measurement). UNVERIFIED = built but not proven. BLOCKED = needs the owner or an external answer.
+COMPLETE = observed in a real run (link or measurement). PARTIAL = works, with a stated gap. UNVERIFIED = built, not proven. BLOCKED = needs the owner or an external answer.
 
-| Area | Status | Evidence / what remains |
+## Live endpoints (protected staging: nothing public)
+
+| What | URL | Access |
 | --- | --- | --- |
-| Neon database (Frankfurt, free) | COMPLETE | Hosted runs 43610948377 (bootstrap), 43613484847 (sync), 43614861221 (force), 43615748446 (verify). TLS `verify-full` through the JVM trust store; Flyway V1-V8 on PostgreSQL 17.12; 3 universities, 9 programs (Helsinki 4, Aalto 2, Oulu 3), 17 external ids, 46 provenance rows; every invariant of `verify-data` holds. |
-| Repeat synchronization idempotent | COMPLETE | After a second `sync` and after `force` (9 records re-read: `unchanged=9`) counts and the write fingerprint were byte-identical; discovery: created 0, already imported 9. |
-| Freshness watchdog | COMPLETE | 9 of 9 extractor-maintained programs fresh (runs 43613339367, 43615748446). |
-| API reads the hosted database | COMPLETE | Run 43618013702 (`api-smoke`): the production-profile API on the runner served 9 programs and 3 universities from Neon, gate 401 without a key, detail 200, `/actuator/env` 404. |
-| Container | COMPLETE (locally) | Image built and run: non-root, healthy, ready in about 15 s, graceful stop, no secret in logs, 401/200 gate. Not yet running on a host. |
-| Hosted backend | COMPLETE (protected staging) | Render free web service `pathway-ai-api` (Frankfurt, Docker, Free), https://pathway-ai-api.onrender.com. Reads Neon through the read-only role `pathway_api` (SELECT only, verified) over TLS verify-full; 9 programs and 3 universities served with the staging key, 401 without it; verify-deployment run 43625469490 passed. Sleeps after 15 idle minutes. |
-| Hosted frontend | BLOCKED (owner login) | Vercel Hobby is wired (`deploy.yml`, inert until `VERCEL_DEPLOY_ENABLED=true`); needs the owner's login and secrets; Hobby is non-commercial (frontend docs/deployment.md). |
-| Backend CI | COMPLETE | Every PR and push to `main`: Linux build, unit tests, Testcontainers ITs, guard tests, executable-bit guard. Merged PRs #8-#13 and #16, all CI green. |
-| Backend CD | UNVERIFIED | Render deploys `main` after checks pass (`autoDeployTrigger: checksPass`) and `verify-deployment.yml` proves the live commit; neither has run because the service does not exist yet. |
-| Frontend CI | COMPLETE | format, lint, typecheck, 66 unit tests, build, 240 Playwright tests (desktop and mobile, axe light and dark) on Linux. PRs #10-#14 merged. |
-| Frontend CD | UNVERIFIED | `deploy.yml` verified only by reading; never executed. |
-| Source to website path | COMPLETE (locally) / UNVERIFIED (hosted) | Real API container + synthetic database + the frontend's proxy: a committed change was served through the frontend 310 ms later on revalidation; no rebuild. Browser cache bound 300 s. No catalogue exists in the frontend. Hosted end-to-end needs the two hosts above. |
-| Protected staging | COMPLETE (code) | API gate (`STAGING_ACCESS_KEY`, fail-closed in production), frontend proxy and site password (fail-closed), `public` rewritten to `private`, bundle scan clean. |
-| Scheduled synchronization | NOT ENABLED | `SYNC_ENABLED` is unset on purpose; manual dispatch works. Enable it only after the dead-man's switch exists. |
-| Missed-run monitoring | BLOCKED (owner account) | Healthchecks.io (or equivalent) account and ping URL not created; no independent alert is configured or tested. Do not rely on missed-run protection. |
-| Failure alerts | UNVERIFIED | The alert job (issue + optional webhook) has never fired. |
-| Backups / restore | PARTIAL | Neon point-in-time window only; owner-run `pg_dump` documented; no restore drill done. |
-| Public launch | BLOCKED | Studyinfo licence, attribution, persistent-copy and commercial terms are unanswered: the draft email (`docs/data/studyinfo-permission-request.md`) must be sent by the owner. |
-| Paid resources | NONE | Nothing paid was created or requested. |
+| Frontend (Vercel Hobby, project `pathway-ai-frontend`) | https://pathway-ai-frontend-roan.vercel.app | HTTP Basic password (user `staff`) in front of every page and the API proxy |
+| Backend API (Render Free, service `pathway-ai-api`, Frankfurt) | https://pathway-ai-api.onrender.com | `/actuator/health/readiness` and `/actuator/info` are open; every `/api/v1/*` call needs the `X-Staging-Key` header |
+| Database (Neon Free, project `pathway-ai`, Frankfurt, PostgreSQL 17) | not exposed | TLS `verify-full`; the API uses the read-only role `pathway_api` |
+
+## Acceptance criteria
+
+| # | Requirement | Status | Evidence |
+| --- | --- | --- | --- |
+| 1 | Running hosted Spring Boot backend | COMPLETE | Render Free service; readiness 200; the commit reported by `/actuator/info` equals the merged commit (backend run 43625791497) |
+| 2 | Running protected Next.js staging site | COMPLETE | Vercel production deployment of `main`; 401 without the password, 200 with it; `/api/version` equals the merged commit (frontend run 43628497905) |
+| 3 | Both communicate | COMPLETE | Browser tests through the site's proxy: 10 of 10 passed (desktop and mobile) against the live site and the hosted API |
+| 4 | Correct Neon data flow | COMPLETE | The hosted API serves 9 programs and 3 universities read from Neon through a verified read-only role (SELECT yes, INSERT/UPDATE no, not in `neon_superuser`) |
+| 5 | Nine verified programs through the protected application | COMPLETE | Helsinki 4, Aalto 2, Oulu 3; visible only with the site password or staging key |
+| 6 | Automatic deployment after approved merges | COMPLETE (observed twice) | Backend: PR #18 merged, Render deployed 208 s later, verification passed. Frontend: PR #24 merged, Vercel deployed, the `status`-triggered verification passed. The two pipelines are independent: each repository deploys only itself |
+| 7 | Academic-data updates reach the website without a frontend rebuild | PARTIAL | Measured locally with a synthetic fixture: a committed database change was served through the frontend proxy 310 ms later on revalidation (upper bound 300 s from `max-age`). The frontend holds no catalogue. A hosted propagation test was not run: it would mean changing hosted rows that must stay source-backed |
+| 8 | Scheduled synchronization operating unattended | BLOCKED | `SYNC_ENABLED` is unset on purpose: its precondition (independent missed-run monitoring) does not exist. Manual runs of every mode work on the hosted database |
+| 9 | Failure and missed-run monitoring | PARTIAL | Failing deployments fail the verification workflows visibly. The sync alert job has never fired (UNVERIFIED). Missed-run alarm (Healthchecks.io): BLOCKED, account creation needs a link emailed to the owner's inbox |
+| 10 | Security and backups | PARTIAL | See below. A restore drill passed on a Neon branch, but no independent off-site backup exists |
+| 11 | Zero paid services | COMPLETE | Neon Free, Render Free, Vercel Hobby, GitHub free; no payment method added anywhere |
+| 12 | Real logs and verified URLs | COMPLETE | Links below |
+
+## Pipelines (proven by real runs)
+
+* Backend: PR, CI (Linux build, unit tests, Testcontainers ITs, guards), merge, Render auto-deploys `main` after checks pass (`render.yaml`, `autoDeployTrigger: checksPass`), then workflow `Verify deployment` (trigger `workflow_run` after CI) waits for the live commit and smoke-tests with the staging key. Run: https://github.com/YunisSadig/pathway-ai-backend/actions/runs/43625791497
+* Frontend: PR, CI (format, lint, typecheck, unit, build, e2e), merge, Vercel Git integration deploys `main`, then workflow `Verify deployment` (trigger: the `Vercel` commit status) waits for the served commit, runs the health script and 5 Playwright tests on desktop and mobile against the live site. Run: https://github.com/YunisSadig/pathway-ai-frontend/actions/runs/43628497905
+* Data: manual dispatch of `bootstrap`, `sync`, `force`, `verify`, `api-smoke` and `freshness` on the hosted database succeeded (runs 43610948377, 43613484847, 43614861221, 43615748446, 43618013702). A repeat sync and a forced re-read of all 9 records changed nothing (counts and write fingerprint identical).
+
+## Security
+
+* TLS to Neon: `sslmode=verify-full` through the JVM trust store, enforced by code (the API refuses to start otherwise; the scheduler script refuses any other mode).
+* Credentials: the Neon owner secrets live only in GitHub environment `sync`; Render holds a separate read-only role; the staging key lives in Render, the GitHub `staging` environment and Vercel (sensitive variables). Nothing is in the repositories, in public logs or in a `NEXT_PUBLIC_*` variable (bundle scan clean).
+* Third-party GitHub access: Render's app and Vercel's app are each installed on exactly one repository (a first Render install accidentally covered all repositories for about a minute and was narrowed immediately).
+* Secret hygiene incident: one staging key was visible in a screenshot taken during setup; it was rotated before it was used anywhere.
+* Staging protection: API gate (fail-closed in production), site password (fail-closed), and shared caches never store gated data (`public` is rewritten to `private`).
+
+## Not done / owner decisions
+
+1. **Public launch: BLOCKED.** Studyinfo licence, attribution, persistent-copy and commercial terms are unanswered. The email is drafted in `docs/data/studyinfo-permission-request.md` (repository URL filled in; your name and contact remain). It has **not** been sent.
+2. **Healthchecks.io:** create an account (emailed link), create a check with a 1-day period and a short grace, store its ping URL as the `HEALTHCHECK_PING_URL` secret of environment `sync`, send a test ping, then set `SYNC_ENABLED=true`.
+3. **Independent backups:** decide on an off-site encrypted dump (needs a storage account and a key).
+4. **Commercial use:** Vercel Hobby is for non-commercial use; revisit before any commercial launch.
+5. The 37 staged changes are untouched; they need source-specific review (`docs/data/change-review.md`).

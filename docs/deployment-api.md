@@ -1,6 +1,6 @@
 # Deploying the API (Spring Boot) and verifying it
 
-Status: the container, the production profile and the verification workflow are built and tested. **The hosted service does not exist yet**: creating it needs your interactive login (section 3). Public launch is **BLOCKED** (section 6).
+Status (2026-11-14): **deployed and verified as PROTECTED STAGING** on Render's free plan at https://pathway-ai-api.onrender.com (every `/api/v1` call needs the staging key). Continuous delivery was observed end to end: merge to `main` -> Render deployed the commit 208 s later -> the `Verify deployment` workflow confirmed it (run 43625791497). Public launch is **BLOCKED** (section 6).
 
 ## 1. Choice of host (researched 2026-11-14)
 
@@ -24,7 +24,9 @@ Rejected: Koyeb (card required for the free instance, per its pricing FAQ), Goog
 * `X-Staging-Key` gate on `/api/v1/*`, an in-memory per-client rate limit (default 240/min, `RATE_LIMIT_PER_MINUTE`), explicit-origin CORS, `no-store` on errors, ETag/`Cache-Control` (see README).
 * `render.yaml` (Blueprint, `autoDeployTrigger: checksPass`: a push to `main` deploys only after its GitHub checks pass), `.github/workflows/verify-deployment.yml` (waits until the live `/actuator/info` reports the merged commit, then smoke-tests; skipped until `API_BASE_URL` is set).
 
-## 3. Owner steps (cannot be done for you: interactive login)
+## 3. How it was set up (done 2026-11-14) and what stays with the owner
+
+Done in the Render dashboard: Blueprint `pathway-ai-staging` from this repository (Render's GitHub app is installed on this one repository only), service `pathway-ai-api` (Docker, Free, Frankfurt), secrets entered once in Render (`DB_URL` with `sslmode=verify-full`, `DB_USERNAME=pathway_api` (read-only role, section 5), `DB_PASSWORD`, `STAGING_ACCESS_KEY`, `CORS_ALLOWED_ORIGINS`). GitHub: environment `staging` (only `main`) with secret `STAGING_ACCESS_KEY`, repository variable `API_BASE_URL`. The original steps, for rebuilding from scratch:
 
 1. Sign in at render.com with GitHub, authorize the `pathway-ai-backend` repository, **New > Blueprint**, pick this repository. Do not add a payment method.
 2. Enter the secrets Render asks for (they stay in Render, never in Git):
@@ -60,4 +62,6 @@ Whether Studyinfo data may be stored and displayed publicly (licence, attributio
 
 ## 7. Backups and recovery (limits)
 
-Neon's free plan keeps a short point-in-time history window (check the console for the current figure) and no scheduled dumps. The authoritative academic data is reproducible from the official API, so the realistic recovery is: restore within the window, or re-run `bootstrap` + `sync` against an empty database (about 15 minutes). Owner-run dump: `pg_dump "<unpooled connection string>" -Fc -f pathway_ai.dump` from a trusted machine (the file contains data, keep it private). A restore drill has **not** been performed: UNVERIFIED.
+Neon's free plan keeps a short point-in-time history window and no scheduled dumps. **Restore drill performed 2026-11-14** without touching production: a Neon branch `restore-drill` (copy-on-write fork of production, created in 0.57 s, auto-deleted after one day) was queried and held exactly the production data: 3 universities, 9 programs, 17 external ids, 46 provenance rows, Flyway V8. Recovery options, in order: (1) fork a branch at a past point in time and repoint `DB_URL`, (2) re-run workflow `bootstrap` then `sync` against an empty database (about 15 minutes, all data is reproducible from the official API), (3) a private owner-run dump: `pg_dump "<unpooled connection string>" -Fc -f pathway_ai.dump` (the file contains data: keep it private, never upload it as a public workflow artifact).
+
+Limits, stated plainly: a branch lives inside the same Neon project, so it protects against bad data and bad migrations, **not** against loss of the Neon account or project. There is no scheduled independent backup; a scheduled encrypted off-site dump needs a storage account and a key, which is an owner decision.

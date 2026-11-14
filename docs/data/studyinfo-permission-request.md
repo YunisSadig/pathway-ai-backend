@@ -1,6 +1,6 @@
 # Draft: request to the Finnish National Agency for Education (Opetushallitus)
 
-**Not sent.** You send it, from your own address, to the contact the API documentation names: `palaute@opintopolku.fi`
+**Not sent (verified 2026-11-14: nothing has been sent from any session).** Only your own name, role and contact remain to be filled in. You send it, from your own address, to the contact the API documentation names: `palaute@opintopolku.fi`
 (source: the OpenAPI description served by `konfo-backend`, "Jos sinulla on kysyttävää rajapinnan käytöstä, lähetä sähköpostia
 osoitteeseen palaute@opintopolku.fi"). Keep the reply; record it in `docs/data/official-api-connectors.md`.
 
@@ -26,7 +26,7 @@ would like to confirm the exact terms. Could you please tell us:
 4. Is commercial use of the data covered?
 5. Whom should we contact if you ask us to correct or remove data, and how quickly should we act?
 
-We identify our client as `PathwayAIBot/0.1 (+[repository or site URL])`. Thank you for your help.
+We identify our client as `PathwayAIBot/0.1 (+https://github.com/YunisSadig/pathway-ai-backend)`. Thank you for your help.
 
 [Name, role, contact]
 
@@ -50,6 +50,6 @@ julkaistu koulutustarjontadata on avointa dataa. Ennen julkista julkaisua haluam
 4. Kattaako lupa kaupallisen käytön?
 5. Keneen otamme yhteyttä, jos pyydätte korjaamaan tai poistamaan tietoja, ja kuinka nopeasti meidän tulee toimia?
 
-Tunnistaudumme asiakkaana nimellä `PathwayAIBot/0.1 (+[repositorion tai sivuston osoite])`. Kiitos avusta.
+Tunnistaudumme asiakkaana nimellä `PathwayAIBot/0.1 (+https://github.com/YunisSadig/pathway-ai-backend)`. Kiitos avusta.
 
 [Nimi, rooli, yhteystiedot]
