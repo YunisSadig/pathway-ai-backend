@@ -25,6 +25,10 @@ jobs:
           java-version: "21"
           cache: maven
 
+      # fail the build if the executable bit is lost in git (the hosted refresh workflow runs ./mvnw without a chmod of its own)
+      - name: Executable bits are committed
+        run: bash scripts/ci/check-exec-bits.sh
+
       - name: Make Maven Wrapper executable
         run: chmod +x mvnw
 
