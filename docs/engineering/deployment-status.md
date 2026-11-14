@@ -7,7 +7,7 @@ COMPLETE = observed in a real run (link or measurement). PARTIAL = works, with a
 | What | URL | Access |
 | --- | --- | --- |
 | Frontend (Vercel Hobby, project `pathway-ai-frontend`) | https://pathway-ai-frontend-roan.vercel.app | HTTP Basic password (user `staff`) in front of every page and the API proxy |
-| Backend API (Render Free, service `pathway-ai-api`, Frankfurt) | https://pathway-ai-api.onrender.com | `/actuator/health/readiness` and `/actuator/info` are open; every `/api/v1/*` call needs the `X-Staging-Key` header |
+| Backend API (Render Free, service `pathway-ai-api`, Frankfurt) | https://pathway-ai-api.onrender.com | `/actuator/health/readiness` and `/actuator/info` are open; every `/api/v1/*` call needs the `X-Staging-Key` header. **Cold start measured: 84.6 s for the first request after 17 idle minutes** (then 0.4 s and 0.13 s) |
 | Database (Neon Free, project `pathway-ai`, Frankfurt, PostgreSQL 17) | not exposed | TLS `verify-full`; the API uses the read-only role `pathway_api` |
 
 ## Acceptance criteria
@@ -24,6 +24,7 @@ COMPLETE = observed in a real run (link or measurement). PARTIAL = works, with a
 | 8 | Scheduled synchronization operating unattended | BLOCKED | `SYNC_ENABLED` is unset on purpose: its precondition (independent missed-run monitoring) does not exist. Manual runs of every mode work on the hosted database |
 | 9 | Failure and missed-run monitoring | PARTIAL | Failing deployments fail the verification workflows visibly. The sync alert job has never fired (UNVERIFIED). Missed-run alarm (Healthchecks.io): BLOCKED, account creation needs a link emailed to the owner's inbox |
 | 10 | Security and backups | PARTIAL | See below. A restore drill passed on a Neon branch, but no independent off-site backup exists |
+| 10b | Cold start of the free backend | COMPLETE (measured) | 84.6 s after 17 idle minutes (2026-11-15 20:02Z). This exceeded the frontend proxy's 75 s upstream wait, so the first visitor after an idle period would have received a 502: fixed (proxy waits 130 s, `maxDuration` 150, loading state explains a long wait; frontend PR #26) |
 | 11 | Zero paid services | COMPLETE | Neon Free, Render Free, Vercel Hobby, GitHub free; no payment method added anywhere |
 | 12 | Real logs and verified URLs | COMPLETE | Links below |
 
