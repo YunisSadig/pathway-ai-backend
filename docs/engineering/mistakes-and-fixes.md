@@ -302,3 +302,18 @@ Only problems that actually happened during development. Each entry was verified
 - **Fix:** removed from the branch before merge and `/scripts/ops/` added to `.gitignore`. Nothing secret was in the file.
 - **Prevention rule:** stage explicit paths, never `-A` over a directory that holds local tools; read `git show --stat` before pushing.
 - **Status:** fixed.
+
+## 38. A secret piped from Windows PowerShell 5.1 carried a trailing newline (staging key: 401 in the verification workflow)
+
+- **Evidence:** `verify-deployment` run 43625400578: readiness and the closed-gate check passed, every authenticated check got HTTP 401 although the same key worked from a local request.
+- **Root cause:** `$value | gh secret set` in PowerShell 5.1 appends `\r\n`, so the GitHub secret was the key plus a newline and never matched the key on the host.
+- **Fix:** secrets for GitHub are written as raw bytes through the process's standard input (as `scripts/ops/set-sync-secrets.ps1` already did). Verification: run 43625469490 passed all checks.
+- **Prevention rule:** never pipe a secret with `|` in PowerShell 5.1; write bytes. A post-deploy workflow that sends the key is the test that catches this class.
+- **Status:** fixed.
+
+## 39. A database role created through the Neon console is not read-only
+
+- **Evidence:** `REVOKE neon_superuser FROM <role>` failed with "Only roles with the ADMIN option ... may revoke"; console-created roles join `neon_superuser`, which inherits broad read/write rights.
+- **Fix:** the API's role is created with SQL (`CREATE ROLE ... LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE`) plus `GRANT SELECT` only. Verified in SQL: not superuser, not in `neon_superuser`, `SELECT` yes, `INSERT`/`UPDATE` no; the Neon SQL-history entry that held the generated password was deleted.
+- **Prevention rule:** least-privilege roles are created in SQL, and their privileges are asserted with `has_table_privilege`, not assumed from a console screen.
+- **Status:** fixed.
