@@ -20,3 +20,6 @@ After hitting a real problem, add it to `mistakes-and-fixes.md` (error output, r
 - Never commit `.env`, passwords or tokens.
 - Use Conventional Commits; use feature branches + PRs after the initial commit; do not force-push.
 - Do not add Security/AI/Redis/Kafka/etc. dependencies without an explicit request.
+- Frontend contract: documented in README "REST API contract", pinned by `UniversityApiIT.jsonContractFieldNamesAreStable`. Renaming a JSON field is a breaking change: update README + test and tell the frontend.
+- CORS: explicit origins only via `CORS_ALLOWED_ORIGINS` (`config/CorsConfig`); never a wildcard.
+- Do not modify the frontend repo from here. CI (`.github/workflows/ci.yml`) and CD (`docs/deployment.md`) are documented separately; never provision hosting or incur charges without approval.

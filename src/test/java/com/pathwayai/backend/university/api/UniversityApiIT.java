@@ -126,6 +126,37 @@ class UniversityApiIT {
                 .andExpect(status().isBadRequest());
     }
 
+    /** Pins the exact JSON field names the frontend consumes (see README "API contract"). */
+    @Test
+    void jsonContractFieldNamesAreStable() throws Exception {
+        mockMvc.perform(get("/api/v1/universities").param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.keys()").value(org.hamcrest.Matchers.containsInAnyOrder(
+                        "content", "number", "size", "totalElements", "totalPages")))
+                .andExpect(jsonPath("$.content[0].keys()").value(org.hamcrest.Matchers.containsInAnyOrder(
+                        "slug", "name", "city", "countryCode", "countryName", "websiteUrl")))
+                .andExpect(jsonPath("$.number").value(0))
+                .andExpect(jsonPath("$.size").value(1))
+                .andExpect(jsonPath("$.totalPages").value(3));
+        mockMvc.perform(get("/api/v1/universities/beta-university"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.keys()").value(org.hamcrest.Matchers.containsInAnyOrder(
+                        "slug", "name", "city", "countryCode", "countryName", "websiteUrl", "description",
+                        "programs")))
+                .andExpect(jsonPath("$.programs[0].keys()").value(org.hamcrest.Matchers.containsInAnyOrder(
+                        "slug", "name", "degreeLevel", "fieldOfStudy", "durationMonths", "teachingLanguage")))
+                .andExpect(jsonPath("$.programs[0].degreeLevel").value("BACHELOR"));
+    }
+
+    @Test
+    void emptyResultIsEmptyPageNotError() throws Exception {
+        mockMvc.perform(get("/api/v1/universities").param("q", "zzz-no-match"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0));
+    }
+
     @Test
     void actuatorHealthIsUp() throws Exception {
         mockMvc.perform(get("/actuator/health"))
