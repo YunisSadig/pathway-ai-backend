@@ -38,7 +38,7 @@ Expected cost: **$0**. Billing conditions can change: read each sign-up page, an
 
 ## 2. What runs, when, and how failure is noticed
 
-`.github/workflows/source-refresh.yml` (it does nothing until you set the repository variable `SYNC_ENABLED=true`):
+`.github/workflows/source-refresh.yml` (its daily schedule does nothing until you set the repository variable `SYNC_ENABLED=true`; a manual "Run workflow" dispatch always runs, so you can test first):
 
 | When | Mode | What it does |
 |---|---|---|
