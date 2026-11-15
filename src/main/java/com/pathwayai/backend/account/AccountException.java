@@ -5,7 +5,11 @@ import java.util.List;
 /** A business-rule failure with a stable machine-readable code and a message that is safe to show to the user. */
 public class AccountException extends RuntimeException {
 
-    public record Violation(String field, String message) {
+    /** {@code code} is a stable machine-readable reason so a client can show the message in the visitor's language. */
+    public record Violation(String field, String message, String code) {
+        public Violation(String field, String message) {
+            this(field, message, "INVALID");
+        }
     }
 
     private final int status;

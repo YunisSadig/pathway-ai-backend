@@ -27,9 +27,9 @@ class FlywayMigrationIT {
         assertThat(flyway.info().pending()).isEmpty();
         MigrationInfo current = flyway.info().current();
         assertThat(current).isNotNull();
-        assertThat(current.getVersion().getVersion()).isEqualTo("9");
+        assertThat(current.getVersion().getVersion()).isEqualTo("10");
         assertThat(flyway.info().applied()).extracting(m -> m.getVersion().getVersion())
-                .containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9");
+                .containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9", "10");
         assertThat(current.getState().isApplied()).isTrue();
     }
 
@@ -71,6 +71,7 @@ class FlywayMigrationIT {
         //     program_fact_history->(program, source, source)
         // V9: account_token, student_profile, student_language_qualification, student_destination_preference, saved_program,
         //     saved_university, spring_session_attributes -> user_account / spring_session (7)
-        assertThat(fkCount).isEqualTo(13 + 4 + 7 + 6 + 7);
+        // V10: student_education, student_skill, student_experience, student_exam_result, student_exam_section, student_preferred_university, student_avatar
+        assertThat(fkCount).isEqualTo(13 + 4 + 7 + 6 + 7 + 7);
     }
 }

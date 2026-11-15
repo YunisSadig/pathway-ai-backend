@@ -104,6 +104,10 @@ class ProfileService {
         jdbc.sql("delete from student_profile where account_id = :id").param("id", accountId).update();
         jdbc.sql("delete from student_language_qualification where account_id = :id").param("id", accountId).update();
         jdbc.sql("delete from student_destination_preference where account_id = :id").param("id", accountId).update();
+        for (String table : List.of("student_education", "student_skill", "student_experience", "student_exam_result", "student_preferred_university",
+                "student_avatar")) {
+            jdbc.sql("delete from " + table + " where account_id = :id").param("id", accountId).update();
+        }
     }
 
     private static List<AccountException.Violation> check(ProfileRequest p) {
