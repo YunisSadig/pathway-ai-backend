@@ -110,7 +110,7 @@ class PublicCatalogueIT {
     }
 
     @Test
-    void anyAccountCanSaveAUniversityButProgramsStillNeedCatalogueAccess() throws Exception {
+    void anyAccountCanSaveUniversitiesAndPrograms() throws Exception {
         Cookie session = register(AccountApiIT.email());
         mvc.perform(put("/api/v1/account/saved/universities/zz-public-u").cookie(session)).andExpect(status().isNoContent());
         mvc.perform(put("/api/v1/account/saved/universities/zz-no-such-university").cookie(session)).andExpect(status().isNotFound());
@@ -118,7 +118,34 @@ class PublicCatalogueIT {
                 .andExpect(jsonPath("$.universities", hasSize(1))).andExpect(jsonPath("$.universities[0].available").value(true))
                 .andExpect(jsonPath("$.universities[0].name").value("Synthetic Public University"))
                 .andExpect(jsonPath("$.catalogueVisible").value(false));
-        mvc.perform(put("/api/v1/account/saved/programs/zz-public-u--p").cookie(session)).andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("CATALOGUE_PROTECTED"));
+        mvc.perform(put("/api/v1/account/saved/programs/zz-public-u--p").cookie(session)).andExpect(status().isNoContent());
+        mvc.perform(get("/api/v1/account/saved").cookie(session)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.programs", hasSize(1))).andExpect(jsonPath("$.programs[0].available").value(true));
+    }
+
+    static final Set<String> PROGRAM_FIELDS = Set.of("identifier", "slug", "name", "degreeLevel", "field", "studyMode", "durationMonths",
+            "teachingLanguages", "campusCity", "university", "officialProgramUrl", "officialAdmissionsUrl", "officialApplicationUrl", "verification");
+
+    @Test
+    void visitorsBrowseProgramsWithAnAllowListAndNothingRestricted() throws Exception {
+        String list = mvc.perform(get("/api/v1/public/programs?q=Synthetic&level=master&country=ZP")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1))).andExpect(jsonPath("$.content[0].identifier").value("zz-public-u--p"))
+                .andExpect(jsonPath("$.content[0].university.name").value("Synthetic Public University"))
+                .andExpect(jsonPath("$.content[0].officialApplicationUrl").doesNotExist())
+                .andReturn().getResponse().getContentAsString();
+        String one = mvc.perform(get("/api/v1/public/programs/zz-public-u--p")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        for (String body : new String[] {list, one}) {
+            assertThat(body).doesNotContain("tuition").doesNotContain("requirements").doesNotContain("intakes").doesNotContain("sources")
+                    .doesNotContain("synchronization").doesNotContain("applicationDeadline");
+        }
+        assertThat(tools.jackson.databind.json.JsonMapper.builder().build().readTree(one).propertyNames())
+                .containsExactlyInAnyOrderElementsOf(PROGRAM_FIELDS);
+        mvc.perform(get("/api/v1/public/programs?level=doctorate")).andExpect(jsonPath("$.content", hasSize(0)));
+        mvc.perform(get("/api/v1/public/programs/zz-public-u--nope")).andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/public/programs?size=500")).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/v1/public/universities?country=ZP")).andExpect(jsonPath("$.content", hasSize(1)));
+        mvc.perform(get("/api/v1/public/universities?country=FI")).andExpect(jsonPath("$.content", hasSize(0)));
+        // the detailed protected record still needs catalogue access
+        mvc.perform(get("/api/v1/programs/zz-public-u--p")).andExpect(status().isUnauthorized());
     }
 }

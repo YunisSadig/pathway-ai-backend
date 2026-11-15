@@ -51,9 +51,10 @@ class PublicUniversityController {
     @GetMapping
     PageResponse<PublicUniversity> list(
             @RequestParam(required = false) @Size(max = 100) String q,
+            @RequestParam(required = false) @Pattern(regexp = "[A-Za-z]{2}") String country,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "12") @Min(1) @Max(50) int size) {
-        var found = universities.search(q, null, PageRequest.of(page, size, Sort.by("name").and(Sort.by("id"))));
+        var found = universities.search(q, country, PageRequest.of(page, size, Sort.by("name").and(Sort.by("id"))));
         return new PageResponse<>(found.content().stream().map(this::enrich).toList(), found.number(), found.size(),
                 found.totalElements(), found.totalPages());
     }

@@ -97,18 +97,11 @@ public class AccountService {
             UUID id = accounts.insert(rawEmail.trim(), email, hash, name);
             AccountRow created = accounts.findById(id).orElseThrow();
             if (mail.available()) {
-                sendVerification(created);
-                return new Registered(Optional.empty());
+                sendVerification(created); // ownership of the address is proved separately; it never gates the account
             }
             return new Registered(Optional.of(created));
         } catch (DuplicateKeyException duplicate) {
-            if (mail.available()) {
-                trySend(rawEmail.trim(), "You already have a Pathway AI account",
-                        "Someone, probably you, tried to create a Pathway AI account with this email address, but one already exists.\n\n"
-                                + "Log in: " + props.siteUrl() + "/login\nForgot your password: " + props.siteUrl() + "/forgot-password\n\n"
-                                + "If this was not you, you can ignore this message.");
-                return new Registered(Optional.empty());
-            }
+            // registration always opens a session now, so a duplicate cannot look identical; it is refused plainly
             throw new AccountException(409, "EMAIL_TAKEN", "An account with this email already exists. Log in instead.");
         }
     }
@@ -127,9 +120,7 @@ public class AccountService {
             throw new AccountException(401, "INVALID_CREDENTIALS", "Invalid email or password.");
         }
         AccountRow account = found.get();
-        if (mail.available() && !account.emailVerified()) {
-            throw new AccountException(403, "EMAIL_NOT_VERIFIED", "Please verify your email address first. Check your inbox for the link.");
-        }
+        // Email verification (proof of address ownership) is deliberately NOT a login condition: it must not block profiles, saving or browsing.
         throttle.clear("login-email", email);
         accounts.touchLogin(account.id());
         return account;

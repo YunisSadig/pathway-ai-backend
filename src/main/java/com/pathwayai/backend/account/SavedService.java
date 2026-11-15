@@ -55,7 +55,7 @@ class SavedService {
 
     @Transactional
     void saveProgram(UUID accountId, String identifier) {
-        requireCatalogue(accountId);
+        // the public program tier (name, level, university) is open to every account, so any account may save a program
         try {
             programs.getByIdentifier(identifier);
         } catch (ResourceNotFoundException e) {
@@ -87,13 +87,6 @@ class SavedService {
         jdbc.sql("delete from saved_university where account_id = :id and university_slug = :s").param("id", accountId).param("s", slug).update();
     }
 
-    private void requireCatalogue(UUID accountId) {
-        if (!accounts.canViewCatalogue(accountId)) {
-            throw new AccountException(403, "CATALOGUE_PROTECTED",
-                    "The university catalogue is in a protected beta, so programs cannot be saved yet.");
-        }
-    }
-
     private void enforceLimit(String table, UUID accountId) {
         int count = jdbc.sql("select count(*) from " + table + " where account_id = :id").param("id", accountId).query(Integer.class).single();
         if (count >= props.maxSavedItems()) {
@@ -102,13 +95,11 @@ class SavedService {
     }
 
     private SavedProgram resolveProgram(String identifier, Instant savedAt, boolean visible) {
-        if (visible) {
-            try {
-                ProgramDetailResponse p = programs.getByIdentifier(identifier);
-                return new SavedProgram(identifier, savedAt, true, p.name(), p.university().name(), p.university().slug(), p.degreeLevel().name());
-            } catch (ResourceNotFoundException e) {
-                // falls through: no longer listed
-            }
+        try {
+            ProgramDetailResponse p = programs.getByIdentifier(identifier);
+            return new SavedProgram(identifier, savedAt, true, p.name(), p.university().name(), p.university().slug(), p.degreeLevel().name());
+        } catch (ResourceNotFoundException e) {
+            // falls through: no longer listed
         }
         return new SavedProgram(identifier, savedAt, false, null, null, null, null);
     }

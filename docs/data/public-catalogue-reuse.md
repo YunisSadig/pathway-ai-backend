@@ -37,3 +37,11 @@ The public page says the catalogue covers only the institutions actually synchro
 ## To widen the public tier later
 
 Obtain the provider's written answer (licence and attribution), then add the permitted fields to `PublicUniversity` and extend the pinning test.
+
+## Update 2026-11-15: public program tier (owner decision)
+
+`GET /api/v1/public/programs[/{identifier}]` (no account) shows the PUBLISHED OFFERING the official Konfo external API exists to display: name, degree level, field, study mode, planned duration, teaching languages, campus city, the offering university, the official program and admissions pages and our verification date. Filters: name, field, level, country, university, language.
+
+Still restricted (catalogue gate): tuition, intakes and deadlines, admission requirements, source records, synchronization details and the application link. The licence question stays OPEN and unanswered in writing (`studyinfo-permission-request.md`, unsent); the public program fields are therefore a documented risk accepted by the owner, easy to narrow by editing `PublicProgramController`. A test pins the exact field set.
+
+Email verification is separate from access: it never blocks sign-in, saving, profiles or browsing.
