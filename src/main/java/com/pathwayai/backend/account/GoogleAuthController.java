@@ -188,6 +188,12 @@ class GoogleAuthController {
             return;
         }
         if (accounts.findByEmailNormalized(normalized.get()).isPresent()) {
+            // the same person may have been registered a moment ago by a parallel request: that is their own identity, not a conflict
+            Optional<UUID> justCreated = identities.accountOf(ExternalIdentityRepository.GOOGLE, identity.subject());
+            if (justCreated.isPresent()) {
+                open(justCreated.get(), next, request, response, false);
+                return;
+            }
             redirect(response, "/login?error=google_conflict"); // never merged by email: the owner links Google from Settings
             return;
         }
