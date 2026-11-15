@@ -22,8 +22,8 @@ public final class SyncPolicy {
     /** A different value from the official API replaces the published one automatically. */
     public static final Set<FactType> AUTO_REPLACE = Set.of(FactType.DURATION_MONTHS, FactType.LANGUAGES, FactType.CAMPUS_CITY);
 
-    /** A value that does not exist yet (a new application round) is added automatically; an existing one is never overwritten. */
-    public static final Set<FactType> AUTO_ADD = Set.of(FactType.DEADLINE);
+    /** A value that does not exist yet (a new application round, or a field of education that was unknown) is added automatically; an existing one is never overwritten. */
+    public static final Set<FactType> AUTO_ADD = Set.of(FactType.DEADLINE, FactType.ACADEMIC_FIELD);
 
     /** How a published field reaches the public API once its source changes. */
     public enum UpdateMode {
@@ -40,8 +40,8 @@ public final class SyncPolicy {
     public static UpdateMode modeOf(String provenanceField) {
         return switch (provenanceField) {
             case "duration_months", "languages", "campus_city" -> UpdateMode.AUTOMATIC;
-            case "name", "degree_level", "academic_field" -> UpdateMode.REVIEW_REQUIRED;
-            case "application_deadline" -> UpdateMode.ADDITIVE_AUTOMATIC;
+            case "name", "degree_level" -> UpdateMode.REVIEW_REQUIRED;
+            case "application_deadline", "academic_field" -> UpdateMode.ADDITIVE_AUTOMATIC;
             default -> UpdateMode.FIXED_AT_CREATION;
         };
     }

@@ -56,6 +56,34 @@
       "parent": "humanities"
     },
     {
+      "slug": "education",
+      "name": "Education"
+    },
+    {
+      "slug": "arts-and-media",
+      "name": "Arts and Media"
+    },
+    {
+      "slug": "business-and-administration",
+      "name": "Business and Administration"
+    },
+    {
+      "slug": "law",
+      "name": "Law"
+    },
+    {
+      "slug": "health-and-welfare",
+      "name": "Health and Welfare"
+    },
+    {
+      "slug": "agriculture-forestry-and-veterinary",
+      "name": "Agriculture, Forestry, Fisheries and Veterinary"
+    },
+    {
+      "slug": "services",
+      "name": "Services"
+    },
+    {
       "slug": "interdisciplinary-studies",
       "name": "Interdisciplinary Studies"
     }

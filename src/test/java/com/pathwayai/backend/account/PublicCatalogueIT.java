@@ -125,6 +125,7 @@ class PublicCatalogueIT {
 
     static final Set<String> PROGRAM_FIELDS = Set.of("identifier", "slug", "name", "degreeLevel", "field", "studyMode", "durationMonths",
             "teachingLanguages", "campusCity", "university", "officialProgramUrl", "officialAdmissionsUrl", "officialApplicationUrl", "verification");
+    static final Set<String> PROGRAM_DETAIL_FIELDS = new java.util.HashSet<>(PROGRAM_FIELDS) {{ add("lastCheckedOn"); }};
 
     @Test
     void visitorsBrowseProgramsWithAnAllowListAndNothingRestricted() throws Exception {
@@ -139,7 +140,7 @@ class PublicCatalogueIT {
                     .doesNotContain("synchronization").doesNotContain("applicationDeadline");
         }
         assertThat(tools.jackson.databind.json.JsonMapper.builder().build().readTree(one).propertyNames())
-                .containsExactlyInAnyOrderElementsOf(PROGRAM_FIELDS);
+                .containsExactlyInAnyOrderElementsOf(PROGRAM_DETAIL_FIELDS);
         mvc.perform(get("/api/v1/public/programs?level=doctorate")).andExpect(jsonPath("$.content", hasSize(0)));
         mvc.perform(get("/api/v1/public/programs/zz-public-u--nope")).andExpect(status().isNotFound());
         mvc.perform(get("/api/v1/public/programs?size=500")).andExpect(status().isBadRequest());

@@ -37,10 +37,11 @@ One class states it, `refresh/pipeline/SyncPolicy`; the pipeline enforces it and
 | application deadline | Studyinfo | closing time of a published round changed | **review** (dated facts are never overwritten, even by approval; correct by retraction) |
 | program name | Studyinfo | changed | `REVIEW_REQUIRED` (old value stays shown until approved) |
 | degree level | Studyinfo | changed | `REVIEW_REQUIRED` |
-| academic field | Studyinfo | changed | `REVIEW_REQUIRED` |
+| academic field | Studyinfo | was unknown, the official code is now in the reviewed map | `ADDITIVE_AUTOMATIC`: filled, audited |
+| academic field | Studyinfo | a published field changed | **review** (never overwritten silently) |
 | official program URL, identifiers | Studyinfo | - | `FIXED_AT_CREATION` (stable) |
 | discontinued program | Studyinfo (`tila` = `arkistoitu`/`poistettu`) | state change | automatic: marked `DISCONTINUED`, hidden, nothing deleted, audited (`LIFECYCLE`); reinstated if published again |
-| new program | Studyinfo tarjonta listing | appears (within the university's `maxPrograms`) | created by `sync` with the full pipeline, verified, monitored |
+| new program | Studyinfo tarjonta listing | appears (within the university cap `maxPrograms`, now 30 each; known programs count toward it and cost no request) | created by `sync` with the full pipeline, verified, monitored |
 | tuition, scholarships, admission requirements, application URL | **no connector** | - | **unavailable**: listed in `synchronization.notSynchronized`, never shown as maintained |
 
 Not discontinuations (they are failures and change nothing): HTTP errors, timeouts, a 404, a draft state (`tallennettu`,
