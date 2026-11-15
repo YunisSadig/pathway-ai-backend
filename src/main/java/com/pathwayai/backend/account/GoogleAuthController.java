@@ -44,6 +44,9 @@ class GoogleAuthController {
     private static final String LINK_INTENT = "google.link";
     private static final long PENDING_SECONDS = 600;
     private static final long LINK_SECONDS = 300;
+    private static final String PENDING_LINK = "google.pending-link";
+    private static final long PENDING_LINK_SECONDS = 600;
+    private static final int PENDING_LINK_ATTEMPTS = 5;
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final GoogleAuthSettings settings;
@@ -52,9 +55,11 @@ class GoogleAuthController {
     private final AccountService accounts;
     private final AccountProperties props;
     private final SessionStarter sessions;
+    private final AuthThrottle throttle;
 
     GoogleAuthController(GoogleAuthSettings settings, GoogleIdentityVerifier verifier, ExternalIdentityRepository identities,
-                         AccountService accounts, AccountProperties props, SessionStarter sessions) {
+                         AccountService accounts, AccountProperties props, SessionStarter sessions, AuthThrottle throttle) {
+        this.throttle = throttle;
         this.settings = settings;
         this.verifier = verifier;
         this.identities = identities;
@@ -124,6 +129,21 @@ class GoogleAuthController {
     void callback(@RequestParam(required = false) String code, @RequestParam(required = false) String state,
                   @RequestParam(required = false) String error, Authentication authentication,
                   HttpServletRequest request, HttpServletResponse response) {
+        try {
+            handleCallback(code, state, error, authentication, request, response);
+        } catch (RuntimeException e) {
+            // Anything unforeseen (database, session store, ...) must never reach the browser as a raw 500: the person lands on the
+            // login page with a short code. The exception goes to the log (the code and tokens are never part of it).
+            log.error("Google callback failed unexpectedly", e);
+            if (!response.isCommitted()) {
+                response.resetBuffer();
+                redirect(response, "/login?error=google_failed");
+            }
+        }
+    }
+
+    private void handleCallback(String code, String state, String error, Authentication authentication,
+                                HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(false);
         @SuppressWarnings("unchecked")
         Map<String, String> pending = session == null ? null : (Map<String, String>) session.getAttribute(PENDING);
@@ -194,7 +214,7 @@ class GoogleAuthController {
                 open(justCreated.get(), next, request, response, false);
                 return;
             }
-            redirect(response, "/login?error=google_conflict"); // never merged by email: the owner links Google from Settings
+            offerLinking(normalized.get(), identity, next, request, response);
             return;
         }
         try {
@@ -211,6 +231,92 @@ class GoogleAuthController {
                 redirect(response, "/login?error=google_conflict");
             }
         }
+    }
+
+    /**
+     * The Google address belongs to an existing password account. Nothing is merged by email: the verified Google identity is parked in
+     * the visitor's own server-side session and the visitor must prove they own the Pathway AI account by entering its password ONCE.
+     */
+    private void offerLinking(String emailNormalized, Identity identity, String next, HttpServletRequest request, HttpServletResponse response) {
+        AccountRow existing = accounts.findByEmailNormalized(emailNormalized).orElse(null);
+        if (existing == null || existing.passwordHash() == null || !identities.providersOf(existing.id()).isEmpty()) {
+            // no password to prove ownership with, or the account already has a (different) Google identity: nothing safe to offer
+            redirect(response, "/login?error=google_conflict");
+            return;
+        }
+        Map<String, String> link = new HashMap<>();
+        link.put("account", existing.id().toString());
+        link.put("subject", identity.subject());
+        link.put("email", identity.email().strip());
+        link.put("next", safeNext(next));
+        link.put("created", Long.toString(Instant.now().getEpochSecond()));
+        link.put("attempts", "0");
+        request.getSession(true).setAttribute(PENDING_LINK, link);
+        redirect(response, "/login/link-google");
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, String> pendingLink(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || !(session.getAttribute(PENDING_LINK) instanceof Map<?, ?> raw)) {
+            return null;
+        }
+        Map<String, String> link = (Map<String, String>) raw;
+        if (Instant.now().getEpochSecond() - Long.parseLong(link.get("created")) > PENDING_LINK_SECONDS) {
+            session.removeAttribute(PENDING_LINK);
+            return null;
+        }
+        return link;
+    }
+
+    /** What the linking screen shows: only the address Google just proved, and only to the browser that completed the Google step. */
+    @GetMapping("/pending-link")
+    ResponseEntity<Map<String, String>> pendingLinkInfo(HttpServletRequest request) {
+        Map<String, String> link = pendingLink(request);
+        if (link == null) {
+            return ResponseEntity.status(404).header("Cache-Control", "no-store").build();
+        }
+        return ResponseEntity.ok().header("Cache-Control", "no-store").body(Map.of("email", link.get("email")));
+    }
+
+    /**
+     * The one-time proof: the existing account's password. Right: the Google subject is linked to THAT account (never a new one), the
+     * pending link is gone, and a fresh session (new id) opens. Wrong: the account is left untouched; five misses or ten minutes end it.
+     */
+    @PostMapping("/confirm-link")
+    ResponseEntity<Map<String, String>> confirmLink(@RequestBody PasswordBody body, HttpServletRequest request, HttpServletResponse response) {
+        Map<String, String> link = pendingLink(request);
+        if (link == null) {
+            throw new AccountException(410, "LINK_EXPIRED", "This step has expired. Please choose Continue with Google again.");
+        }
+        String ip = ClientIp.of(request);
+        if (throttle.locked("google-link-ip", ip) || throttle.locked("google-link-account", link.get("account"))) {
+            throw new AccountException(429, "TOO_MANY_ATTEMPTS", "Too many attempts. Please try again later.");
+        }
+        UUID accountId = UUID.fromString(link.get("account"));
+        AccountRow account = accounts.find(accountId).orElse(null);
+        if (account == null || !accounts.passwordMatches(account, body == null ? null : body.password())) {
+            throttle.failure("google-link-ip", ip, 10, 900, 900);
+            throttle.failure("google-link-account", link.get("account"), 10, 900, 900);
+            int attempts = Integer.parseInt(link.get("attempts")) + 1;
+            if (attempts >= PENDING_LINK_ATTEMPTS) {
+                request.getSession().removeAttribute(PENDING_LINK);
+            } else {
+                link.put("attempts", Integer.toString(attempts));
+                request.getSession().setAttribute(PENDING_LINK, link);
+            }
+            throw new AccountException(403, "WRONG_PASSWORD", "Your password is not correct.");
+        }
+        request.getSession().removeAttribute(PENDING_LINK); // single use, also when the insert below loses a race
+        try {
+            identities.link(accountId, ExternalIdentityRepository.GOOGLE, link.get("subject"), link.get("email"));
+        } catch (DuplicateKeyException e) {
+            // the subject got attached elsewhere meanwhile, or this account already has a Google identity: the account stays as it was
+            throw new AccountException(409, "GOOGLE_TAKEN", "This Google account cannot be connected. Log in with your password instead.");
+        }
+        throttle.clear("google-link-account", link.get("account"));
+        sessions.start(account, request, response);
+        return ResponseEntity.ok().header("Cache-Control", "no-store").body(Map.of("next", link.get("next")));
     }
 
     private void open(UUID accountId, String next, HttpServletRequest request, HttpServletResponse response, boolean created) {

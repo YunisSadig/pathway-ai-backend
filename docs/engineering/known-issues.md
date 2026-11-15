@@ -57,6 +57,6 @@
 ## Student accounts: open items (2026-11-15)
 
 - **No email delivery.** Without an SMTP account (`MAIL_*`), email verification and password reset report `EMAIL_UNAVAILABLE`, and registration answers `EMAIL_TAKEN` for an existing address (the one documented enumeration exception). Needs the owner to create a mail provider account.
-- **No Google sign-in.** Needs an OAuth client created interactively by the owner.
+- **Google sign-in** is implemented and needs migration V12 applied on Neon (workflow "Source refresh", mode `migrate`) before it works in production (mistakes 46).
 - **Catalogue stays gated** (`CATALOGUE_PUBLIC=false`, accounts need `catalogue_access`) until the Studyinfo reuse conditions are answered in writing.
 - **Account support tools are manual:** granting catalogue access is a SQL update in the Neon editor (no admin UI; safe steps in docs/engineering/beta-access.md).
