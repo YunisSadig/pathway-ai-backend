@@ -1,30 +1,39 @@
 # Draft: request to the Finnish National Agency for Education (Opetushallitus)
 
-**Not sent (verified 2026-11-14: nothing has been sent from any session).** Only your own name, role and contact remain to be filled in. You send it, from your own address, to the contact the API documentation names: `palaute@opintopolku.fi`
-(source: the OpenAPI description served by `konfo-backend`, "Jos sinulla on kysyttävää rajapinnan käytöstä, lähetä sähköpostia
-osoitteeseen palaute@opintopolku.fi"). Keep the reply; record it in `docs/data/official-api-connectors.md`.
+**Not sent (nothing has been sent from any session; verified 2026-11-15).** Fill in your own name, role and contact and send it from your own
+address to the contact the API documentation names: `palaute@opintopolku.fi` (source: the OpenAPI description served by `konfo-backend`,
+"Jos sinulla on kysyttävää rajapinnan käytöstä, lähetä sähköpostia osoitteeseen palaute@opintopolku.fi"). Keep the reply and record it in
+`docs/data/official-api-connectors.md`. Do not add credentials or anything about private systems. Until a written answer exists, program
+details stay behind the catalogue gate (`docs/data/public-catalogue-reuse.md`).
 
-Fill in the bracketed parts. Do not add credentials or anything about your private systems.
+Sources to cite (both read on 2026-11-15):
+
+- Konfo external API documentation: <https://wiki.eduuni.fi/spaces/ophPPK/pages/190612447/Koulutustarjonta+ja+Opintopolku.fi+tietomallit+ja+rajapinnat> (section "Opintopolku.fi:n (konfo) ulkoiset rajapinnat"). It says the external endpoints need no authentication, only a caller-id header, and suit showing published offerings on one's own sites. It states **no licence, attribution rule, terms, image rights or rate limits**; that gap is the reason for this request.
+- The API user guidance page: opintopolku.fi/konfo/fi/sivu/opintopolku-fi-rajapinnat.
 
 ## English
 
-Subject: Question about reuse terms of the Opintopolku external API (`/konfo-backend/external/*`)
+Subject: Reuse terms for program data from the Opintopolku external API (`/konfo-backend/external/*`)
 
 Hello,
 
-We are building [Pathway AI, a service that helps international applicants discover university degree programmes]. Your guidance page
-for API users (opintopolku.fi/konfo/fi/sivu/opintopolku-fi-rajapinnat) says published education offerings can be fetched for display in
-third-party web services through the open external API and that the published offering data is open data. Before we launch publicly we
-would like to confirm the exact terms. Could you please tell us:
+We run Pathway AI [a service that helps international applicants discover university degree programmes]. The Konfo external API
+documentation on wiki.eduuni.fi says the open external endpoints can be used to show published education offerings on your own websites,
+but it states no licence, attribution rule or terms of use. Before we show program details publicly we would like written confirmation.
 
-1. Under which licence is the data returned by `/konfo-backend/external/*` published (for example CC BY 4.0), and how should we attribute it?
-2. May we keep a stored copy of the fields we use (programme name, degree level, field of education, planned duration, teaching language,
-   campus municipality, application round closing dates, the Studyinfo page link) in our own database, refreshed from your API about weekly,
-   in order to display and search them? We do not store free-text descriptions.
-3. Are there limits on request frequency or volume beyond the `Crawl-delay: 30` in robots.txt, which we follow? We read about 10 to 30
-   records per university per week and re-read discovery lists weekly.
-4. Is commercial use of the data covered?
-5. Whom should we contact if you ask us to correct or remove data, and how quickly should we act?
+What we show today without an account is only institution identity (name, city, country, the institution's own website link, and how
+many programmes we track). Programme-level details are not public.
+
+For programme-level data we would like to publish, per programme: name, degree level, field of education, planned duration, teaching
+language(s), campus municipality, tuition fee where the API states it, application period dates, admission requirements as published, and
+the link to the programme's Studyinfo page. Could you please tell us:
+
+1. Under which licence is this data published (for example CC BY 4.0), and how must we attribute it?
+2. May we keep a stored copy of these fields in our own database, refreshed from your API about weekly, to display and search them?
+3. Are there limits on request frequency or volume beyond the `Crawl-delay: 30` in robots.txt, which we follow?
+4. Is commercial use covered?
+5. Are there fields (for example tuition, requirements or free-text descriptions) that we may not reuse?
+6. Whom should we contact if you ask us to correct or remove data, and how quickly should we act?
 
 We identify our client as `PathwayAIBot/0.1 (+https://github.com/YunisSadig/pathway-ai-backend)`. Thank you for your help.
 
@@ -32,23 +41,27 @@ We identify our client as `PathwayAIBot/0.1 (+https://github.com/YunisSadig/path
 
 ## Suomeksi
 
-Aihe: Kysymys Opintopolun ulkoisen rajapinnan (`/konfo-backend/external/*`) uudelleenkäyttöehdoista
+Aihe: Opintopolun ulkoisen rajapinnan (`/konfo-backend/external/*`) koulutustietojen uudelleenkäyttöehdot
 
 Hei,
 
-kehitämme palvelua [Pathway AI, joka auttaa kansainvälisiä hakijoita löytämään yliopistojen tutkintoon johtavia koulutuksia].
-Rajapintojen käyttäjille tarkoitetulla sivullanne (opintopolku.fi/konfo/fi/sivu/opintopolku-fi-rajapinnat) kerrotaan, että Opintopolussa
-julkaistua koulutustarjontaa voi hakea esitettäväksi kolmannen osapuolen verkkopalveluun avoimen ulkoisen rajapinnan kautta ja että
-julkaistu koulutustarjontadata on avointa dataa. Ennen julkista julkaisua haluamme varmistaa tarkat ehdot. Voitteko kertoa:
+ylläpidämme palvelua Pathway AI [joka auttaa kansainvälisiä hakijoita löytämään yliopistojen tutkintoon johtavia koulutuksia]. Konfon
+ulkoisen rajapinnan dokumentaatio (wiki.eduuni.fi) kertoo, että avoimilla ulkoisilla rajapinnoilla voi hakea julkaistua koulutustarjontaa
+näkyviin omille verkkosivuille, mutta siinä ei mainita lisenssiä, lähteen mainintaa eikä käyttöehtoja. Ennen kuin näytämme koulutusten
+tietoja julkisesti haluamme kirjallisen vahvistuksen.
 
-1. Millä lisenssillä rajapinnan (`/konfo-backend/external/*`) palauttama data on julkaistu (esim. CC BY 4.0) ja miten lähde tulee mainita?
-2. Saammeko säilyttää käyttämiemme kenttien kopion (koulutuksen nimi, tutkinnon taso, koulutusala, suunniteltu kesto, opetuskieli,
-   kampuskunta, hakujen päättymispäivät, Opintopolun sivulinkki) omassa tietokannassamme ja päivittää sen rajapinnasta noin viikoittain
-   esittämistä ja hakua varten? Emme tallenna vapaamuotoisia kuvaustekstejä.
-3. Onko pyyntömäärille rajoituksia robots.txt:n `Crawl-delay: 30` -ohjeen lisäksi? Noudatamme sitä. Luemme noin 10–30 tietuetta
-   yliopistoa kohden viikossa ja haemme hakulistaukset viikoittain.
+Ilman tiliä näytämme nyt vain oppilaitoksen perustiedot (nimi, kaupunki, maa, oppilaitoksen oma verkkosivu ja seuraamiemme koulutusten
+lukumäärä). Koulutuskohtaiset tiedot eivät ole julkisia.
+
+Koulutuskohtaisesti haluaisimme julkaista: nimi, tutkinnon taso, koulutusala, suunniteltu kesto, opetuskieli(et), kampuskunta,
+lukukausimaksu jos rajapinta sen kertoo, hakuajat, julkaistut pääsyvaatimukset ja linkki koulutuksen Opintopolku-sivulle. Voitteko kertoa:
+
+1. Millä lisenssillä data on julkaistu (esim. CC BY 4.0) ja miten lähde tulee mainita?
+2. Saammeko säilyttää näiden kenttien kopion omassa tietokannassamme ja päivittää sen rajapinnasta noin viikoittain esittämistä ja hakua varten?
+3. Onko pyyntömäärille rajoituksia robots.txt:n `Crawl-delay: 30` -ohjeen lisäksi? Noudatamme sitä.
 4. Kattaako lupa kaupallisen käytön?
-5. Keneen otamme yhteyttä, jos pyydätte korjaamaan tai poistamaan tietoja, ja kuinka nopeasti meidän tulee toimia?
+5. Onko kenttiä (esim. lukukausimaksu, vaatimukset tai vapaamuotoiset kuvaukset), joita emme saa käyttää uudelleen?
+6. Keneen otamme yhteyttä, jos pyydätte korjaamaan tai poistamaan tietoja, ja kuinka nopeasti meidän tulee toimia?
 
 Tunnistaudumme asiakkaana nimellä `PathwayAIBot/0.1 (+https://github.com/YunisSadig/pathway-ai-backend)`. Kiitos avusta.
 
