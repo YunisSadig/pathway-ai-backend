@@ -100,3 +100,19 @@ session whose account has `catalogue_access` (checked in the database on every r
 **Known limits.** Email verification and password reset need an SMTP account; without one the API says so (`EMAIL_UNAVAILABLE`) and
 registration reports an existing address as taken (the only enumeration exception, documented). Google sign-in needs an OAuth client
 and is not implemented.
+
+## ADR-23 Student profile v2: named grading scales, no conversions, conditional completion (2026-11-15)
+
+**Decision.** The profile is a structured document (`/api/v1/account/student-profile`), not a form of loose fields. A grade is stored exactly as printed on a
+NAMED scale (`FIVE_POINT`, `TEN_POINT`, `PERCENT_100`, `GPA_4`, `LETTER`, `OTHER` with a stated label and range); Pathway AI never converts a grade, never
+derives a US GPA and never estimates admission chances (research and sources: `docs/data/grading-systems-and-exams.md`). A country does not select a scale:
+the student picks the one on their own transcript. Exams are limited to IELTS, TOEFL iBT (new 1-6 reports valid only for tests on or after 2026-01-21, and
+the legacy 0-120 report) and SAT; each is stored as reported and never compared with another. Completion rules depend on the student's situation
+(school, bachelor's, master's, graduated) and are enforced by the backend (`StudentProfileRules`); a draft may be saved half-finished, a completed profile never
+becomes incomplete. "None yet" / "not taken" / "not sure" are explicit answers, never forced entries.
+**Data.** V10 is additive: V9 columns stay as they were and are shown to the student as "entered earlier", never reinterpreted. New tables: `student_education`,
+`student_skill`, `student_experience`, `student_exam_result`, `student_exam_section`, `student_preferred_university`, `student_avatar`.
+**Destinations** come from the live catalogue through `ProgramService` (the public discovery rules); an account without catalogue access receives nothing from it.
+**Avatar.** Stored in PostgreSQL as a server-produced 256x256 JPEG (type decided from magic bytes, size and pixel limits before decoding, re-encoded, metadata
+removed); durable and backed up, no extra service and no cost. Object storage remains an option if volume ever demands it.
+**Future AI.** The structure is what a future advisor reads; no model, score or prediction exists. Profiles are not training data.
