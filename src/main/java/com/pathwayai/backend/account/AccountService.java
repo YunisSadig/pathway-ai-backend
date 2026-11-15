@@ -45,9 +45,12 @@ public class AccountService {
     private final SessionTerminator sessions;
     private final boolean cataloguePublic;
     private final String dummyHash;
+    private final ExternalIdentityRepository googleIdentities;
 
     AccountService(AccountRepository accounts, AuthThrottle throttle, PasswordEncoder encoder, MailGateway mail, AccountProperties props,
-                   SessionTerminator sessions, @Value("${app.access.catalogue-public:false}") boolean cataloguePublic) {
+                   SessionTerminator sessions, ExternalIdentityRepository googleIdentities,
+                   @Value("${app.access.catalogue-public:false}") boolean cataloguePublic) {
+        this.googleIdentities = googleIdentities;
         this.accounts = accounts;
         this.throttle = throttle;
         this.encoder = encoder;
@@ -56,6 +59,27 @@ public class AccountService {
         this.sessions = sessions;
         this.cataloguePublic = cataloguePublic;
         this.dummyHash = encoder.encode(UUID.randomUUID().toString());
+    }
+
+    /** Re-checks the password of an account before a sensitive step; false for an account that has none. */
+    boolean passwordMatches(AccountRow account, String raw) {
+        return account.passwordHash() != null && raw != null && encoder.matches(raw, account.passwordHash());
+    }
+
+    /**
+     * Creates the account of a first-time Google user (no password, the address already proved by Google) and its Google identity in
+     * ONE transaction, so a concurrent second attempt either waits for the constraint and then finds the first account, or fails whole.
+     */
+    @Transactional
+    UUID createGoogleAccount(String email, String emailNormalized, String displayName, String googleSubject) {
+        UUID id = accounts.insert(email, emailNormalized, null, displayName);
+        accounts.markEmailVerified(id);
+        googleIdentities.link(id, ExternalIdentityRepository.GOOGLE, googleSubject, email);
+        return id;
+    }
+
+    Optional<AccountRow> findByEmailNormalized(String emailNormalized) {
+        return accounts.findByEmail(emailNormalized);
     }
 
     public boolean emailDeliveryAvailable() {
@@ -113,7 +137,8 @@ public class AccountService {
             throw new AccountException(429, "TOO_MANY_ATTEMPTS", "Too many attempts. Please wait a few minutes and try again.");
         }
         Optional<AccountRow> found = accounts.findByEmail(email);
-        boolean ok = encoder.matches(password, found.map(AccountRow::passwordHash).orElse(dummyHash)) && found.isPresent();
+        boolean ok = encoder.matches(password, found.map(a -> a.passwordHash() == null ? dummyHash : a.passwordHash()).orElse(dummyHash))
+                && found.isPresent() && found.get().passwordHash() != null; // a Google-only account has no password to match
         if (!ok) {
             throttle.failure("login-email", email, 5, 900, 900);
             throttle.failure("login-ip", ip, 40, 900, 900);
@@ -157,7 +182,7 @@ public class AccountService {
         if (throttle.hit("forgot-ip", ip, 3600) > 6) {
             return;
         }
-        EmailAddress.normalize(rawEmail).filter(e -> throttle.hit("forgot-email", e, 3600) <= 3).flatMap(accounts::findByEmail)
+        EmailAddress.normalize(rawEmail).filter(e -> throttle.hit("forgot-email", e, 3600) <= 3).flatMap(accounts::findByEmail).filter(a -> a.passwordHash() != null) // no reset link for an account that signs in with Google
                 .ifPresent(account -> {
                     String token = newToken();
                     accounts.deleteTokens(account.id(), RESET);
@@ -186,6 +211,9 @@ public class AccountService {
     @Transactional
     void changePassword(UUID id, String current, String newPassword, String keepSessionId) {
         AccountRow account = accounts.findById(id).orElseThrow(() -> new AccountException(401, "UNAUTHENTICATED", "Please log in again."));
+        if (account.passwordHash() == null) {
+            throw new AccountException(409, "NO_PASSWORD", "This account signs in with Google and has no password to change.");
+        }
         if (!encoder.matches(current, account.passwordHash())) {
             throw new AccountException(403, "WRONG_PASSWORD", "Your current password is not correct.");
         }
@@ -199,7 +227,7 @@ public class AccountService {
     @Transactional
     void deleteAccount(UUID id, String password) {
         AccountRow account = accounts.findById(id).orElseThrow(() -> new AccountException(401, "UNAUTHENTICATED", "Please log in again."));
-        if (!encoder.matches(password, account.passwordHash())) {
+        if (account.passwordHash() == null || !encoder.matches(password, account.passwordHash())) {
             throw new AccountException(403, "WRONG_PASSWORD", "Your password is not correct.");
         }
         accounts.delete(id); // profile, qualifications, destinations, saved items and tokens go with it (ON DELETE CASCADE)

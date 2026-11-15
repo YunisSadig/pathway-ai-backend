@@ -35,11 +35,13 @@ public final class AccountDtos {
     }
 
     public record AccountResponse(UUID id, String email, String displayName, String role, boolean emailVerified,
-                                  boolean catalogueAccess, Instant createdAt, StudentProfileDtos.AvatarInfo avatar) {
+                                  boolean catalogueAccess, Instant createdAt, StudentProfileDtos.AvatarInfo avatar,
+                                  boolean hasPassword, java.util.List<String> providers) {
     }
 
     /** What the website may offer, so it never shows a button that cannot work. */
-    public record ConfigResponse(boolean registrationOpen, boolean emailDeliveryAvailable, boolean cataloguePublic) {
+    public record ConfigResponse(boolean registrationOpen, boolean emailDeliveryAvailable, boolean cataloguePublic,
+                                 boolean googleLoginAvailable) {
     }
 
     public record MessageResponse(String message) {
