@@ -467,6 +467,29 @@ class StudentProfileIT {
     }
 
     @Test
+    void thePictureLivesInTheDatabaseNotOnTheServerDiskSoItSurvivesARestartAndAReplacementKeepsOneRow() throws Exception {
+        Student a = student();
+        mvc.perform(put("/api/v1/account/avatar").cookie(a.session()).contentType(MediaType.IMAGE_PNG).content(png(300, 300)))
+                .andExpect(status().isOk());
+        String id = jdbc.queryForObject("select id::text from user_account where email_normalized = ?", String.class, a.email().toLowerCase());
+        // the bytes are a database row (hosted application disks are ephemeral; the database is not)
+        Integer bytes = jdbc.queryForObject("select octet_length(data) from student_avatar where account_id = ?::uuid", Integer.class, id);
+        assertThat(bytes).isBetween(100, 262144);
+        // a fresh read (what a restarted application does) returns exactly the stored bytes
+        byte[] stored = jdbc.queryForObject("select data from student_avatar where account_id = ?::uuid", byte[].class, id);
+        byte[] served = mvc.perform(get("/api/v1/account/avatar").cookie(a.session())).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsByteArray();
+        assertThat(served).isEqualTo(stored);
+        // replacing keeps a single row and bumps the version; removing deletes it
+        mvc.perform(put("/api/v1/account/avatar").cookie(a.session()).contentType(MediaType.IMAGE_PNG).content(png(120, 90)))
+                .andExpect(status().isOk());
+        assertThat(jdbc.queryForObject("select count(*) from student_avatar where account_id = ?::uuid", Integer.class, id)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("select version from student_avatar where account_id = ?::uuid", Integer.class, id)).isEqualTo(2);
+        mvc.perform(delete("/api/v1/account/avatar").cookie(a.session())).andExpect(status().isNoContent());
+        assertThat(jdbc.queryForObject("select count(*) from student_avatar where account_id = ?::uuid", Integer.class, id)).isZero();
+    }
+
+    @Test
     void aPictureIsReencodedToASmallSquareJpegOwnedByTheUploader() throws Exception {
         Student a = student();
         Student b = student();

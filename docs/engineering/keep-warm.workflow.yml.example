@@ -1,0 +1,36 @@
+# NOT ACTIVE. This is a proposal kept outside .github/workflows on purpose, so it cannot run. To activate it the owner copies it to
+# .github/workflows/keep-warm.yml (see docs/engineering/cold-start.md), after deciding to accept a scheduled request to the production API.
+#
+# Purpose: avoid the free-tier cold start (measured 85 to 109 s after idling) during the hours people use the site.
+# Window: 09:00 to 23:00 Asia/Baku. Baku is UTC+4 all year (no daylight saving), so that is 05:00 to 19:00 UTC. GitHub cron uses UTC:
+# "*/10 5-18 * * *" fires at minutes 00, 10, ... 50 of the UTC hours 05..18, i.e. 09:00 to 22:50 Baku. GitHub may delay or skip runs.
+# Opt-in: nothing happens unless the repository variable KEEP_WARM is exactly "true". Set it to anything else to stop at once.
+# Cost: about 84 runs per day (14 h x 6), about 2,500 a month, each well under a minute. The repository is public, so Actions minutes are
+# free; if it ever becomes private, 2,500 billed minutes exceed the 2,000 free minutes, so revisit the interval then.
+# Monitoring: every run writes its status code and time to the job summary; a failed ping fails the run, and GitHub emails the person
+# who last edited this file. Look at the Actions tab, workflow "Keep API warm", to see the history and the slowest pings.
+name: Keep API warm
+
+on:
+  schedule:
+    - cron: "*/10 5-18 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: keep-warm
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    if: ${{ vars.KEEP_WARM == 'true' && vars.API_BASE_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping the public health endpoint
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          out=$(curl -fsS -m 150 --retry 2 --retry-delay 5 -o /dev/null -w "%{http_code} %{time_total}" "$API_BASE_URL/actuator/health")
+          echo "health: $out (status, seconds)" | tee -a "$GITHUB_STEP_SUMMARY"
