@@ -1,33 +1,44 @@
-# Pathway AI Backend
+# Pathway AI — Backend
 
-REST backend for **Pathway AI**, an international university discovery and education-planning platform. The first release exposes a read-only university discovery API backed by PostgreSQL. The frontend lives in a separate repository: [pathway-ai-frontend](https://github.com/YunisSadig/pathway-ai-frontend).
+**Live website: https://pathway-ai-frontend-roan.vercel.app** · Frontend repository: https://github.com/YunisSadig/pathway-ai-frontend
 
-> Product direction: [docs/product/MVP_SPEC.md](docs/product/MVP_SPEC.md) (global, program-first, all disciplines, bachelor and master).
->
-> There are **no static academic records**, neither in the migrations nor in a data file. Programs enter only through an official-API connector and stay current through `--app.refresh.command=sync`: see [docs/data/sync-policy.md](docs/data/sync-policy.md). Every fact has a source and a field-level provenance row; a year is stored only when the source states it; unknown stays unknown.
->
-> Inspecting the database in pgAdmin 4: [docs/database/PGADMIN_GUIDE.md](docs/database/PGADMIN_GUIDE.md).
+REST API for **Pathway AI**, a study-abroad planning platform for students from Azerbaijan, Kazakhstan, Georgia, Uzbekistan and Kyrgyzstan. It serves student accounts and profiles, and a **protected** catalogue of official university program data.
+
+| Part | Where it runs |
+| --- | --- |
+| This API (Spring Boot, Docker) | **Render** (free web service; sleeps when idle, a cold start can take up to about two minutes) |
+| Database (PostgreSQL 17) | **Neon** |
+| Frontend | **Vercel** (the browser never calls this API directly; the site's own server forwards the calls) |
+
+Health check: https://pathway-ai-api.onrender.com/actuator/health (a liveness probe, not a public API; every `/api/v1` call needs the deployment's staging key and, for the catalogue, a signed-in account with catalogue access).
+
+> Product direction: [docs/product/MVP_SPEC.md](docs/product/MVP_SPEC.md). There are **no static academic records**: programs enter only through an official-API connector and stay current through `--app.refresh.command=sync` ([docs/data/sync-policy.md](docs/data/sync-policy.md)). Database inspection: [docs/database/PGADMIN_GUIDE.md](docs/database/PGADMIN_GUIDE.md).
 
 ## Technology stack
-Java 21 · Spring Boot 4.1.2 (Web MVC, Data JPA, Validation, Actuator) · PostgreSQL 17 · Flyway · Maven Wrapper · JUnit 5 + Mockito + Testcontainers · GitHub Actions
+Java 21 · Spring Boot 4.1.2 (Web MVC, Data JPA, Security, Session JDBC, Validation, Actuator) · PostgreSQL 17 · Flyway · Maven Wrapper · JUnit 5 + Mockito + Testcontainers · GitHub Actions
 
 ## Architecture
 Package-by-feature under `com.pathwayai.backend`:
 
 ```
-university/  controller service repository entity dto mapper   <- public API
-program/     controller service repository entity dto mapper    <- public API (program-first)
-program/importer  ReferenceData, validator, idempotent importer   <- reference data, not migrations
-field/       entity repository                                  <- academic-field taxonomy (rows, not enums)
-requirement/ entity repository                                  <- per application cycle, cites a source
-tuition/     entity repository                                  <- per academic year, cites a source
-source/      entity repository                                  <- official source provenance
-country/     entity repository
-common/      exception response                                 <- ApiError, PageResponse, global handler
-src/main/resources/db/migration/                                <- Flyway migrations
-docs/engineering/                                               <- decisions, mistakes, known issues
+account/     accounts, sessions, student profile v2, saved items, avatar   <- /api/v1/account/**
+university/  program/  field/  requirement/  tuition/  source/  country/    <- academic catalogue (gated)
+refresh/ provider/  connectors, source monitoring, synchronization          <- official data only
+common/      exception, response, discovery policy
+src/main/resources/db/migration/                                             <- Flyway (V1-V10)
+docs/                                                                        <- decisions, data, deployment
 ```
 See [architecture decisions](docs/engineering/architecture-decisions.md).
+
+## Authentication and security
+- Email + password (bcrypt), **server-side sessions** in PostgreSQL (Spring Session JDBC); the browser holds only an opaque `PATHWAY_SESSION` cookie (HttpOnly, SameSite=Lax, Secure in production). No tokens in JavaScript.
+- Login/registration/recovery throttled in the database; identical errors for unknown email and wrong password; one-time tokens stored only as SHA-256 hashes.
+- Every account call acts on the session's own account (no ids in URLs); writes require the site's `Origin`.
+- The catalogue (`/programs`, `/universities`, `/discovery`) is closed to anonymous callers and to accounts without `catalogue_access` (401 / 403) until the data-reuse terms are confirmed (`CATALOGUE_PUBLIC`).
+- Runtime database role `pathway_app`: SELECT on the catalogue, writes only on account tables ([docs/database/account-role.sql](docs/database/account-role.sql)). Details: ADR-22 and ADR-23.
+
+## Database migrations
+Flyway, additive only; applied to Neon through the workflow **Source refresh** with mode `migrate` (the production API runs with Flyway disabled). Never edit an applied migration; add a new version.
 
 ## Requirements
 JDK 21, Docker Desktop (database + integration tests), PowerShell. Build with JDK 21 even if your default `JAVA_HOME` differs:
@@ -201,6 +212,10 @@ Invoke-RestMethod "http://localhost:8080/api/v1/universities?q=tech&country=de&s
 | `APP_API_CACHE_MAX_AGE_SECONDS` | `300` | How long a browser or CDN may reuse a list/detail answer before it must revalidate (ETag); errors are never cached |
 | `REFERENCE_DATA_LOCATION` | `classpath:reference-data/taxonomy.json` | The taxonomy file (countries and academic fields only; a file with academic records is refused) |
 | `PORT` | `8080` | HTTP port (injected by most hosts) |
+| `STAGING_ACCESS_KEY` | *(production)* | Infrastructure key every `/api/v1` call must send as `X-Staging-Key` (set on the host, never committed) |
+| `CATALOGUE_PUBLIC` | `false` | `true` opens the catalogue to everyone (only after the data-reuse terms are settled) |
+| `SITE_URL` | `http://localhost:3000` | Public site origin (links in emails, allowed origin) |
+| `SESSION_COOKIE_SECURE` | `true` in prod | Secure flag of the session cookie |
 
 A git-ignored `.env` in the working directory is read automatically; real environment variables take precedence.
 
@@ -231,7 +246,7 @@ Measured on a developer laptop (Windows, PostgreSQL 17 in Docker, JDK 21, local 
 
 ## CI and CD
 - **CI** (implemented): `.github/workflows/ci.yml` runs `./mvnw clean verify` (incl. Testcontainers integration tests) on every push to `main` and every PR. It never deploys.
-- **CD** (not implemented; awaiting owner approval and a hosting decision): see [docs/deployment.md](docs/deployment.md) for requirements, env vars, options and cost notes.
+- **CD**: Render redeploys `main` after its checks pass; the workflow `Verify deployment` then waits for the merged commit (`/actuator/info`) and smoke-tests the API, asserting that the gated catalogue refuses anonymous callers. See [docs/deployment-api.md](docs/deployment-api.md).
 
 ## Troubleshooting
 - **`role "pathway" does not exist`** — another PostgreSQL owns the port. Check `Get-NetTCPConnection -LocalPort 5433` and change `POSTGRES_PORT`/`DB_URL`.

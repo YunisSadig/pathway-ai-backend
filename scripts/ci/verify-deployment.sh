@@ -28,10 +28,13 @@ check() {  # check <name> <expected-status> <path> [jq-ish grep]
   echo "ok   $1"
 }
 check "readiness"          200 /actuator/health/readiness '"status":"UP"'
-check "program list"       200 "/api/v1/programs?size=5" '"content"|"items"|\['
-check "university list"    200 "/api/v1/universities?size=5" '"content"|"items"|\['
-check "discovery status"   200 /api/v1/discovery/status
-check "unknown program"    404 /api/v1/programs/zz--does-not-exist
+# The catalogue is gated (student accounts): an anonymous caller must be refused, never served. Account basics must answer.
+check "account config"     200 /api/v1/account/config '"registrationOpen"'
+check "anonymous has no session" 401 /api/v1/account/me
+check "program list is gated"    401 "/api/v1/programs?size=5"
+check "university list is gated" 401 "/api/v1/universities?size=5"
+check "discovery is gated"       401 /api/v1/discovery/status
+check "unknown program is gated" 401 /api/v1/programs/zz--does-not-exist
 check "no env endpoint"    404 /actuator/env
 [ -n "${STAGING_ACCESS_KEY:-}" ] && { code=$(curl -s -o /dev/null -m 60 -w '%{http_code}' "$base/api/v1/programs"); [ "$code" = 401 ] && echo "ok   gate closed without the key" || { echo "FAIL gate: HTTP $code without key (expected 401)"; fail=1; }; }
 [ "$fail" = 0 ] && echo "== deployment verified" || { echo "== deployment verification FAILED"; exit 1; }
