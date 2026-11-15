@@ -53,3 +53,10 @@
 | 49 | No API host, Dockerfile or CD pipeline: the frontend cannot read the hosted database yet, and the frontend's own caching could not be checked from this repository | Synchronized data is not visible to users until the API is hosted | Open: owner decision (docs/deployment-sync.md section 6) |
 | 50 | The `verify-full` TLS handshake with Neon, the hosted-database connection, issue creation, the webhook and the dead-man's-switch ping could not be tested before the owner's accounts exist | Each fails visibly on the first run (`bootstrap`) rather than silently | Open: verified at the first hosted run (docs/deployment-sync.md section 5) |
 | 51 | Without an independent dead-man's switch (`HEALTHCHECK_PING_URL`), a completely missed run (schedule disabled after 60 days, GitHub outage) is noticed by nothing inside GitHub | Stale data is only withheld from public discovery after 45 days | Open: owner sets up the external check (docs/deployment-sync.md section 2) |
+
+## Student accounts: open items (2026-11-15)
+
+- **No email delivery.** Without an SMTP account (`MAIL_*`), email verification and password reset report `EMAIL_UNAVAILABLE`, and registration answers `EMAIL_TAKEN` for an existing address (the one documented enumeration exception). Needs the owner to create a mail provider account.
+- **No Google sign-in.** Needs an OAuth client created interactively by the owner.
+- **Catalogue stays gated** (`CATALOGUE_PUBLIC=false`, accounts need `catalogue_access`) until the Studyinfo reuse conditions are answered in writing.
+- **Account support tools are manual:** granting catalogue access is a SQL update in the Neon editor (no admin UI).
