@@ -114,7 +114,9 @@ class AccountSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/account/register", "/api/v1/account/login",
                                 "/api/v1/account/verify-email", "/api/v1/account/resend-verification",
                                 "/api/v1/account/forgot-password", "/api/v1/account/reset-password").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/account/oauth/google/start", "/api/v1/account/oauth/google/callback").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/account/oauth/google/start", "/api/v1/account/oauth/google/callback",
+                                "/api/v1/account/oauth/google/pending-link").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/account/oauth/google/confirm-link").permitAll()
                         .requestMatchers("/api/v1/account/**").authenticated()
                         .requestMatchers("/api/v1/programs/**", "/api/v1/universities/**", "/api/v1/discovery/**").access(catalogue)
                         .anyRequest().permitAll())

@@ -59,6 +59,7 @@ class GoogleAuthIT {
 
     @Autowired MockMvc mvc;
     @Autowired JdbcTemplate jdbc;
+    @org.springframework.test.context.bean.override.mockito.MockitoSpyBean ExternalIdentityRepository identitiesSpy;
 
     @AfterEach
     void clean() {
@@ -179,9 +180,10 @@ class GoogleAuthIT {
         NEXT.set(google("sub-conflict-1", email, true));
         Started s = start("", null);
         MvcResult r = callback(s, s.state());
-        assertThat(location(r)).isEqualTo("http://site.test/login?error=google_conflict");
-        assertThat(r.getResponse().getCookie("PATHWAY_SESSION")).isNull();
+        // never merged by email, and no session: the visitor is sent to the one-time "prove it is your account" screen instead
+        assertThat(location(r)).isEqualTo("http://site.test/login/link-google");
         assertThat(count("select count(*) from external_identity where subject = 'sub-conflict-1'")).isZero();
+        mvc.perform(get("/api/v1/account/me").cookie(s.session())).andExpect(status().isUnauthorized()); // parked, not signed in
         // the password account still works and is untouched
         mvc.perform(post("/api/v1/account/login").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"" + email + "\",\"password\":\"" + AccountApiIT.PASSWORD + "\"}")).andExpect(status().isOk());
@@ -253,6 +255,130 @@ class GoogleAuthIT {
         Started t = start("?mode=link", thief);
         assertThat(location(callback(t, t.state()))).isEqualTo("http://site.test/settings?section=security&google=taken");
         assertThat(count("select count(*) from external_identity where subject = 'sub-link-1'")).isEqualTo(1);
+    }
+
+    /** Registers a password account and returns its address; the Google step for the same address is then parked as a pending link. */
+    record Parked(String email, Cookie session, java.util.UUID accountId) {
+    }
+
+    Parked parkedLink(String sub) throws Exception {
+        String email = mail();
+        Cookie owner = mvc.perform(post("/api/v1/account/register").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"" + email + "\",\"password\":\"" + AccountApiIT.PASSWORD + "\",\"displayName\":\"Pat Student\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getCookie("PATHWAY_SESSION");
+        java.util.UUID id = jdbc.queryForObject("select id from user_account where email_normalized = ?", java.util.UUID.class, email);
+        jdbc.update("insert into saved_university (account_id, university_slug) values (?, 'synthetic-university')", id);
+        mvc.perform(post("/api/v1/account/logout").cookie(owner)).andReturn();
+        NEXT.set(google(sub, email, true));
+        Started s = start("", null);
+        MvcResult r = callback(s, s.state());
+        assertThat(location(r)).isEqualTo("http://site.test/login/link-google");
+        return new Parked(email, s.session(), id);
+    }
+
+    String confirm(Cookie session, String password) {
+        return "{\"password\":\"" + password + "\"}";
+    }
+
+    @Test
+    void theOneTimePasswordProofLinksGoogleToTheSameAccountAndBothMethodsKeepWorking() throws Exception {
+        Parked p = parkedLink("sub-onetime-1");
+        long savedBefore = count("select count(*) from saved_university where account_id = ?", p.accountId());
+        mvc.perform(get("/api/v1/account/oauth/google/pending-link").cookie(p.session())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value(p.email()));
+        MvcResult done = mvc.perform(post("/api/v1/account/oauth/google/confirm-link").cookie(p.session()).contentType(MediaType.APPLICATION_JSON)
+                .content(confirm(p.session(), AccountApiIT.PASSWORD))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.next").value("/dashboard")).andReturn();
+        Cookie session = done.getResponse().getCookie("PATHWAY_SESSION");
+        assertThat(session.getValue()).isNotEqualTo(p.session().getValue()); // a new session id: no fixation
+        // THE SAME account: same id, same data, still exactly one row for the address, now with Google as a provider next to the password
+        mvc.perform(get("/api/v1/account/me").cookie(session)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value(p.email())).andExpect(jsonPath("$.hasPassword").value(true))
+                .andExpect(jsonPath("$.providers[0]").value("GOOGLE"));
+        assertThat(count("select count(*) from user_account where email_normalized = ?", p.email())).isEqualTo(1);
+        assertThat(jdbc.queryForObject("select account_id from external_identity where subject = 'sub-onetime-1'", java.util.UUID.class))
+                .isEqualTo(p.accountId());
+        assertThat(count("select count(*) from saved_university where account_id = ?", p.accountId())).isEqualTo(savedBefore);
+        // replaying the proof does nothing: the pending link was consumed
+        mvc.perform(post("/api/v1/account/oauth/google/confirm-link").cookie(p.session()).contentType(MediaType.APPLICATION_JSON)
+                .content(confirm(p.session(), AccountApiIT.PASSWORD))).andExpect(status().isGone());
+        // from now on Google opens the same account directly, without the password
+        NEXT.set(google("sub-onetime-1", p.email(), true));
+        Started again = start("", null);
+        MvcResult direct = callback(again, again.state());
+        assertThat(location(direct)).isEqualTo("http://site.test/dashboard");
+        mvc.perform(get("/api/v1/account/me").cookie(direct.getResponse().getCookie("PATHWAY_SESSION")))
+                .andExpect(jsonPath("$.email").value(p.email()));
+        // and the password still works
+        mvc.perform(post("/api/v1/account/login").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"" + p.email() + "\",\"password\":\"" + AccountApiIT.PASSWORD + "\"}")).andExpect(status().isOk());
+        assertThat(count("select count(*) from user_account where email_normalized = ?", p.email())).isEqualTo(1);
+    }
+
+    @Test
+    void aWrongPasswordLinksNothingAndFiveMissesEndThePendingLink() throws Exception {
+        Parked p = parkedLink("sub-wrong-1");
+        for (int i = 0; i < 4; i++) {
+            mvc.perform(post("/api/v1/account/oauth/google/confirm-link").cookie(p.session()).contentType(MediaType.APPLICATION_JSON)
+                    .content(confirm(p.session(), "not the password"))).andExpect(status().isForbidden());
+        }
+        // still pending after four misses, and the right password would still work; a fifth miss ends it
+        mvc.perform(get("/api/v1/account/oauth/google/pending-link").cookie(p.session())).andExpect(status().isOk());
+        mvc.perform(post("/api/v1/account/oauth/google/confirm-link").cookie(p.session()).contentType(MediaType.APPLICATION_JSON)
+                .content(confirm(p.session(), "not the password"))).andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/account/oauth/google/confirm-link").cookie(p.session()).contentType(MediaType.APPLICATION_JSON)
+                .content(confirm(p.session(), AccountApiIT.PASSWORD))).andExpect(status().isGone());
+        assertThat(count("select count(*) from external_identity where subject = 'sub-wrong-1'")).isZero();
+        assertThat(count("select count(*) from user_account where email_normalized = ?", p.email())).isEqualTo(1);
+        // the original account is unchanged and still logs in
+        mvc.perform(post("/api/v1/account/login").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"" + p.email() + "\",\"password\":\"" + AccountApiIT.PASSWORD + "\"}")).andExpect(status().isOk());
+    }
+
+    @Test
+    void withoutAPendingLinkTheProofEndpointsAnswerGoneAndNotFoundNeverAnAccount() throws Exception {
+        mvc.perform(get("/api/v1/account/oauth/google/pending-link")).andExpect(status().isNotFound());
+        mvc.perform(post("/api/v1/account/oauth/google/confirm-link").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"password\":\"" + AccountApiIT.PASSWORD + "\"}")).andExpect(status().isGone());
+    }
+
+    @Test
+    void aGoogleSubjectAlreadyLinkedElsewhereCannotBeAttachedByTheProof() throws Exception {
+        Parked p = parkedLink("sub-taken-1");
+        // meanwhile somebody else's account took that Google subject
+        String other = mail();
+        NEXT.set(google("sub-taken-1", other, true));
+        Started s = start("", null);
+        callback(s, s.state());
+        mvc.perform(post("/api/v1/account/oauth/google/confirm-link").cookie(p.session()).contentType(MediaType.APPLICATION_JSON)
+                .content(confirm(p.session(), AccountApiIT.PASSWORD))).andExpect(status().isConflict());
+        assertThat(count("select count(*) from external_identity where subject = 'sub-taken-1'")).isEqualTo(1);
+        assertThat(count("select count(*) from external_identity where account_id = ?", p.accountId())).isZero();
+    }
+
+    @Test
+    void aGoogleAddressThatIsNotVerifiedNeverStartsLinking() throws Exception {
+        String email = mail();
+        mvc.perform(post("/api/v1/account/register").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"" + email + "\",\"password\":\"" + AccountApiIT.PASSWORD + "\"}")).andExpect(status().isCreated());
+        NEXT.set(google("sub-unverified-link", email, false));
+        Started s = start("", null);
+        assertThat(location(callback(s, s.state()))).isEqualTo("http://site.test/login?error=google_unverified_email");
+        mvc.perform(get("/api/v1/account/oauth/google/pending-link").cookie(s.session())).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void anUnexpectedFailureInTheCallbackIsASafeRedirectNeverAServerError() throws Exception {
+        // the real production failure: the external_identity table was missing, so the lookup threw a database error
+        org.mockito.Mockito.doThrow(new org.springframework.jdbc.BadSqlGrammarException("lookup", "select ...",
+                new java.sql.SQLException("relation \"external_identity\" does not exist"))).when(identitiesSpy).accountOf(
+                org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString());
+        NEXT.set(google("sub-boom-1", mail(), true));
+        Started s = start("", null);
+        MvcResult r = callback(s, s.state());
+        assertThat(r.getResponse().getStatus()).isEqualTo(302);
+        assertThat(location(r)).isEqualTo("http://site.test/login?error=google_failed");
+        assertThat(r.getResponse().getContentAsString()).doesNotContain("external_identity").doesNotContain("Exception");
     }
 
     @Test

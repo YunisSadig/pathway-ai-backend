@@ -368,3 +368,12 @@ Only problems that actually happened during development. Each entry was verified
 - **A failed live smoke test leaves disposable accounts behind** (it deletes the account only at the end). They were removed with a scoped `delete ... where email_normalized like 'pathway-smoke-%@example.com'`.
 - **Layout regressions from a harmless addition:** a two-button language switch overflowed the header at 360 px; fixed with a single compact toggle and by hiding the header Sign up button below 400 px (the menu and the hero still offer it).
 - **Status:** all fixed and verified (251 backend tests, 112 unit, 311 browser tests, 8 hosted tests on 2026-11-15).
+
+## 46. Google callback returned HTTP 500 in production: the code was deployed before its migration (2026-11-15)
+
+- **Error output (Render log, 20:43:42Z and again on `GET /api/v1/account/me` at 20:44:29Z):** `PSQLException: ERROR: relation "external_identity" does not exist` (`BadSqlGrammarException ... select provider from external_identity where account_id = ?`).
+- **Root cause:** the hosted API runs with Flyway OFF; schema changes reach Neon only through the workflow "Source refresh", mode `migrate`. Backend #37 (V12, the `external_identity` table) was merged and auto-deployed without that run, so the new code queried a table that did not exist. Credentials, token checks, the proxy and the session store were all fine (the failure was the first database read after Google answered). Because `/me` also reads the table, every signed-in request failed too.
+- **Files:** `GoogleAuthController` (callback now catches unexpected failures and redirects to `/login?error=google_failed`, logging the exception but never the code or tokens), `GoogleAuthIT.anUnexpectedFailureInTheCallbackIsASafeRedirectNeverAServerError` (reproduces the failing lookup).
+- **Fix:** run `Source refresh` mode `migrate` (additive: one new table, one relaxed NOT NULL) BEFORE relying on the new code. See status.
+- **Prevention rule:** a PR that adds a Flyway version is not "deployed" until the `migrate` run has succeeded on Neon; run it BEFORE merging, or merge only with the run queued immediately after, and confirm with `verify`/a read of `flyway_schema_history`. A deployed feature flag (here, the Google credentials) must be enabled only after its migration.
+- **Status:** the code fix and regression test are tested; the production migration was NOT run by me (the action was declined by the permission layer) and is still pending the owner's run.
