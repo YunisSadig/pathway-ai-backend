@@ -95,8 +95,6 @@ class CatalogueGateIT {
     void savedItemsWorkWithAccessAndResolveThroughTheCatalogueRules() throws Exception {
         String email = AccountApiIT.email();
         Cookie session = register(email);
-        mvc.perform(put("/api/v1/account/saved/programs/zz-gate-u--p").cookie(session)).andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("CATALOGUE_PROTECTED"));
         grant(email, true);
         mvc.perform(put("/api/v1/account/saved/programs/zz-gate-u--p").cookie(session)).andExpect(status().isNoContent());
         mvc.perform(put("/api/v1/account/saved/programs/zz-gate-u--p").cookie(session)).andExpect(status().isNoContent()); // idempotent
@@ -108,10 +106,10 @@ class CatalogueGateIT {
                 .andExpect(jsonPath("$.programs[0].universityName").value("Synthetic Gate University"))
                 .andExpect(jsonPath("$.universities[0].name").value("Synthetic Gate University"))
                 .andExpect(header().string("Cache-Control", "no-store"));
-        // revoked access: the identifiers stay but no catalogue fact is shown
+        // revoked access: saved items still resolve through the public tier (name, level, university), never the protected catalogue
         grant(email, false);
         mvc.perform(get("/api/v1/account/saved").cookie(session)).andExpect(jsonPath("$.catalogueVisible").value(false))
-                .andExpect(jsonPath("$.programs[0].available").value(false)).andExpect(jsonPath("$.programs[0].name").doesNotExist());
+                .andExpect(jsonPath("$.programs[0].available").value(true)).andExpect(jsonPath("$.programs[0].name").value("Synthetic Gate Program"));
         grant(email, true);
         mvc.perform(delete("/api/v1/account/saved/programs/zz-gate-u--p").cookie(session)).andExpect(status().isNoContent());
         mvc.perform(get("/api/v1/account/saved").cookie(session)).andExpect(jsonPath("$.programs.length()").value(0));

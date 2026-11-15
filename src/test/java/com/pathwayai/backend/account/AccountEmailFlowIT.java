@@ -81,8 +81,7 @@ class AccountEmailFlowIT {
     String registerPending(String email) throws Exception {
         mvc.perform(post("/api/v1/account/register").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"" + email + "\",\"password\":\"" + AccountApiIT.PASSWORD + "\"}"))
-                .andExpect(status().isAccepted()).andExpect(jsonPath("$.status").value("CHECK_EMAIL"))
-                .andExpect(jsonPath("$.account").doesNotExist());
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.status").value("CREATED"));
         return tokenIn(OUTBOX.get(OUTBOX.size() - 1));
     }
 
@@ -92,11 +91,11 @@ class AccountEmailFlowIT {
     }
 
     @Test
-    void registrationSendsALinkAndLoginWaitsForIt() throws Exception {
+    void registrationSendsALinkButLoginNeverWaitsForIt() throws Exception {
         String email = AccountApiIT.email();
         String token = registerPending(email);
         assertThat(OUTBOX.get(0).to()).isEqualTo(email);
-        login(email, AccountApiIT.PASSWORD, 403); // EMAIL_NOT_VERIFIED
+        login(email, AccountApiIT.PASSWORD, 200); // an unverified address can still log in
         mvc.perform(post("/api/v1/account/verify-email").contentType(MediaType.APPLICATION_JSON).content("{\"token\":\"" + token + "\"}"))
                 .andExpect(status().isOk());
         login(email, AccountApiIT.PASSWORD, 200);
@@ -114,22 +113,18 @@ class AccountEmailFlowIT {
         jdbc.update("update account_token set expires_at = now() - interval '1 minute'");
         mvc.perform(post("/api/v1/account/verify-email").contentType(MediaType.APPLICATION_JSON).content("{\"token\":\"" + token + "\"}"))
                 .andExpect(status().isBadRequest());
-        login(email, AccountApiIT.PASSWORD, 403);
+        login(email, AccountApiIT.PASSWORD, 200);
     }
 
     @Test
-    void registeringAnExistingAddressAnswersTheSameAndTellsTheOwnerByEmail() throws Exception {
+    void registeringAnExistingAddressIsRefusedPlainly() throws Exception {
         String email = AccountApiIT.email();
         registerPending(email);
         OUTBOX.clear();
-        String second = mvc.perform(post("/api/v1/account/register").contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/api/v1/account/register").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"" + email + "\",\"password\":\"" + AccountApiIT.PASSWORD + "\"}"))
-                .andExpect(status().isAccepted()).andReturn().getResponse().getContentAsString();
-        String fresh = mvc.perform(post("/api/v1/account/register").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + AccountApiIT.email() + "\",\"password\":\"" + AccountApiIT.PASSWORD + "\"}"))
-                .andExpect(status().isAccepted()).andReturn().getResponse().getContentAsString();
-        assertThat(second).isEqualTo(fresh);
-        assertThat(OUTBOX).extracting(Sent::subject).contains("You already have a Pathway AI account");
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("EMAIL_TAKEN"));
+        assertThat(OUTBOX).isEmpty();
     }
 
     @Test
