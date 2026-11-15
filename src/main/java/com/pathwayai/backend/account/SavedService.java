@@ -73,10 +73,8 @@ class SavedService {
 
     @Transactional
     void saveUniversity(UUID accountId, String slug) {
-        requireCatalogue(accountId);
-        try {
-            universities.getBySlug(slug);
-        } catch (ResourceNotFoundException e) {
+        // a university's identity is public, so any signed-in account may keep a shortlist of universities (programs still need catalogue access)
+        if (universities.findListedBySlug(slug).isEmpty()) {
             throw new AccountException(404, "NOT_FOUND", "This university is not available.");
         }
         enforceLimit("saved_university", accountId);
@@ -116,14 +114,9 @@ class SavedService {
     }
 
     private SavedUniversity resolveUniversity(String slug, Instant savedAt, boolean visible) {
-        if (visible) {
-            try {
-                var u = universities.getBySlug(slug);
-                return new SavedUniversity(slug, savedAt, true, u.name(), u.countryName());
-            } catch (ResourceNotFoundException e) {
-                // falls through
-            }
-        }
-        return new SavedUniversity(slug, savedAt, false, null, null);
+        // identity only (name, country): public information, shown to every account
+        return universities.findListedBySlug(slug)
+                .map(u -> new SavedUniversity(slug, savedAt, true, u.name(), u.countryName()))
+                .orElseGet(() -> new SavedUniversity(slug, savedAt, false, null, null));
     }
 }

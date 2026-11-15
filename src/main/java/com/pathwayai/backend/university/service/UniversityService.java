@@ -48,6 +48,15 @@ public class UniversityService {
         return PageResponse.from(universityRepository.findAll(spec, pageable), mapper::toSummary);
     }
 
+    /** One university by slug under the SAME listing rules as the search (a withheld or unverified institution is absent). Identity fields only. */
+    public java.util.Optional<UniversitySummaryResponse> findListedBySlug(String slug) {
+        Specification<University> spec = Specification
+                .where(fetchCountry())
+                .and((root, query, cb) -> cb.equal(root.get("slug"), slug))
+                .and(discovery.universities());
+        return universityRepository.findOne(spec).map(mapper::toSummary);
+    }
+
     public UniversityDetailResponse getBySlug(String slug) {
         return universityRepository.findBySlug(slug)
                 .map(mapper::toDetail)

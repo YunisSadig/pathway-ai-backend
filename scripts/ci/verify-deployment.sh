@@ -31,6 +31,7 @@ check "readiness"          200 /actuator/health/readiness '"status":"UP"'
 # The catalogue is gated (student accounts): an anonymous caller must be refused, never served. Account basics must answer.
 check "account config"     200 /api/v1/account/config '"registrationOpen"'
 check "anonymous has no session" 401 /api/v1/account/me
+check "public universities (visitors)" 200 "/api/v1/public/universities?size=5" '"content"'
 check "program list is gated"    401 "/api/v1/programs?size=5"
 check "university list is gated" 401 "/api/v1/universities?size=5"
 check "discovery is gated"       401 /api/v1/discovery/status
