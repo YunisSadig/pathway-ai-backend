@@ -48,7 +48,10 @@ class AccountController {
     private final SavedService saved;
     private final SecurityContextRepository contextRepository = new HttpSessionSecurityContextRepository();
 
-    AccountController(AccountService service, ProfileService profiles, SavedService saved) {
+    private final AvatarService avatars;
+
+    AccountController(AccountService service, ProfileService profiles, SavedService saved, AvatarService avatars) {
+        this.avatars = avatars;
         this.service = service;
         this.profiles = profiles;
         this.saved = saved;
@@ -169,7 +172,7 @@ class AccountController {
         contextRepository.saveContext(context, request, response);
     }
 
-    static AccountResponse view(AccountRow a) {
-        return new AccountResponse(a.id(), a.email(), a.displayName(), a.role(), a.emailVerified(), a.catalogueAccess(), a.createdAt());
+    AccountResponse view(AccountRow a) {
+        return new AccountResponse(a.id(), a.email(), a.displayName(), a.role(), a.emailVerified(), a.catalogueAccess(), a.createdAt(), avatars.info(a.id()));
     }
 }

@@ -35,7 +35,7 @@ public final class AccountDtos {
     }
 
     public record AccountResponse(UUID id, String email, String displayName, String role, boolean emailVerified,
-                                  boolean catalogueAccess, Instant createdAt) {
+                                  boolean catalogueAccess, Instant createdAt, StudentProfileDtos.AvatarInfo avatar) {
     }
 
     /** What the website may offer, so it never shows a button that cannot work. */

@@ -470,6 +470,8 @@ class StudentProfileIT {
     void aPictureIsReencodedToASmallSquareJpegOwnedByTheUploader() throws Exception {
         Student a = student();
         Student b = student();
+        // the account answer every screen reads (navigation included) carries the picture state
+        mvc.perform(get("/api/v1/account/me").cookie(a.session())).andExpect(jsonPath("$.avatar.present").value(false));
         mvc.perform(get("/api/v1/account/avatar").cookie(a.session())).andExpect(status().isNotFound());
         mvc.perform(put("/api/v1/account/avatar").cookie(a.session()).contentType(MediaType.IMAGE_PNG).content(png(640, 480)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.present").value(true)).andExpect(jsonPath("$.version").value(1));
@@ -485,8 +487,11 @@ class StudentProfileIT {
                 .andExpect(jsonPath("$.version").value(2));
         mvc.perform(get("/api/v1/account/avatar").cookie(b.session())).andExpect(status().isNotFound());
         mvc.perform(get(URL).cookie(a.session())).andExpect(jsonPath("$.avatar.present").value(true)).andExpect(jsonPath("$.avatar.version").value(2));
+        mvc.perform(get("/api/v1/account/me").cookie(a.session())).andExpect(jsonPath("$.avatar.present").value(true))
+                .andExpect(jsonPath("$.avatar.version").value(2));
         mvc.perform(delete("/api/v1/account/avatar").cookie(a.session())).andExpect(status().isNoContent());
         mvc.perform(get("/api/v1/account/avatar").cookie(a.session())).andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/account/me").cookie(a.session())).andExpect(jsonPath("$.avatar.present").value(false));
     }
 
     @Test
