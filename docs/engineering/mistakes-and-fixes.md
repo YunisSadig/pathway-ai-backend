@@ -348,3 +348,13 @@ Only problems that actually happened during development. Each entry was verified
 - **Fix:** frontend PR #26: upstream wait 130 s, `maxDuration = 150` (Fluid Compute is enabled on the Hobby project), a unit test that pins the wait above 100 s and below the function limit, and a loading state that explains a long wait after 6 s.
 - **Prevention rule:** timeouts come from measured values, and a documented figure is a hypothesis until measured.
 - **Status:** fixed; verified through the live site on 2026-11-15: first request after 17 idle minutes, HTTP 200 in 108.7 s, 9 programs.
+
+## 44. Account work: six problems found while building student accounts (2026-11-15)
+
+- **Cookie settings ignored in tests.** `server.servlet.session.cookie.*` only configures embedded servers; MockMvc saw `SESSION=...; Path=/`. **Fix:** an explicit `DefaultCookieSerializer` bean (`PATHWAY_SESSION`, HttpOnly, SameSite=Lax, Secure by property). **Rule:** configure security-relevant cookie attributes in code and pin them with a test.
+- **Anonymous 401s created database sessions.** Spring Security's request cache saved the denied request. **Fix:** `requestCache` disabled (nothing here needs post-login replay). **Rule:** after adding a security chain, count rows in the session table after anonymous calls.
+- **`@WebMvcTest` slices returned 401** once Security was on the classpath. **Fix:** `@AutoConfigureMockMvc(addFilters = false)` in those slices; security is covered by the integration tests.
+- **Hikari "connection not available" in the full suite:** many cached Spring contexts times a pool of 10 exceeded PostgreSQL `max_connections`. **Fix:** test pool size 3, min idle 0. I also overwrote the tracked `src/test/resources/application.properties` once and lost a setting (restored with `git checkout`, then appended). **Rule:** append to tracked test config, never replace it.
+- **CLI jobs (`web-application-type=none`) broke** because web-only security beans were required. **Fix:** the chain is `@ConditionalOnWebApplication` and `SessionTerminator` is optional.
+- **Secrets shown on screen three times** (Neon SQL history entry opened by a click, then a pasted Render value that the field revealed). **Fix:** the role password was rotated each time, history entries deleted, never screenshot after pasting a secret; save first, screenshot only after the page reloads masked. **Rule:** a SQL-history entry loads its text into the editor when clicked; use its menu instead.
+- **Status:** fixed; verified by 228 backend tests and a hosted register, profile, gate and delete round trip on 2026-11-15.
