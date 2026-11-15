@@ -45,6 +45,10 @@ app:
     mail-from: ${MAIL_FROM:no-reply@pathway-ai.invalid}
     # Email is sent only when an SMTP server is configured with SPRING_MAIL_HOST (+ _PORT, _USERNAME, _PASSWORD); otherwise the API
     # reports emailDeliveryAvailable=false and the website hides verification and reset.
+  google:
+    # Continue with Google is offered only when BOTH are set (hosted secrets; never committed). Redirect URI: ${SITE_URL}/api/v1/account/oauth/google/callback
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
   cors:
     # Explicit origins only (comma separated). Set CORS_ALLOWED_ORIGINS to the deployed frontend origin in production.
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}

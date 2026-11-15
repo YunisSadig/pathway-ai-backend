@@ -49,9 +49,16 @@ class AccountController {
     private final SecurityContextRepository contextRepository = new HttpSessionSecurityContextRepository();
 
     private final AvatarService avatars;
+    private final GoogleAuthSettings google;
+    private final ExternalIdentityRepository identities;
+    private final SessionStarter sessionStarter;
 
-    AccountController(AccountService service, ProfileService profiles, SavedService saved, AvatarService avatars) {
+    AccountController(AccountService service, ProfileService profiles, SavedService saved, AvatarService avatars,
+                      GoogleAuthSettings google, ExternalIdentityRepository identities, SessionStarter sessionStarter) {
         this.avatars = avatars;
+        this.google = google;
+        this.identities = identities;
+        this.sessionStarter = sessionStarter;
         this.service = service;
         this.profiles = profiles;
         this.saved = saved;
@@ -59,7 +66,7 @@ class AccountController {
 
     @GetMapping("/config")
     ConfigResponse config() {
-        return new ConfigResponse(service.registrationOpen(), service.emailDeliveryAvailable(), service.cataloguePublic());
+        return new ConfigResponse(service.registrationOpen(), service.emailDeliveryAvailable(), service.cataloguePublic(), google.available());
     }
 
     @PostMapping("/register")
@@ -160,19 +167,11 @@ class AccountController {
     }
 
     private void startSession(AccountRow account, HttpServletRequest request, HttpServletResponse response) {
-        if (request.getSession(false) != null) {
-            request.changeSessionId(); // a new session id after login defeats session fixation
-        } else {
-            request.getSession(true);
-        }
-        var authority = new SimpleGrantedAuthority("ADMIN".equals(account.role()) ? "ROLE_ADMIN" : "ROLE_USER");
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(account.id().toString(), null, List.of(authority)));
-        SecurityContextHolder.setContext(context);
-        contextRepository.saveContext(context, request, response);
+        sessionStarter.start(account, request, response);
     }
 
     AccountResponse view(AccountRow a) {
-        return new AccountResponse(a.id(), a.email(), a.displayName(), a.role(), a.emailVerified(), a.catalogueAccess(), a.createdAt(), avatars.info(a.id()));
+        return new AccountResponse(a.id(), a.email(), a.displayName(), a.role(), a.emailVerified(), a.catalogueAccess(), a.createdAt(), avatars.info(a.id()),
+                a.passwordHash() != null, identities.providersOf(a.id()));
     }
 }
