@@ -358,3 +358,13 @@ Only problems that actually happened during development. Each entry was verified
 - **CLI jobs (`web-application-type=none`) broke** because web-only security beans were required. **Fix:** the chain is `@ConditionalOnWebApplication` and `SessionTerminator` is optional.
 - **Secrets shown on screen three times** (Neon SQL history entry opened by a click, then a pasted Render value that the field revealed). **Fix:** the role password was rotated each time, history entries deleted, never screenshot after pasting a secret; save first, screenshot only after the page reloads masked. **Rule:** a SQL-history entry loads its text into the editor when clicked; use its menu instead.
 - **Status:** fixed; verified by 228 backend tests and a hosted register, profile, gate and delete round trip on 2026-11-15.
+
+## 45. Profile v2: problems found while building and verifying it (2026-11-15)
+
+- **A missing primitive failed the whole request.** A record with `boolean ongoing` made Jackson 3 reject a body that simply omitted it (HttpMessageNotReadable, no violations). **Fix:** `Boolean` and `Boolean.TRUE.equals(...)`. **Rule:** optional JSON fields are boxed types.
+- **Stale Playwright server.** `reuseExistingServer` silently tested an old build on port 3100 (strange 30-60 s timeouts, assertions about code that was already changed). **Rule:** stop whatever listens on 3100 before an e2e run that follows source changes; with Docker Desktop running, use `--workers=4`, not 10.
+- **Hidden previous page counted by locators.** After a client navigation Next keeps the previous route mounted but hidden, so `getByText(...).toHaveCount(0)` counted the wizard. **Rule:** use `.filter({ visible: true })` for "this text must not be shown" assertions.
+- **A banner meant for the wizard appeared on the finished profile page** ("press Finish"). Found by the hosted smoke test, not by the mocked e2e suite. **Fix:** `hideReady`. **Rule:** run the live smoke test against the real deployment after every UI change to a shared component.
+- **A failed live smoke test leaves disposable accounts behind** (it deletes the account only at the end). They were removed with a scoped `delete ... where email_normalized like 'pathway-smoke-%@example.com'`.
+- **Layout regressions from a harmless addition:** a two-button language switch overflowed the header at 360 px; fixed with a single compact toggle and by hiding the header Sign up button below 400 px (the menu and the hero still offer it).
+- **Status:** all fixed and verified (251 backend tests, 112 unit, 311 browser tests, 8 hosted tests on 2026-11-15).
