@@ -248,6 +248,24 @@ class StudyinfoConnectorIT {
     }
 
     @Test
+    void anUnknownFieldIsFilledAutomaticallyFromTheOfficialCodeButAPublishedOneIsNeverOverwritten() {
+        // imported while the record carries a code that is not in the reviewed mapping: the field stays unknown
+        serveModified(r -> StudyinfoParserTest.first(r, "koulutuskoodienAlatJaAsteet").put("koulutusalaKoodiUrit",
+                List.of("kansallinenkoulutusluokitus2016koulutusalataso1_09", "kansallinenkoulutusluokitus2016koulutusalataso2_999")));
+        importer.run(false, null, null);
+        assertThat(field("f.slug")).isNull();
+        serve(StudyinfoParserTest.recorded()); // the provider now states a code the reviewed mapping knows
+
+        monitors.markDue(StudyinfoAdapter.NAME, T1);
+        var run = refresh.runDueForAdapter(StudyinfoAdapter.NAME, T1);
+
+        assertThat(run.pendingReview()).isZero();
+        assertThat(field("f.slug")).as("an empty field is filled from the official classification code").isEqualTo("computer-and-data-science");
+        assertThat(jdbc.queryForObject("select status from staged_change where fact_type = 'ACADEMIC_FIELD' order by id desc limit 1", String.class))
+                .isEqualTo("AUTO_APPLIED");
+    }
+
+    @Test
     void renamingAProgramKeepsItsIdentifierItsLinksAndItsProviderIdAndCreatesNoDuplicate() throws Exception {
         importer.run(false, null, null);
         String identifier = "zz-studyinfo-u--computer-science-and-engineering-master-of-science";
@@ -441,7 +459,7 @@ class StudyinfoConnectorIT {
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.fields[?(@.field == 'duration_months')].updateMode").value("AUTOMATIC"))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.fields[?(@.field == 'languages')].updateMode").value("AUTOMATIC"))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.fields[?(@.field == 'name')].updateMode").value("REVIEW_REQUIRED"))
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.fields[?(@.field == 'academic_field')].updateMode").value("REVIEW_REQUIRED"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.fields[?(@.field == 'academic_field')].updateMode").value("ADDITIVE_AUTOMATIC"))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.fields[?(@.field == 'application_deadline')].updateMode").value("ADDITIVE_AUTOMATIC"))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.synchronization.notSynchronized[0]").value("tuition"))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.tuition").isEmpty());

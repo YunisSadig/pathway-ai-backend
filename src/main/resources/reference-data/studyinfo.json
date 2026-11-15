@@ -11,19 +11,19 @@
       "slug": "university-of-helsinki",
       "organisationOid": "1.2.246.562.10.39218317368",
       "officialName": "University of Helsinki",
-      "maxPrograms": 4
+      "maxPrograms": 30
     },
     {
       "slug": "aalto-university",
       "organisationOid": "1.2.246.562.10.72985435253",
       "officialName": "Aalto University",
-      "maxPrograms": 3
+      "maxPrograms": 30
     },
     {
       "slug": "university-of-oulu",
       "organisationOid": "1.2.246.562.10.38417217288",
       "officialName": "University of Oulu",
-      "maxPrograms": 3,
+      "maxPrograms": 30,
       "createIfMissing": {"name": "University of Oulu", "countryCode": "FI", "city": "Oulu"}
     }
   ]

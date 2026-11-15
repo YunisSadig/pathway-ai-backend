@@ -64,13 +64,27 @@ class PublicProgramController {
                 found.totalElements(), found.totalPages());
     }
 
-    /** {@code identifier} is {@code <university-slug>--<program-slug>}. Same field set as the list. */
+    /**
+     * One program: the list fields plus {@code lastCheckedOn}, the day the official source was last read successfully. That is a
+     * source CHECK, distinct from {@code verification.verifiedOn} (when the record was last verified) and from any actual change of a fact.
+     */
+    record PublicProgram(String identifier, String slug, String name, com.pathwayai.backend.program.entity.DegreeLevel degreeLevel,
+                         ProgramListItemResponse.FieldRef field, com.pathwayai.backend.program.entity.StudyMode studyMode,
+                         Integer durationMonths, java.util.List<String> teachingLanguages, String campusCity,
+                         ProgramListItemResponse.UniversityRef university, String officialProgramUrl, String officialAdmissionsUrl,
+                         String officialApplicationUrl, ProgramListItemResponse.Verification verification, java.time.LocalDate lastCheckedOn) {
+    }
+
+    /** {@code identifier} is {@code <university-slug>--<program-slug>}. */
     @GetMapping("/{identifier}")
-    ProgramListItemResponse get(@PathVariable @Size(max = 245) @Pattern(regexp = SLUG + "--" + SLUG) String identifier) {
+    PublicProgram get(@PathVariable @Size(max = 245) @Pattern(regexp = SLUG + "--" + SLUG) String identifier) {
         ProgramDetailResponse d = programs.getByIdentifier(identifier);
-        return open(new ProgramListItemResponse(d.identifier(), d.slug(), d.name(), d.degreeLevel(),
-                d.field(), d.studyMode(), d.durationMonths(), d.teachingLanguages(), d.campusCity(), d.university(),
-                d.officialProgramUrl(), d.officialAdmissionsUrl(), d.officialApplicationUrl(), d.verification()));
+        var sync = d.synchronization();
+        java.time.LocalDate checked = sync == null || sync.lastSuccessfulSyncAt() == null ? null
+                : sync.lastSuccessfulSyncAt().atZone(java.time.ZoneOffset.UTC).toLocalDate();
+        return new PublicProgram(d.identifier(), d.slug(), d.name(), d.degreeLevel(), d.field(), d.studyMode(), d.durationMonths(),
+                d.teachingLanguages(), d.campusCity(), d.university(), d.officialProgramUrl(), d.officialAdmissionsUrl(), null,
+                d.verification(), checked);
     }
 
     /** The application link is not part of the public tier. */

@@ -1,9 +1,145 @@
 {
-  "_comment": "Reviewed mapping from Studyinfo field-of-education codes (national classification, ISCED-F based) to the Pathway AI taxonomy. Each entry was added only after the code and its official English label were seen in a real API response (labels below are verbatim). A code that is not listed yields no academic field; never add one from a program name. Known unmapped: 0811 (agriculture), which the taxonomy has no field for.",
+  "_comment": "Reviewed mapping from Studyinfo field-of-education codes (national classification, ISCED-F based) to the Pathway AI taxonomy. Codes and labels are read verbatim from the official classification served by the Opintopolku koodisto service (kansallinenkoulutusluokitus2016koulutusalataso2/3, retrieved 2026-11-15); only the target slug is a reviewed decision. A 4-digit detailed code is looked up first, then its 3-digit narrow code. A code that is not listed (for example journalism 032, personal-service 'inter-disciplinary' codes, 0811 has no own entry) yields no academic field; never add one from a program name.",
   "mappings": [
-    {"code": "061", "slug": "computer-and-data-science", "label": "Information and Communication Technologies (ICT)"},
-    {"code": "052", "slug": "natural-sciences", "label": "Environment"},
-    {"code": "053", "slug": "natural-sciences", "label": "Physical sciences, chemistry and geosciences"},
-    {"code": "054", "slug": "mathematics-and-statistics", "label": "Mathematics and statistics"}
+    {
+      "code": "011",
+      "slug": "education",
+      "label": "Education"
+    },
+    {
+      "code": "021",
+      "slug": "arts-and-media",
+      "label": "Arts"
+    },
+    {
+      "code": "022",
+      "slug": "humanities",
+      "label": "Humanities (except languages)"
+    },
+    {
+      "code": "023",
+      "slug": "languages-and-literature",
+      "label": "Languages"
+    },
+    {
+      "code": "031",
+      "slug": "social-sciences",
+      "label": "Social and behavioural sciences"
+    },
+    {
+      "code": "041",
+      "slug": "business-and-administration",
+      "label": "Business and administration"
+    },
+    {
+      "code": "042",
+      "slug": "law",
+      "label": "Law"
+    },
+    {
+      "code": "051",
+      "slug": "natural-sciences",
+      "label": "Biological and related sciences"
+    },
+    {
+      "code": "052",
+      "slug": "natural-sciences",
+      "label": "Environment"
+    },
+    {
+      "code": "053",
+      "slug": "natural-sciences",
+      "label": "Physical sciences, chemistry and geosciences"
+    },
+    {
+      "code": "054",
+      "slug": "mathematics-and-statistics",
+      "label": "Mathematics and statistics"
+    },
+    {
+      "code": "061",
+      "slug": "computer-and-data-science",
+      "label": "Information and Communication Technologies (ICT)"
+    },
+    {
+      "code": "071",
+      "slug": "engineering-and-technology",
+      "label": "Engineering and engineering trades"
+    },
+    {
+      "code": "072",
+      "slug": "engineering-and-technology",
+      "label": "Manufacturing and processing"
+    },
+    {
+      "code": "081",
+      "slug": "agriculture-forestry-and-veterinary",
+      "label": "Agriculture"
+    },
+    {
+      "code": "082",
+      "slug": "agriculture-forestry-and-veterinary",
+      "label": "Forestry"
+    },
+    {
+      "code": "083",
+      "slug": "agriculture-forestry-and-veterinary",
+      "label": "Fisheries"
+    },
+    {
+      "code": "084",
+      "slug": "agriculture-forestry-and-veterinary",
+      "label": "Veterinary"
+    },
+    {
+      "code": "091",
+      "slug": "health-and-welfare",
+      "label": "Health"
+    },
+    {
+      "code": "092",
+      "slug": "health-and-welfare",
+      "label": "Welfare"
+    },
+    {
+      "code": "101",
+      "slug": "services",
+      "label": "Personal services"
+    },
+    {
+      "code": "103",
+      "slug": "services",
+      "label": "Security services"
+    },
+    {
+      "code": "104",
+      "slug": "services",
+      "label": "Transport services"
+    },
+    {
+      "code": "0311",
+      "slug": "economics",
+      "label": "Economics"
+    },
+    {
+      "code": "0313",
+      "slug": "psychology",
+      "label": "Psychology"
+    },
+    {
+      "code": "0715",
+      "slug": "mechanical-engineering",
+      "label": "Mechanics and metal trades"
+    },
+    {
+      "code": "0731",
+      "slug": "architecture-and-design",
+      "label": "Architecture and town planning"
+    },
+    {
+      "code": "0732",
+      "slug": "engineering-and-technology",
+      "label": "Building and civil engineering"
+    }
   ]
 }
