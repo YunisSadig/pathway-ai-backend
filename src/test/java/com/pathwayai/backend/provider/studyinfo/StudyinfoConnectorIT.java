@@ -268,6 +268,10 @@ class StudyinfoConnectorIT {
     @Test
     void renamingAProgramKeepsItsIdentifierItsLinksAndItsProviderIdAndCreatesNoDuplicate() throws Exception {
         importer.run(false, null, null);
+        String universityUrl = "https://example.invalid/synthetic-university-program";
+        jdbc.update("update degree_program set official_program_url = ? where id = ?", universityUrl, programId());
+        assertThat(importer.run(false, null, null).alreadyImported()).isEqualTo(1);
+        assertThat(field("p.official_program_url")).isEqualTo(universityUrl);
         String identifier = "zz-studyinfo-u--computer-science-and-engineering-master-of-science";
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/programs/" + identifier))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk());
