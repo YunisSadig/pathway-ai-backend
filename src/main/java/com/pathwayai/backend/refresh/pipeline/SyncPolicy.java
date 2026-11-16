@@ -40,7 +40,7 @@ public final class SyncPolicy {
     public static UpdateMode modeOf(String provenanceField) {
         return switch (provenanceField) {
             case "duration_months", "languages", "campus_city" -> UpdateMode.AUTOMATIC;
-            case "name", "degree_level" -> UpdateMode.REVIEW_REQUIRED;
+            case "name", "degree_level", "official_program_url" -> UpdateMode.REVIEW_REQUIRED;
             case "application_deadline", "academic_field" -> UpdateMode.ADDITIVE_AUTOMATIC;
             default -> UpdateMode.FIXED_AT_CREATION;
         };

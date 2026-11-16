@@ -34,7 +34,7 @@ public class ProgramMapper {
         return new ProgramListItemResponse(
                 p.getIdentifier(), p.getSlug(), p.getName(), p.getDegreeLevel(), field(p), p.getStudyMode(),
                 p.getDurationMonths(), languages(p), p.getCampusCity(), university(p.getUniversity()),
-                p.getOfficialProgramUrl(), p.getOfficialAdmissionsUrl(), activeApplicationUrl(p),
+                officialProgramUrl(p), p.getOfficialAdmissionsUrl(), activeApplicationUrl(p),
                 new Verification(p.getVerificationStatus(), p.getVerifiedOn()));
     }
 
@@ -60,7 +60,7 @@ public class ProgramMapper {
         return new ProgramDetailResponse(
                 p.getIdentifier(), p.getSlug(), p.getName(), p.getDegreeLevel(), field(p), p.getStudyMode(),
                 p.getDurationMonths(), languages(p), p.getCampusCity(), university(p.getUniversity()),
-                p.getOfficialProgramUrl(), p.getOfficialAdmissionsUrl(), activeApplicationUrl(p),
+                officialProgramUrl(p), p.getOfficialAdmissionsUrl(), activeApplicationUrl(p),
                 new Verification(p.getVerificationStatus(), p.getVerifiedOn()),
                 p.getSources().stream().map(this::source)
                         .sorted(Comparator.comparing(SourceRef::url)).toList(),
@@ -83,6 +83,13 @@ public class ProgramMapper {
      * An Apply link is only active for a VERIFIED program whose link was verified for a current or upcoming
      * cycle. Anything older is withheld here, so a stale link can never be presented as an active Apply button.
      */
+    private static String officialProgramUrl(DegreeProgram p) {
+        // Existing imports may still carry this legacy value until the reviewed backfill runs.
+        // Studyinfo stays in source records and external IDs, never in the university-page slot.
+        return com.pathwayai.backend.provider.universitypages.OfficialProgramPages.studyinfo(p.getOfficialProgramUrl())
+                ? null : p.getOfficialProgramUrl();
+    }
+
     private String activeApplicationUrl(DegreeProgram p) {
         if (p.getOfficialApplicationUrl() == null
                 || p.getVerificationStatus() != com.pathwayai.backend.program.entity.VerificationStatus.VERIFIED

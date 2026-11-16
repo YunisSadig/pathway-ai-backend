@@ -338,8 +338,6 @@ public class StudyinfoImporter {
             String oid = p.koulutusOid();
             slug = base + "-" + oid.substring(Math.max(0, oid.length() - 6));
         }
-        String pageUrl = p.toteutusOid() != null ? config.provider().programPageBase() + p.toteutusOid()
-                : config.provider().programPageFallbackBase() + p.koulutusOid();
         long sourceId = jdbc.sql("""
                 insert into source (url, title, publisher, source_type, retrieved_on)
                 values (:url, :title, :pub, 'GOVERNMENT', :on)
@@ -352,7 +350,7 @@ public class StudyinfoImporter {
                                             verification_status, verified_on)
                 values (:u, :slug, :name, :level, :url, 'VERIFIED', :on) returning id""")
                 .param("u", universityId).param("slug", slug).param("name", p.name()).param("level", p.degreeLevel())
-                .param("url", pageUrl).param("on", today).query(Long.class).single();
+                .param("url", (String) null).param("on", today).query(Long.class).single();
         jdbc.sql("insert into program_external_id (program_id, scheme, value) values (:p, :s, :v)")
                 .param("p", programId).param("s", StudyinfoParser.SCHEME_KOULUTUS).param("v", p.koulutusOid()).update();
         if (p.toteutusOid() != null) {
