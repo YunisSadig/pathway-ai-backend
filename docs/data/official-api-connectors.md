@@ -54,7 +54,7 @@ independent of OPH". The API's source and OpenAPI text carry the EUPL-1.2 notice
 | Teaching languages | `opetuskieli` | only fi/sv/en by the provider's own label; one unknown language omits the whole list |
 | Campus city | municipality of the offering organisation | omitted if implementations disagree |
 | Application deadline | round (`haku`) closing time | only a published round with exactly one closing time; the date is stored with the round's own name as label; **no academic year is stored** because the record only states it as the system's "inferred" start |
-| Program page | built from the provider's own sitemap pattern `/konfo/en/toteutus/{oid}` | |
+| Program page | university-owned page verified separately | Studyinfo imports leave `officialProgramUrl` unknown; reviewed OID association + live check required (`milestone-1-official-links.md`) |
 | External ids | `koulutus` and `toteutus` oids, organisation oid | unique, so one record is never imported twice |
 
 ### What the API cannot supply (still needs another source)

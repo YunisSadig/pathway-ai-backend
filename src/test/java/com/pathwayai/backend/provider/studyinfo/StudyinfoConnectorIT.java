@@ -133,7 +133,7 @@ class StudyinfoConnectorIT {
         assertThat(field("p.campus_city")).isEqualTo("Oulu");
         assertThat(field("f.slug")).isEqualTo("computer-and-data-science");
         assertThat(field("p.verification_status")).isEqualTo("VERIFIED");
-        assertThat(field("p.official_program_url")).isEqualTo("https://opintopolku.fi/konfo/en/toteutus/" + TOTEUTUS);
+        assertThat(field("p.official_program_url")).as("university destination needs a separate verified association").isNull();
         assertThat(field("p.official_application_url")).as("no application URL is stated by the API").isNull();
         assertThat(jdbc.queryForList("select language_code from program_language where program_id = ?", String.class, programId())).containsExactly("en");
         assertThat(jdbc.queryForList("select application_deadline::text || ' ' || label from program_intake where program_id = ?", String.class, programId()))
@@ -268,6 +268,10 @@ class StudyinfoConnectorIT {
     @Test
     void renamingAProgramKeepsItsIdentifierItsLinksAndItsProviderIdAndCreatesNoDuplicate() throws Exception {
         importer.run(false, null, null);
+        String universityUrl = "https://example.invalid/synthetic-university-program";
+        jdbc.update("update degree_program set official_program_url = ? where id = ?", universityUrl, programId());
+        assertThat(importer.run(false, null, null).alreadyImported()).isEqualTo(1);
+        assertThat(field("p.official_program_url")).isEqualTo(universityUrl);
         String identifier = "zz-studyinfo-u--computer-science-and-engineering-master-of-science";
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/programs/" + identifier))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk());

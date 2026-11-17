@@ -39,7 +39,8 @@ One class states it, `refresh/pipeline/SyncPolicy`; the pipeline enforces it and
 | degree level | Studyinfo | changed | `REVIEW_REQUIRED` |
 | academic field | Studyinfo | was unknown, the official code is now in the reviewed map | `ADDITIVE_AUTOMATIC`: filled, audited |
 | academic field | Studyinfo | a published field changed | **review** (never overwritten silently) |
-| official program URL, identifiers | Studyinfo | - | `FIXED_AT_CREATION` (stable) |
+| official program URL | reviewed university page association | initial preview + guarded live check | `REVIEW_REQUIRED`; Studyinfo is never the primary university destination; operator-only backfill, see `milestone-1-official-links.md` |
+| identifiers | Studyinfo | - | `FIXED_AT_CREATION` (stable) |
 | discontinued program | Studyinfo (`tila` = `arkistoitu`/`poistettu`) | state change | automatic: marked `DISCONTINUED`, hidden, nothing deleted, audited (`LIFECYCLE`); reinstated if published again |
 | new program | Studyinfo tarjonta listing | appears (within the university cap `maxPrograms`, now 30 each; known programs count toward it and cost no request) | created by `sync` with the full pipeline, verified, monitored |
 | tuition, scholarships, admission requirements, application URL | **no connector** | - | **unavailable**: listed in `synchronization.notSynchronized`, never shown as maintained |

@@ -76,6 +76,38 @@ public final class StudyinfoParser {
 
     @SuppressWarnings("unchecked")
     public static Parsed parse(String json, FieldTaxonomy taxonomy) {
+        return parse(json,taxonomy,null,false);
+    }
+
+    /** A reviewed offering may explicitly be a bachelor's-entry combined pathway; other mixed levels stay unsupported. */
+    @SuppressWarnings("unchecked")
+    public static Parsed parse(String json, FieldTaxonomy taxonomy,String implementationOid,boolean combinedEntry) {
+        return parse(json,taxonomy,implementationOid,combinedEntry,null);
+    }
+
+    public static Parsed parse(String json, FieldTaxonomy taxonomy,String implementationOid,boolean combinedEntry,String reviewedProviderOid) {
+        return parse(json,taxonomy,implementationOid,combinedEntry,reviewedProviderOid,List.of());
+    }
+
+    /**
+     * Base-education requirements that are themselves a completed degree. A target asking for one of these is a
+     * master's (or later) entry route; a bachelor's entry route asks for general university eligibility instead.
+     */
+    static final Set<String> PRIOR_DEGREE_REQUIREMENTS = Set.of("pohjakoulutusvaatimuskouta_101", "pohjakoulutusvaatimuskouta_102",
+            "pohjakoulutusvaatimuskouta_103", "pohjakoulutusvaatimuskouta_116", "pohjakoulutusvaatimuskouta_117",
+            "pohjakoulutusvaatimuskouta_119", "pohjakoulutusvaatimuskouta_120", "pohjakoulutusvaatimuskouta_121");
+    static final String GENERAL_UNIVERSITY_ELIGIBILITY = "pohjakoulutusvaatimuskouta_123";
+
+    /**
+     * {@code reviewedTitleCodes}: for a reviewed combined pathway whose level codes name only the master's level, the
+     * exact degree-title codes ({@code metadata.tutkintonimike}) a reviewer confirmed. The record is then a bachelor's
+     * entry only if it still states exactly those titles AND every published target of the reviewed implementation asks
+     * for general university eligibility and for no completed degree. Names are never used. Any difference leaves the
+     * level unknown, so the offering goes to review instead of being relabelled.
+     */
+    @SuppressWarnings("unchecked")
+    public static Parsed parse(String json, FieldTaxonomy taxonomy,String implementationOid,boolean combinedEntry,String reviewedProviderOid,
+                               List<String> reviewedTitleCodes) {
         List<String> issues = new ArrayList<>();
         Map<String, Object> root;
         try {
@@ -98,6 +130,8 @@ public final class StudyinfoParser {
             return new Parsed(null, List.of("not a university degree record (koulutustyyppi=" + str(root.get("koulutustyyppi")) + ")"));
         }
         List<Object> providers = list(root.get("tarjoajat"));
+        if(reviewedProviderOid!=null && implementationOid!=null)
+            providers=providers.stream().filter(p->reviewedProviderOid.equals(str(map(p).get("oid")))).toList();
         if (providers.size() != 1) {
             return new Parsed(null, List.of("expected exactly one providing institution, found " + providers.size()));
         }
@@ -107,10 +141,13 @@ public final class StudyinfoParser {
         Localized name = null;
         List<Map<String, Object>> toteutukset = new ArrayList<>();
         for (Object t : list(root.get("toteutukset"))) {
-            if ("julkaistu".equals(str(map(t).get("tila")))) {
+            if ("julkaistu".equals(str(map(t).get("tila")))
+                    && (implementationOid==null || implementationOid.equals(str(map(t).get("oid"))))) {
                 toteutukset.add(map(t));
             }
         }
+        if(implementationOid!=null && toteutukset.size()!=1)
+            return new Parsed(null,List.of("reviewed implementation is not uniquely published"));
         String toteutusOid = null;
         if (toteutukset.size() == 1) {
             toteutusOid = str(toteutukset.get(0).get("oid"));
@@ -125,12 +162,28 @@ public final class StudyinfoParser {
             return new Parsed(null, List.of("record has no name"));
         }
 
-        String level = degreeLevel(root, issues);
+        String level = degreeLevel(root, issues,combinedEntry);
+        if(combinedEntry && implementationOid!=null && reviewedTitleCodes!=null && !reviewedTitleCodes.isEmpty()) {
+            level=bachelorEntryByEvidence(root,implementationOid,reviewedTitleCodes,issues) ? "BACHELOR" : null;
+        }
         String[] field = field(root, taxonomy, issues);
         Integer months = distinctSingle(durations(toteutukset), "planned duration", issues);
         Set<String> languages = distinctSingleSet(languageSets(toteutukset), "teaching language", issues);
         String city = distinctSingle(cities(toteutukset), "campus city", issues);
-        List<Deadline> deadlines = deadlines(root, issues);
+        Map<String,Object> deadlineRoot=root;
+        if(implementationOid!=null) {
+            Set<String> rounds=new LinkedHashSet<>();
+            for(Object target:list(root.get("hakukohteet"))) {
+                Map<String,Object> entry=map(target);
+                if(implementationOid.equals(str(entry.get("toteutusOid"))) && "julkaistu".equals(str(entry.get("tila"))))
+                    rounds.add(str(entry.get("hakuOid")));
+            }
+            deadlineRoot=new LinkedHashMap<>(root);
+            deadlineRoot.put("haut",list(root.get("haut")).stream().filter(h->rounds.contains(str(map(h).get("oid")))).toList());
+            deadlineRoot.put("hakukohteet",list(root.get("hakukohteet")).stream()
+                    .filter(t->implementationOid.equals(str(map(t).get("toteutusOid")))).toList());
+        }
+        List<Deadline> deadlines = implementationOid==null ? deadlines(deadlineRoot, issues) : routeDeadlines(deadlineRoot, issues);
 
         String cleanName = INTAKE_SUFFIX.matcher(name.value()).replaceFirst("").strip();
         Program p = new Program(oid, toteutusOid, orgOid, orgName == null ? null : orgName.value(), cleanName.isEmpty() ? name.value() : cleanName, name.language(),
@@ -166,7 +219,7 @@ public final class StudyinfoParser {
 
     // ---- level and field --------------------------------------------------------------------------------------
 
-    private static String degreeLevel(Map<String, Object> root, List<String> issues) {
+    private static String degreeLevel(Map<String, Object> root, List<String> issues,boolean combinedEntry) {
         Set<String> codes = new TreeSet<>();
         for (Object k : list(root.get("koulutuskoodienAlatJaAsteet"))) {
             for (Object c : list(map(k).get("koulutusasteKoodiUrit"))) {
@@ -176,6 +229,7 @@ public final class StudyinfoParser {
                 }
             }
         }
+        if(combinedEntry && codes.equals(Set.of("6","7"))) return "BACHELOR";
         if (codes.size() != 1) {
             issues.add("degree level is not stated unambiguously (level codes " + codes + ")");
             return null;
@@ -354,6 +408,140 @@ public final class StudyinfoParser {
         }
         out.sort(Comparator.comparing(Deadline::date).thenComparing(Deadline::label));
         return out;
+    }
+
+    private static String unversioned(String codeUri) {
+        return codeUri == null ? null : codeUri.replaceFirst("#.*$", "");
+    }
+
+    /** See {@link #parse(String, FieldTaxonomy, String, boolean, String, List)}. */
+    private static boolean bachelorEntryByEvidence(Map<String, Object> root, String implementationOid, List<String> reviewedTitleCodes,
+                                                   List<String> issues) {
+        Set<String> titles = new TreeSet<>();
+        for (Object t : list(map(root.get("metadata")).get("tutkintonimike"))) {
+            titles.add(unversioned(str(map(t).get("koodiUri"))));
+        }
+        if (!titles.equals(new TreeSet<>(reviewedTitleCodes.stream().map(StudyinfoParser::unversioned).toList()))) {
+            issues.add("degree titles " + titles + " differ from the reviewed " + reviewedTitleCodes + ": entry level needs review");
+            return false;
+        }
+        int targets = 0;
+        for (Object o : list(root.get("hakukohteet"))) {
+            Map<String, Object> target = map(o);
+            if (!implementationOid.equals(str(target.get("toteutusOid"))) || !"julkaistu".equals(str(target.get("tila")))) {
+                continue;
+            }
+            targets++;
+            Set<String> requirements = new TreeSet<>();
+            for (Object r : list(target.get("pohjakoulutusvaatimus"))) {
+                requirements.add(unversioned(str(map(r).get("koodiUri"))));
+            }
+            if (!requirements.contains(GENERAL_UNIVERSITY_ELIGIBILITY) || requirements.stream().anyMatch(PRIOR_DEGREE_REQUIREMENTS::contains)) {
+                issues.add("application target " + str(target.get("oid")) + " does not state a bachelor's entry requirement: entry level needs review");
+                return false;
+            }
+        }
+        if (targets == 0) {
+            issues.add("reviewed implementation has no published application target: entry level needs review");
+        }
+        return targets > 0;
+    }
+
+    /**
+     * Deadlines of one reviewed implementation, one per application route. Targets of the same round that close on the
+     * same date form one route labelled with the round's name (the existing label). Targets of one round that close on
+     * different dates (for example two admission groups) each become a route; the label is the part of the target's own
+     * published name that the other targets of the round do not share, followed by the round's name.
+     */
+    private static List<Deadline> routeDeadlines(Map<String, Object> root, List<String> issues) {
+        Map<String, Map<String, Object>> rounds = new LinkedHashMap<>();
+        for (Object h : list(root.get("haut"))) {
+            if ("julkaistu".equals(str(map(h).get("tila"))) && str(map(h).get("oid")) != null) {
+                rounds.put(str(map(h).get("oid")), map(h));
+            }
+        }
+        Map<String, List<Map<String, Object>>> targetsByRound = new LinkedHashMap<>();
+        Map<String, String> closing = new LinkedHashMap<>();
+        for (Object o : list(root.get("hakukohteet"))) {
+            Map<String, Object> target = map(o);
+            Map<String, Object> round = rounds.get(str(target.get("hakuOid")));
+            if (round == null || !"julkaistu".equals(str(target.get("tila")))) {
+                continue;
+            }
+            List<Object> windows = Boolean.TRUE.equals(target.get("kaytetaanHaunAikataulua"))
+                    ? list(round.get("hakuajat")) : list(target.get("hakuajat"));
+            Set<String> ends = new TreeSet<>();
+            for (Object w : windows) {
+                String end = str(map(w).get("paattyy"));
+                Matcher m = end == null ? null : ISO_DATE.matcher(end);
+                if (m != null && m.matches()) {
+                    ends.add(m.group(1));
+                }
+            }
+            if (windows.size() != 1 || ends.size() != 1) {
+                issues.add("application target " + str(target.get("oid")) + " has no single closing date: not imported");
+                continue;
+            }
+            closing.put(str(target.get("oid")), ends.iterator().next());
+            targetsByRound.computeIfAbsent(str(target.get("hakuOid")), k -> new ArrayList<>()).add(target);
+        }
+        List<Deadline> out = new ArrayList<>();
+        for (var e : targetsByRound.entrySet()) {
+            Localized roundName = localized(rounds.get(e.getKey()).get("nimi"));
+            if (roundName == null) {
+                issues.add("application round " + e.getKey() + " has no usable name for a label: not imported");
+                continue;
+            }
+            Set<String> dates = new TreeSet<>();
+            e.getValue().forEach(t -> dates.add(closing.get(str(t.get("oid")))));
+            if (dates.size() == 1) {
+                out.add(new Deadline(e.getKey(), fitLabel(roundName.value()), dates.iterator().next()));
+                continue;
+            }
+            for (Map<String, Object> target : e.getValue()) {
+                String route = distinguishingSegment(target, e.getValue());
+                if (route == null) {
+                    issues.add("application target " + str(target.get("oid")) + " cannot be told apart by its published name: not imported");
+                    continue;
+                }
+                out.add(new Deadline(str(target.get("oid")), fitLabel(route + " · " + roundName.value()),
+                        closing.get(str(target.get("oid")))));
+            }
+        }
+        Set<String> labels = new java.util.HashSet<>();
+        for (Deadline d : out) {
+            if (!labels.add(d.label())) {
+                issues.add("two application routes shorten to the same label '" + d.label() + "': routes not imported");
+                return List.of();
+            }
+        }
+        out.sort(Comparator.comparing(Deadline::date).thenComparing(Deadline::label));
+        return out;
+    }
+
+    /** Labels are at most 100 characters (the intake key). A longer published name keeps its start and its end. */
+    static String fitLabel(String label) {
+        return label.length() <= 100 ? label : label.substring(0, 60).strip() + " … " + label.substring(label.length() - 37).strip();
+    }
+
+    /** The single comma-separated segment of a target's published name that no other target of the same round has. */
+    private static String distinguishingSegment(Map<String, Object> target, List<Map<String, Object>> sameRound) {
+        Localized own = localized(target.get("nimi"));
+        if (own == null) {
+            return null;
+        }
+        Set<String> others = new LinkedHashSet<>();
+        for (Map<String, Object> t : sameRound) {
+            Localized n = t == target ? null : localized(t.get("nimi"));
+            if (n != null) {
+                for (String s : n.value().split(",")) others.add(s.strip());
+            }
+        }
+        List<String> unique = new ArrayList<>();
+        for (String s : own.value().split(",")) {
+            if (!s.isBlank() && !others.contains(s.strip())) unique.add(s.strip());
+        }
+        return unique.size() == 1 ? unique.get(0) : null;
     }
 
     // ---- small helpers over the untyped JSON tree -----------------------------------------------------------------

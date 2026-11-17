@@ -377,3 +377,12 @@ Only problems that actually happened during development. Each entry was verified
 - **Fix:** run `Source refresh` mode `migrate` (additive: one new table, one relaxed NOT NULL) BEFORE relying on the new code. See status.
 - **Prevention rule:** a PR that adds a Flyway version is not "deployed" until the `migrate` run has succeeded on Neon; run it BEFORE merging, or merge only with the run queued immediately after, and confirm with `verify`/a read of `flyway_schema_history`. A deployed feature flag (here, the Google credentials) must be enabled only after its migration.
 - **Status:** the code fix and regression test are tested; the production migration was NOT run by me (the action was declined by the permission layer) and is still pending the owner's run.
+
+## 47. Windows verification artifacts and checkout line endings (2026-11-16)
+
+- **Errors:** frontend Prettier reported 67 untouched files after a CRLF checkout; the first browser build failed with `EBUSY: resource busy or locked, unlink .next/official-links-check.log`.
+- **Cause:** core.autocrlf produced CRLF while Prettier expects LF. A concurrent check wrote its log inside Next's disposable build directory, which the build tried to clean.
+- **Fix:** normalize working-tree text to LF, refresh the Git index and confirm no unrelated content diff; keep check logs outside `.next`; run the build after check completion. No global Git setting or formatting policy changed.
+- **Verification:** frontend format/lint/typecheck and 144 unit tests passed. The rerun built successfully and completed 403 browser tests, with 7 existing device-specific skips. Windows Next teardown hung after the cases completed; stopping that run's own server let Playwright exit 0.
+- **Prevention:** never put active logs in `.next`/`target` while another command cleans them; avoid concurrent type generation and production builds. Treat Windows server teardown separately from assertion results; require hosted Linux CI too.
+- **Status:** local checks completed; hosted PR checks must pass before any owner-approved merge.

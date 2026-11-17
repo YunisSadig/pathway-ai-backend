@@ -83,6 +83,17 @@ public final class FactValidator {
                     e.add("city is required (max 120 characters)");
                 }
             }
+            case UNIVERSITY_FACT -> {
+                if (v.get("field")==null || !com.pathwayai.backend.program.service.UniversityFacts.FIELDS.contains(v.get("field"))
+                        || blank(v.get("value")) || v.get("value").length() > 12000
+                        || blank(v.get("educationOid"))) {
+                    e.add("university fact needs a supported field, education OID and bounded non-empty value");
+                }
+                if(v.get("field")!=null && v.get("field").endsWith("url") && v.get("value")!=null) {
+                    if(!com.pathwayai.backend.provider.universitypages.CuratedSources.ownedByAny(v.get("value")))
+                        e.add("university fact URL must be a university-owned HTTPS information page");
+                }
+            }
         }
         return e;
     }

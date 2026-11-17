@@ -26,6 +26,8 @@ public class UniversityService {
     private final UniversityMapper mapper;
 
     private final DiscoveryPolicy discovery;
+    @Autowired(required=false) private com.pathwayai.backend.program.service.CuratedCatalog curated;
+    @Autowired(required=false) private com.pathwayai.backend.program.repository.DegreeProgramRepository programRepository;
 
     /** Without a discovery restriction (hand-built services in unit tests). */
     public UniversityService(UniversityRepository universityRepository, UniversityMapper mapper) {
@@ -44,7 +46,8 @@ public class UniversityService {
                 .where(fetchCountry())
                 .and(nameContains(nameQuery))
                 .and(inCountry(countryCode))
-                .and(discovery.universities());
+                .and(discovery.universities())
+                .and(curated==null ? (root,query,cb)->cb.conjunction() : curated.universities());
         return PageResponse.from(universityRepository.findAll(spec, pageable), mapper::toSummary);
     }
 
@@ -58,8 +61,15 @@ public class UniversityService {
     }
 
     public UniversityDetailResponse getBySlug(String slug) {
-        return universityRepository.findBySlug(slug)
+        var detail=universityRepository.findBySlug(slug)
                 .map(mapper::toDetail)
                 .orElseThrow(() -> new ResourceNotFoundException("University", slug));
+        if(curated==null || !curated.active() || !"FI".equals(detail.countryCode())) return detail;
+        var identifiers=programRepository==null ? curated.selectedIdentifiers()
+                : programRepository.findAll(com.pathwayai.backend.program.repository.ProgramSpecifications.fetchAssociations()
+                    .and(com.pathwayai.backend.program.repository.ProgramSpecifications.atUniversity(slug))
+                    .and(discovery.programs()).and(curated.programs())).stream().map(com.pathwayai.backend.program.entity.DegreeProgram::getIdentifier).toList();
+        return new UniversityDetailResponse(detail.slug(),detail.name(),detail.city(),detail.countryCode(),detail.countryName(),
+                detail.websiteUrl(),detail.description(),detail.programs().stream().filter(p->identifiers.contains(p.identifier())).toList());
     }
 }

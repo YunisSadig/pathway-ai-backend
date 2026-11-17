@@ -171,6 +171,202 @@
           "retrievedOn": "2026-11-14"
         }
       ]
+    },
+    {
+      "slug": "tampere-university",
+      "name": "Tampere University",
+      "country": "FI",
+      "city": "Tampere",
+      "nativeName": null,
+      "websiteUrl": "https://www.tuni.fi/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "tampere-university.fi"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "SF TAMPERE17"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10148224"
+        },
+        {
+          "scheme": "PIC",
+          "value": "902999288"
+        }
+      ],
+      "aliases": [
+        "TAMPEREEN KORKEAKOULUSAATIO SR"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-17",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/tampere-university.fi/hei",
+          "title": "HEI registry record: TAMPEREEN KORKEAKOULUSAATIO SR",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-17"
+        },
+        {
+          "url": "https://www.tuni.fi/en",
+          "title": "Tampere University",
+          "publisher": "Tampere University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-17"
+        }
+      ]
+    },
+    {
+      "slug": "lut-university",
+      "name": "LUT University",
+      "country": "FI",
+      "city": "Lappeenranta",
+      "nativeName": null,
+      "websiteUrl": "https://www.lut.fi/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "lut.fi"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "SF LAPPEEN01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10207996"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999591209"
+        }
+      ],
+      "aliases": [
+        "LAPPEENRANNAN-LAHDEN TEKNILLINEN YLIOPISTO LUT"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-17",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/lut.fi/hei",
+          "title": "HEI registry record: LAPPEENRANNAN-LAHDEN TEKNILLINEN YLIOPISTO LUT",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-17"
+        },
+        {
+          "url": "https://www.lut.fi/en",
+          "title": "LUT University",
+          "publisher": "LUT University",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-17"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-jyvaskyla",
+      "name": "University of Jyväskylä",
+      "country": "FI",
+      "city": "Jyväskylä",
+      "nativeName": null,
+      "websiteUrl": "https://www.jyu.fi/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "jyu.fi"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "SF JYVASKY01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10208640"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999842245"
+        }
+      ],
+      "aliases": [
+        "JYVASKYLAN YLIOPISTO"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-17",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/jyu.fi/hei",
+          "title": "HEI registry record: JYVASKYLAN YLIOPISTO",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-17"
+        },
+        {
+          "url": "https://www.jyu.fi/en",
+          "title": "University of Jyväskylä",
+          "publisher": "University of Jyväskylä",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-17"
+        }
+      ]
+    },
+    {
+      "slug": "university-of-turku",
+      "name": "University of Turku",
+      "country": "FI",
+      "city": "Turku",
+      "nativeName": null,
+      "websiteUrl": "https://www.utu.fi/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "utu.fi"
+        },
+        {
+          "scheme": "ERASMUS_CODE",
+          "value": "SF TURKU01"
+        },
+        {
+          "scheme": "ERASMUS_CHARTER",
+          "value": "E10209158"
+        },
+        {
+          "scheme": "PIC",
+          "value": "999903064"
+        }
+      ],
+      "aliases": [
+        "TURUN YLIOPISTO"
+      ],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-17",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/utu.fi/hei",
+          "title": "HEI registry record: TURUN YLIOPISTO",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-17"
+        },
+        {
+          "url": "https://www.utu.fi/en",
+          "title": "University of Turku",
+          "publisher": "University of Turku",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-17"
+        }
+      ]
     }
   ]
 }

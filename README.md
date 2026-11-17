@@ -171,6 +171,26 @@ Two link fields: `officialAdmissionsUrl` is an official admissions-**information
 ```
 Empty arrays mean "nothing known", not "none exist". **Every `intakes`, `tuition` and `requirements` item carries `temporalStatus`**: `CURRENT`, `HISTORICAL` (the period has ended; never show it as current) or `UNKNOWN_YEAR` (the source stated no period). Tuition has `academicYear` (only when the source prints one), `effectiveFrom` / `effectiveTo` (a stated start-date range) and `scopeNote` (the source's wording); all may be `null`. The `tuitionMax` filter only matches `CURRENT` fees. `404` for an unknown program, `400` for a malformed identifier. The `programs` rows inside `GET /api/v1/universities/{slug}` gained an additive `identifier` field.
 
+### Curated catalogue fields (additive, Finland 20)
+Finnish discovery shows only the enabled curated release (10 bachelor's-entry + 10 master's programs). Other programs keep
+their identifiers, saves and direct links and report `catalogMembership: "OUTSIDE_CURATED_CATALOG"`.
+`GET /api/v1/programs/{identifier}` adds `catalogMembership` and `universityInformation`:
+```json
+"universityInformation": {
+  "facts": [ { "field": "tuition_scope", "scope": "", "value": "13 000 EUR", "applicationCycle": null,
+               "temporalStatus": "UNKNOWN_YEAR", "verificationStatus": "VERIFIED", "lastSuccessfulCheck": "...",
+               "source": { "...": "..." }, "applicantCategory": "NON_EU_EEA", "academicYear": null } ],
+  "sources": [ { "url": "...", "publisher": "...", "status": "ACTIVE", "lastAttemptAt": "...", "lastSuccessAt": "...",
+                 "nextCheckAt": "...", "method": "university-program" } ],
+  "qualificationPathway": "BACHELOR_AND_MASTER", "studyOption": "computer/data science",
+  "linkChecks": [ { "linkType": "PROGRAM_PAGE", "status": "VERIFIED", "lastCheckedAt": "...", "lastVerifiedAt": "..." } ] }
+```
+`applicantCategory` and `academicYear` are `null` unless the source states them: an undated fee is never presented as a
+2027-2028 fee. `linkChecks[].status`: `VERIFIED | REDIRECTED_VERIFIED | REPLACEMENT_VERIFIED | STALE | BROKEN |
+SOURCE_UNAVAILABLE | PENDING_REVIEW`; a `STALE`, `BROKEN` or `PENDING_REVIEW` program page must not be shown as the verified
+university page. The public `GET /api/v1/public/programs/{identifier}` adds only `catalogMembership`,
+`qualificationPathway`, `studyOption` and `programLinkStatus` (no fact values).
+
 ### `synchronization` block of `GET /api/v1/programs/{identifier}` (additive)
 ```json
 "synchronization": {

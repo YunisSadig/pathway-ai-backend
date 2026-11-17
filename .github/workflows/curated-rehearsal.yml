@@ -1,0 +1,49 @@
+name: Curated catalogue rehearsal
+on:
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: curated-rehearsal
+  cancel-in-progress: false
+jobs:
+  rehearse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: sync
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Build reviewed code without database secrets
+        run: chmod +x mvnw && ./mvnw -B -ntp package -DskipTests
+      - name: Encrypted read-only production backup
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          OUT_DIR: backup-out
+        run: bash scripts/ci/backup.sh dump
+      - name: Restore and rehearse in an isolated database without production credentials
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          OUT_DIR: backup-out
+          REHEARSAL_JAR: target/pathway-ai-backend-0.0.1-SNAPSHOT.jar
+        run: bash scripts/ci/backup.sh restore-test
+      - name: Retain encrypted recovery backup
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: curated-pre-release-encrypted-backup
+          path: |
+            backup-out/*.enc
+            backup-out/*.sha256
+            backup-out/manifest.txt
+          retention-days: 30

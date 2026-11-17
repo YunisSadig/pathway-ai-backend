@@ -204,12 +204,17 @@ public class RefreshService {
                         + " (assign-adapter --app.refresh.university=<slug>)");
             }
             if (adapter instanceof ScopedExtractionAdapter scoped && m.programId() == null) {
-                var perProgram = scoped.extractForPrograms(page);
+                var perProgram = scoped instanceof com.pathwayai.backend.refresh.extract.ContextualScopedExtractionAdapter contextual
+                        ? contextual.extractHtml(r.body(),r.finalUrl(),m) : scoped.extractForPrograms(page);
                 result = processScoped(m, perProgram, parser, now);
                 facts = perProgram.values().stream().flatMap(List::stream).toList();
             } else {
-                facts = adapter.extract(page);
-                if (!facts.isEmpty() && m.programId() != null && lifecycle.reinstate(m, parser, now)) {
+                facts = adapter instanceof com.pathwayai.backend.provider.universitypages.UniversityProgramAdapter university
+                        ? university.extractHtml(r.body(),r.finalUrl(),m.programId()) : adapter.extract(page);
+                if(adapter.name().equals("university-program"))
+                    com.pathwayai.backend.program.service.UniversityFacts.requireContinuity(jdbc,m.sourceId(),m.programId(),facts);
+                if (com.pathwayai.backend.refresh.pipeline.SyncPolicy.isOfficialApi(adapter.name())
+                        && !facts.isEmpty() && m.programId() != null && lifecycle.reinstate(m, parser, now)) {
                     log.info("Source {} publishes program {} again: reinstated", m.sourceId(), m.programId());
                 }
                 result = pipeline.process(m, facts, parser, now);
@@ -253,6 +258,8 @@ public class RefreshService {
             if (programId == null) {
                 continue;
             }
+            if(m.adapterName().equals("university-admissions"))
+                com.pathwayai.backend.program.service.UniversityFacts.requireContinuity(jdbc,m.sourceId(),programId,entry.getValue());
             var one = pipeline.process(m.withProgramId(programId), entry.getValue(), parser, now);
             auto += one.autoApplied();
             pending += one.pendingReview();

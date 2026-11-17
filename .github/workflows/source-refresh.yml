@@ -6,7 +6,8 @@
 #
 # What runs (all in scripts/ci/run-refresh.sh, the same file you can run on a laptop):
 #   * daily 05:17 UTC  : `run`  = re-read every source that is due (each program weekly; daily inside an application window)
-#   * Mondays          : `sync` = discover new programs for the three reviewed universities, then `run`
+#   * Mondays          : `sync` = discover new programs for the three reviewed universities, then `run`, then the weekly
+#                        curated link check (program/admissions pages; moved pages repaired only when certain)
 #   * every run        : `freshness` = last-success watchdog; fails unless EVERY extractor-maintained program was read within 10 days
 #
 # Three different failures, three different alarms (see docs/deployment-sync.md section 2):
@@ -31,10 +32,14 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "run | sync | force (re-read all Studyinfo programs now) | bootstrap (first run on an empty database) | freshness | verify (read-only data audit) | api-smoke (boot the API on the runner and read it over HTTP) | migrate (apply pending Flyway migrations only)"
+        description: "run | sync | force (re-read all Studyinfo programs now) | bootstrap (first run on an empty database) | freshness | verify (read-only data audit) | links (check curated official links) | status (read-only curated report) | api-smoke (boot the API on the runner and read it over HTTP) | migrate (apply pending Flyway migrations only)"
         type: choice
-        options: [run, sync, force, bootstrap, freshness, verify, api-smoke, migrate]
+        options: [run, sync, force, bootstrap, freshness, verify, api-smoke, migrate, curated-preview, curated-apply, links, status]
         default: run
+      curated_fingerprint:
+        description: "curated-apply only: exact fingerprint from the separately reviewed and approved preview"
+        type: string
+        required: false
 
 permissions: {}
 
@@ -85,11 +90,12 @@ jobs:
           DB_URL: ${{ secrets.DB_URL }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          CURATED_APPROVED_FINGERPRINT: ${{ inputs.curated_fingerprint }}
         run: bash scripts/ci/run-refresh.sh "$MODE"
 
       - name: Last-success watchdog
         id: freshness
-        if: ${{ steps.mode.outputs.mode != 'bootstrap' }}
+        if: ${{ !contains(fromJSON('["bootstrap","curated-preview","migrate","links","status"]'), steps.mode.outputs.mode) }}
         continue-on-error: true
         env:
           DB_URL: ${{ secrets.DB_URL }}

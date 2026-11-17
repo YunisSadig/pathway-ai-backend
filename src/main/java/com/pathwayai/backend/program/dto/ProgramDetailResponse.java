@@ -40,12 +40,30 @@ public record ProgramDetailResponse(
         List<Intake> intakes,
         List<Tuition> tuition,
         List<Requirement> requirements,
-        Synchronization synchronization) {
+        Synchronization synchronization,
+        com.pathwayai.backend.program.service.UniversityFacts.Information universityInformation,
+        String catalogMembership) {
+
+    public ProgramDetailResponse(String identifier,String slug,String name,DegreeLevel degreeLevel,FieldRef field,
+                                 StudyMode studyMode,Integer durationMonths,List<String> teachingLanguages,String campusCity,
+                                 UniversityRef university,String officialProgramUrl,String officialAdmissionsUrl,String officialApplicationUrl,
+                                 Verification verification,List<SourceRef> sources,List<Intake> intakes,List<Tuition> tuition,
+                                 List<Requirement> requirements,Synchronization synchronization) {
+        this(identifier,slug,name,degreeLevel,field,studyMode,durationMonths,teachingLanguages,campusCity,university,
+                officialProgramUrl,officialAdmissionsUrl,officialApplicationUrl,verification,sources,intakes,tuition,requirements,
+                synchronization,null,"UNRESTRICTED");
+    }
 
     public ProgramDetailResponse withSynchronization(Synchronization s) {
         return new ProgramDetailResponse(identifier, slug, name, degreeLevel, field, studyMode, durationMonths, teachingLanguages,
                 campusCity, university, officialProgramUrl, officialAdmissionsUrl, officialApplicationUrl, verification, sources,
-                intakes, tuition, requirements, s);
+                intakes, tuition, requirements, s,universityInformation,catalogMembership);
+    }
+
+    public ProgramDetailResponse withUniversityInformation(com.pathwayai.backend.program.service.UniversityFacts.Information information,String membership) {
+        return new ProgramDetailResponse(identifier,slug,name,degreeLevel,field,studyMode,durationMonths,teachingLanguages,campusCity,
+                university,officialProgramUrl,officialAdmissionsUrl,officialApplicationUrl,verification,sources,intakes,tuition,requirements,
+                synchronization,information,membership);
     }
 
     /**

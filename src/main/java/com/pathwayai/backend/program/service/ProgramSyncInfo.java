@@ -31,7 +31,7 @@ public class ProgramSyncInfo {
         List<Map<String, Object>> monitors = jdbc.sql("""
                 select adapter_name, extraction_method, status, last_success_at, next_check_at from source_monitor
                 where program_id = :p and extraction_method in ('ADAPTER', 'JSON_LD')
-                order by last_success_at desc nulls last limit 1""").param("p", programId).query().listOfRows();
+                order by case when adapter_name like 'studyinfo%' then 0 else 1 end,last_success_at desc nulls last limit 1""").param("p", programId).query().listOfRows();
         if (monitors.isEmpty()) {
             return new Synchronization("NOT_SYNCHRONIZED", null, null, null, null, false, policy.maxSourceAgeDays(), List.of(),
                     List.of("everything: no working extractor maintains this program"));

@@ -72,19 +72,28 @@ class PublicProgramController {
                          ProgramListItemResponse.FieldRef field, com.pathwayai.backend.program.entity.StudyMode studyMode,
                          Integer durationMonths, java.util.List<String> teachingLanguages, String campusCity,
                          ProgramListItemResponse.UniversityRef university, String officialProgramUrl, String officialAdmissionsUrl,
-                         String officialApplicationUrl, ProgramListItemResponse.Verification verification, java.time.LocalDate lastCheckedOn) {
+                         String officialApplicationUrl, ProgramListItemResponse.Verification verification, java.time.LocalDate lastCheckedOn,
+                         String catalogMembership, String qualificationPathway, String studyOption, String programLinkStatus) {
     }
 
     /** {@code identifier} is {@code <university-slug>--<program-slug>}. */
     @GetMapping("/{identifier}")
     PublicProgram get(@PathVariable @Size(max = 245) @Pattern(regexp = SLUG + "--" + SLUG) String identifier) {
         ProgramDetailResponse d = programs.getByIdentifier(identifier);
+        var info = d.universityInformation();
         var sync = d.synchronization();
         java.time.LocalDate checked = sync == null || sync.lastSuccessfulSyncAt() == null ? null
                 : sync.lastSuccessfulSyncAt().atZone(java.time.ZoneOffset.UTC).toLocalDate();
         return new PublicProgram(d.identifier(), d.slug(), d.name(), d.degreeLevel(), d.field(), d.studyMode(), d.durationMonths(),
                 d.teachingLanguages(), d.campusCity(), d.university(), d.officialProgramUrl(), d.officialAdmissionsUrl(), null,
-                d.verification(), checked);
+                d.verification(), checked,d.catalogMembership(),
+                info == null ? null : info.qualificationPathway(), info == null ? null : info.studyOption(), programLinkStatus(info));
+    }
+
+    /** Only the health of the program page (no fact values): a stale or broken page must not look verified publicly. */
+    private static String programLinkStatus(com.pathwayai.backend.program.service.UniversityFacts.Information info) {
+        if (info == null || info.linkChecks() == null) return null;
+        return info.linkChecks().stream().filter(l -> l.linkType().equals("PROGRAM_PAGE")).map(l -> l.status()).findFirst().orElse(null);
     }
 
     /** The application link is not part of the public tier. */
