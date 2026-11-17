@@ -243,3 +243,15 @@ connector does not read it yet; the university fact box remains the fee source (
 ## Separate follow-up (NOT part of the Finland 20 release)
 - Performance: the live `/universities` page loads slowly (owner report, 2026-11-18). Investigate next task (API latency,
   Render cold start, client fetches, per-row program counts). No performance changes are mixed into this data release.
+
+## Release log (2026-11-17/18)
+- Merged: backend #40 `f89ad4d`, frontend #51 `4fb3a30`; deployed (Render deployment success; site `/api/version` =
+  `4fb3a30`); read-only verify-deployment Healthy; live browser smoke 14/14 (run 44158925910); public API 3 universities
+  / 56 programs; Google sign-in start redirects to Google with the production callback.
+- Local dry run (empty scratch DB): migrate + catalogue + preview + apply + repeat: 20 programs both times, 10/10,
+  210 university facts, 33 routes, 68 monitors, 0 pending review; fingerprint e9b169f5…
+- #41 `aababe1` (rehearsal registers the 4 universities; `curated-universities` mode). Rehearsal run 44166523352 on the
+  restored production copy (56 programs / 3 universities / V12): V13 OK, catalogue +4 universities (repeat no-op,
+  program rows unchanged), plan 10+10 with 16 new / 4 reused, apply + repeat OK; STOPPED by the university digest:
+  new curated programs link their Studyinfo record to their university (`university_source`, existing importer
+  behaviour). #42 `243c945`: row-level comparison that allows only those provenance links. Rerun: 44173405364.
