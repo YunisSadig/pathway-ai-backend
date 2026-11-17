@@ -76,4 +76,15 @@ class CuratedCatalogIT {
         assertThat(detail.universityInformation().studyOption()).isEqualTo("synthetic study track");
         assertThat(programs.getByIdentifier("zz-curated-u--p-11").universityInformation().studyOption()).isNull();
     }
+
+    @Test void aBrokenOfficialLinkIsReportedAsBrokenNotAsVerified() {
+        long id=jdbc.queryForObject("select id from degree_program where slug='p-1'",Long.class);
+        jdbc.update("insert into program_link_status(program_id,link_type,url,status,consecutive_failures,last_checked_at) values(?,'PROGRAM_PAGE','https://example.test/synthetic','BROKEN',2,now())",id);
+        var links=programs.getByIdentifier("zz-curated-u--p-1").universityInformation().linkChecks();
+        assertThat(links).singleElement().satisfies(l->{
+            assertThat(l.linkType()).isEqualTo("PROGRAM_PAGE");
+            assertThat(l.status()).isEqualTo("BROKEN");
+            assertThat(l.lastVerifiedAt()).isNull();
+        });
+    }
 }

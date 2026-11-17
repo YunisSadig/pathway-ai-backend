@@ -62,7 +62,9 @@ public class CuratedCatalogCli implements ApplicationRunner {
     }
 
     @Override public void run(ApplicationArguments args) {
-        if(!List.of("preview","apply").contains(command))throw new IllegalArgumentException("Curated command must be preview or apply");
+        if(CuratedOperationsCli.COMMANDS.contains(command))return; // links/status: CuratedOperationsCli
+        if(!List.of("preview","apply").contains(command))
+            throw new IllegalArgumentException("Curated command must be preview, apply, "+String.join(", ",CuratedOperationsCli.COMMANDS));
         List<Offering> offerings=new ArrayList<>();
         List<Guidance> guidance=new ArrayList<>();
         for(var candidate:candidates.candidates()) {

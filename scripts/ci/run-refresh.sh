@@ -32,7 +32,7 @@ MAX_AGE_HOURS="${MAX_AGE_HOURS:-240}"
 
 die() { echo "ERROR: $*" >&2; exit "${2:-2}"; }
 
-case "$MODE" in run|sync|force|bootstrap|freshness|verify|api-smoke|migrate|curated-preview|curated-apply) ;; *) die "unknown mode '$MODE'";; esac
+case "$MODE" in run|sync|force|bootstrap|freshness|verify|api-smoke|migrate|curated-preview|curated-apply|links|status) ;; *) die "unknown mode '$MODE'";; esac
 
 for v in DB_URL DB_USERNAME DB_PASSWORD; do
   [ -n "${!v:-}" ] || die "$v is not set (on GitHub it comes from a repository secret)"
@@ -131,11 +131,16 @@ started=$(date -u +%FT%TZ)
 host_label="hosted database"; [ "$is_local" = true ] && host_label="local database"
 echo "== Pathway AI refresh: mode=$MODE database=$host_label attempts=$ATTEMPTS started=$started"
 
+CURATED_HOSTS="opintopolku.fi,www.aalto.fi,www.helsinki.fi,www.tuni.fi,www.lut.fi,www.oulu.fi,www.jyu.fi,www.utu.fi"
 fail_flags=(--app.refresh.fail-on-failures=true "--app.refresh.failure-ratio-threshold=$FAILURE_RATIO")
 rc=0
 case "$MODE" in
   run)       with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=run "${fail_flags[@]}"; rc=$? ;;
-  sync)      with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=sync "${fail_flags[@]}"; rc=$? ;;
+  # sync (weekly): discovery + due sources, then the weekly check of every curated official link (alerts via a failed run)
+  sync)      with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=sync "${fail_flags[@]}"; rc=$?
+             with_retries 1 1 app --app.curated.command=links "--app.refresh.extra-approved-hosts=$CURATED_HOSTS"; lrc=$?; [ "$rc" -eq 0 ] && rc=$lrc ;;
+  links)     with_retries 1 1 app --app.curated.command=links "--app.refresh.extra-approved-hosts=$CURATED_HOSTS"; rc=$? ;;
+  status)    with_retries 1 1 app --app.curated.command=status; rc=$? ;;
   force)     with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=studyinfo-sync "${fail_flags[@]}"; rc=$? ;;
   api-smoke) with_retries 1 1 api_smoke; rc=$? ;;
   # migrate: starts the application once with every importer off, so Flyway applies pending migrations (as the owner role) and the process ends

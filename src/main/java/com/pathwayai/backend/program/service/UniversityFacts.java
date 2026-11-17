@@ -23,7 +23,9 @@ public class UniversityFacts {
     public record Check(String url,String publisher,String status,Instant lastAttemptAt,Instant lastSuccessAt,
                         Instant nextCheckAt,String method) { }
     /** qualificationPathway/studyOption: from the curated membership (null outside it). */
-    public record Information(List<Fact> facts,List<Check> sources,String qualificationPathway,String studyOption) { }
+    /** Health of an official destination: VERIFIED, REDIRECTED_VERIFIED, REPLACEMENT_VERIFIED, STALE, BROKEN, SOURCE_UNAVAILABLE, PENDING_REVIEW. */
+    public record LinkCheck(String linkType,String status,Instant lastCheckedAt,Instant lastVerifiedAt) { }
+    public record Information(List<Fact> facts,List<Check> sources,String qualificationPathway,String studyOption,List<LinkCheck> linkChecks) { }
     private final JdbcClient jdbc;
     private final CuratedCatalog catalog;
     private final Clock clock;
@@ -33,7 +35,7 @@ public class UniversityFacts {
     }
 
     public Information forProgram(long id) {
-        if (!catalog.schemaExists()) return new Information(List.of(),List.of(),null,null);
+        if (!catalog.schemaExists()) return new Information(List.of(),List.of(),null,null,List.of());
         var facts=jdbc.sql("""
                 select f.*,s.url,s.title,s.publisher,s.source_type,s.retrieved_on,m.last_success_at,m.status,m.last_result,
                   exists(select 1 from staged_change c where c.program_id=f.program_id and c.fact_type='UNIVERSITY_FACT'
@@ -73,7 +75,9 @@ public class UniversityFacts {
         var curated=jdbc.sql("""
                 select m.qualification_pathway,m.study_option from catalog_membership m join catalog_release r on r.id=m.release_id
                 where r.enabled and m.program_id=:p""").param("p",id).query((rs,n)->new String[]{rs.getString(1),rs.getString(2)}).optional();
-        return new Information(facts,sources,curated.map(c->c[0]).orElse(null),curated.map(c->c[1]).orElse(null));
+        var links=jdbc.sql("select link_type,status,last_checked_at,last_verified_at from program_link_status where program_id=:p order by link_type")
+                .param("p",id).query((rs,n)->new LinkCheck(rs.getString(1),rs.getString(2),instant(rs.getTimestamp(3)),instant(rs.getTimestamp(4)))).list();
+        return new Information(facts,sources,curated.map(c->c[0]).orElse(null),curated.map(c->c[1]).orElse(null),links);
     }
 
     private static Instant instant(java.sql.Timestamp value) {return value==null?null:value.toInstant();}

@@ -180,3 +180,23 @@ Branch is cut from `feat/official-program-links` (PR #39) and includes the prese
   guessed. Helsinki programs carry program-page facts (level, language, credits, fee) + Studyinfo routes only.
 - Gap: Tampere language pages and Turku language pages render their test lists client-side -> link only, no tests.
 - Tests: `UniversityAdmissionsAdapterTest` (4) + evidence tests (8) pass.
+
+## Phase C: synchronization, cycles, link monitoring (2026-11-17) — DONE, committed
+- Refresh: `curated-apply` registers per program a Studyinfo monitor (identity, language, duration, campus, routes),
+  a university-program monitor (fact box) and per-university guidance monitors; the existing `run` (daily) /
+  `sync` (Mondays) jobs re-read them. Failures never touch published facts. Expired routes are `HISTORICAL`.
+- New admission cycle: a published implementation that is not the reviewed one is NEVER adopted; the Studyinfo
+  monitor fails with "NEW ADMISSION CYCLE candidates ... <oid "name">" -> FAILING -> workflow alert issue. New rounds
+  inside the reviewed implementation are new route rows automatically (older rows kept).
+- `OfficialLinkMonitor` (+ `--app.curated.command=links`, weekly inside `sync`; `links` mode for manual runs):
+  VERIFIED / REDIRECTED_VERIFIED (move followed, history row) / REPLACEMENT_VERIFIED (exactly one sitemap page passes the
+  identity check) / STALE->PENDING_REVIEW / BROKEN (404/410 on 2nd consecutive check) / SOURCE_UNAVAILABLE (403,
+  robots, timeout, 5xx: never broken, never discontinued). No URL is constructed; old URLs in `program_link_history`.
+  Exit code != 0 when any link needs a person -> existing alert job opens/comments the issue.
+- `--app.curated.command=status` (and `status` workflow mode): read-only operator report (selection counts, last
+  successful check, programs not read in 10 days, facts older than 45 days, failing sources, link states and review
+  list, pending review items, upcoming deadlines).
+- API: `universityInformation.linkChecks[]` (type, status, lastCheckedAt, lastVerifiedAt).
+- Not verified yet: scheduled operation. `SYNC_ENABLED` is unset and `HEALTHCHECK_PING_URL` absent (owner decisions);
+  nothing runs unattended until the owner enables it and a scheduled run succeeds.
+- Tests: OfficialLinkMonitorIT 6, evidence 9 (incl. new-cycle), CuratedCatalogIT 5, ProgramApiIT 24, PublicCatalogueIT 6.

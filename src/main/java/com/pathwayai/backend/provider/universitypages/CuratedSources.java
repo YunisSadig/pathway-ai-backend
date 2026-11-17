@@ -72,8 +72,18 @@ public class CuratedSources {
             throw new IllegalArgumentException("Education identity is missing or not published");
         var selected=new java.util.ArrayList<tools.jackson.databind.JsonNode>();
         root.path("toteutukset").forEach(t->{if(candidate.implementationOid().equals(t.path("oid").asText()))selected.add(t);});
-        if(selected.size()!=1 || !"julkaistu".equals(selected.getFirst().path("tila").asText()))
-            throw new IllegalArgumentException("Reviewed implementation is absent or unpublished");
+        if(selected.size()!=1 || !"julkaistu".equals(selected.getFirst().path("tila").asText())) {
+            // a new admission cycle: the provider published another implementation of the same education. It is never
+            // adopted automatically (a new implementation is not a new program and needs a reviewed association).
+            var published=new java.util.ArrayList<String>();
+            root.path("toteutukset").forEach(t->{
+                if("julkaistu".equals(t.path("tila").asText()) && !candidate.implementationOid().equals(t.path("oid").asText()))
+                    published.add(t.path("oid").asText()+" \""+t.path("nimi").path("en").asText(t.path("nimi").path("fi").asText(""))+"\"");
+            });
+            throw new IllegalArgumentException("Reviewed implementation "+candidate.implementationOid()+" of "+candidate.key()
+                    +" is absent or unpublished"+(published.isEmpty()?"":"; NEW ADMISSION CYCLE candidates (same education, review"
+                    +" and update curated-finland.json): "+String.join(", ",published)));
+        }
         var providers=selected.getFirst().path("tarjoajat");
         if(providers.size()!=1 || !candidate.implementationProviderOid().equals(providers.get(0).path("oid").asText()))
             throw new IllegalArgumentException("Implementation provider changed; reviewed institution association required");

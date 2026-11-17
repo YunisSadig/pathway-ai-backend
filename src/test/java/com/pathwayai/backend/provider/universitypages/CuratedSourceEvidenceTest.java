@@ -137,6 +137,16 @@ class CuratedSourceEvidenceTest {
         }
     }
 
+    @Test void aNewAnnualImplementationIsReportedForReviewAndNeverAdoptedOrDuplicated() throws Exception {
+        var c=candidate("tampere-ai-native-software");
+        String next="1.2.246.562.17.00000000000099999999";
+        String json=fixture(c.key()+".json").replace(c.implementationOid(),next);
+        assertThatThrownBy(()->CuratedSources.validateStudyinfo(c,json)).isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("NEW ADMISSION CYCLE").hasMessageContaining(next);
+        // the reviewed parse refuses the unknown implementation instead of attaching it to the program
+        assertThat(parse(c,json).program()).isNull();
+    }
+
     @Test void datesAreReadFromExplicitSourceDatesAndNeverRelabelAnExpiredPeriod() {
         assertThat(UniversityProgramAdapter.periodEnd("7 Dec 2026 – 5 Jan 2027")).isEqualTo(LocalDate.of(2027,1,5));
         assertThat(UniversityProgramAdapter.periodEnd("07.01.2027 - 21.01.2027")).isEqualTo(LocalDate.of(2027,1,21));
