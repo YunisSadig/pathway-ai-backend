@@ -239,3 +239,7 @@ connector does not read it yet; the university fact box remains the fee source (
    discovery (no rows deleted); a scoped restore from step 2's backup is the last resort.
 6. Mode `links` then `status`; check the live site (programs list 10+10, detail pages, buttons).
 7. Unattended sync: owner sets `SYNC_ENABLED=true` (+ optional `HEALTHCHECK_PING_URL`); verify one scheduled run.
+
+## Separate follow-up (NOT part of the Finland 20 release)
+- Performance: the live `/universities` page loads slowly (owner report, 2026-11-18). Investigate next task (API latency,
+  Render cold start, client fetches, per-row program counts). No performance changes are mixed into this data release.
