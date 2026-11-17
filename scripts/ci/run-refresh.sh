@@ -32,7 +32,7 @@ MAX_AGE_HOURS="${MAX_AGE_HOURS:-240}"
 
 die() { echo "ERROR: $*" >&2; exit "${2:-2}"; }
 
-case "$MODE" in run|sync|force|bootstrap|freshness|verify|api-smoke|migrate|curated-preview|curated-apply|links|status) ;; *) die "unknown mode '$MODE'";; esac
+case "$MODE" in run|sync|force|bootstrap|freshness|verify|api-smoke|migrate|curated-preview|curated-apply|curated-universities|links|status) ;; *) die "unknown mode '$MODE'";; esac
 
 for v in DB_URL DB_USERNAME DB_PASSWORD; do
   [ -n "${!v:-}" ] || die "$v is not set (on GitHub it comes from a repository secret)"
@@ -139,6 +139,8 @@ case "$MODE" in
   # sync (weekly): discovery + due sources, then the weekly check of every curated official link (alerts via a failed run)
   sync)      with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=sync "${fail_flags[@]}"; rc=$?
              with_retries 1 1 app --app.curated.command=links "--app.refresh.extra-approved-hosts=$CURATED_HOSTS"; lrc=$?; [ "$rc" -eq 0 ] && rc=$lrc ;;
+  # curated-universities: the idempotent catalogue import only (adds the curated-only universities; fills empty columns only)
+  curated-universities) with_retries 1 1 env IMPORT_UNIVERSITY_CATALOGUE=true java -jar "$JAR" --spring.main.web-application-type=none; rc=$? ;;
   links)     with_retries 1 1 app --app.curated.command=links "--app.refresh.extra-approved-hosts=$CURATED_HOSTS"; rc=$? ;;
   status)    with_retries 1 1 app --app.curated.command=status; rc=$? ;;
   force)     with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=studyinfo-sync "${fail_flags[@]}"; rc=$? ;;
