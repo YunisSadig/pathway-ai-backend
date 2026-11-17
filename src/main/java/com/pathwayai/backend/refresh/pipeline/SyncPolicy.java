@@ -38,6 +38,7 @@ public final class SyncPolicy {
     }
 
     public static UpdateMode modeOf(String provenanceField) {
+        if(com.pathwayai.backend.program.service.UniversityFacts.FIELDS.contains(provenanceField))return UpdateMode.REVIEW_REQUIRED;
         return switch (provenanceField) {
             case "duration_months", "languages", "campus_city" -> UpdateMode.AUTOMATIC;
             case "name", "degree_level", "official_program_url" -> UpdateMode.REVIEW_REQUIRED;

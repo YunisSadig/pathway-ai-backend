@@ -17,11 +17,13 @@ import org.springframework.stereotype.Component;
 public class StudyinfoAdapter implements ExtractionAdapter {
 
     public static final String NAME = "studyinfo-external";
-    public static final String VERSION = "2";
+    public static final String VERSION = "3";
 
     private static final Logger log = LoggerFactory.getLogger(StudyinfoAdapter.class);
 
     private final FieldTaxonomy taxonomy;
+    @org.springframework.beans.factory.annotation.Autowired(required=false)
+    private com.pathwayai.backend.provider.universitypages.CuratedSources curated;
 
     public StudyinfoAdapter(FieldTaxonomy taxonomy) {
         this.taxonomy = taxonomy;
@@ -44,7 +46,14 @@ public class StudyinfoAdapter implements ExtractionAdapter {
 
     @Override
     public List<ExtractedFact> extract(CanonicalPage page) {
-        StudyinfoParser.Parsed parsed = StudyinfoParser.parse(page.text(), taxonomy);
+        String oid=tools.jackson.databind.json.JsonMapper.builder().build().readTree(page.text()).path("oid").asText();
+        var candidate=curated==null?null:curated.byEducationOid(oid);
+        if(candidate!=null)com.pathwayai.backend.provider.universitypages.CuratedSources.validateStudyinfo(candidate,page.text());
+        StudyinfoParser.Parsed parsed = candidate==null ? StudyinfoParser.parse(page.text(),taxonomy)
+                : StudyinfoParser.parse(page.text(),taxonomy,candidate.implementationOid(),candidate.combined(),candidate.providerOid(),candidate.titleCodes());
+        if(candidate!=null && (parsed.program()==null || !candidate.entryLevel().equals(parsed.program().degreeLevel())
+                || !parsed.program().languages().contains("en")))
+            throw new IllegalStateException("Reviewed offering has an unsupported degree or teaching language change");
         if (!parsed.issues().isEmpty()) {
             log.info("Studyinfo record left some facts out: {}", parsed.issues());
         }

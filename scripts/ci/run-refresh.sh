@@ -27,12 +27,12 @@ set -uo pipefail
 MODE="${1:-${REFRESH_MODE:-run}}"
 ATTEMPTS="${RETRY_ATTEMPTS:-3}"
 BASE="${RETRY_BASE_SECONDS:-300}"
-FAILURE_RATIO="${FAILURE_RATIO:-0.5}"
+FAILURE_RATIO="${FAILURE_RATIO:-0}"
 MAX_AGE_HOURS="${MAX_AGE_HOURS:-240}"
 
 die() { echo "ERROR: $*" >&2; exit "${2:-2}"; }
 
-case "$MODE" in run|sync|force|bootstrap|freshness|verify|api-smoke|migrate) ;; *) die "unknown mode '$MODE' (run|sync|force|bootstrap|freshness|verify|api-smoke|migrate)";; esac
+case "$MODE" in run|sync|force|bootstrap|freshness|verify|api-smoke|migrate|curated-preview|curated-apply) ;; *) die "unknown mode '$MODE'";; esac
 
 for v in DB_URL DB_USERNAME DB_PASSWORD; do
   [ -n "${!v:-}" ] || die "$v is not set (on GitHub it comes from a repository secret)"
@@ -76,6 +76,7 @@ if [ -z "$JAR" ]; then JAR="$(ls target/pathway-ai-backend-*.jar 2>/dev/null | g
 
 # nothing but the taxonomy and the reviewed universities may be loaded at startup, and only by `bootstrap`
 export IMPORT_REFERENCE_DATA=false IMPORT_UNIVERSITY_CATALOGUE=false
+export SPRING_FLYWAY_ENABLED=false
 
 LOG="$(mktemp)"; trap 'rm -f "$LOG" "$LOG.api"' EXIT
 app() { java -jar "$JAR" --spring.main.web-application-type=none "$@" 2>&1 | tee -a "$LOG"; return "${PIPESTATUS[0]}"; }
@@ -138,13 +139,17 @@ case "$MODE" in
   force)     with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=studyinfo-sync "${fail_flags[@]}"; rc=$? ;;
   api-smoke) with_retries 1 1 api_smoke; rc=$? ;;
   # migrate: starts the application once with every importer off, so Flyway applies pending migrations (as the owner role) and the process ends
-  migrate)   with_retries 2 "$((BASE < 60 ? BASE : 60))" java -jar "$JAR" --spring.main.web-application-type=none; rc=$? ;;
+  migrate)   with_retries 2 "$((BASE < 60 ? BASE : 60))" java -jar "$JAR" --spring.main.web-application-type=none --spring.flyway.enabled=true; rc=$? ;;
+  curated-preview) with_retries 1 1 app --app.curated.command=preview --app.refresh.extra-approved-hosts=opintopolku.fi,www.aalto.fi,www.helsinki.fi,www.tuni.fi,www.lut.fi,www.oulu.fi,www.jyu.fi,www.utu.fi; rc=$? ;;
+  curated-apply)
+    [[ "${CURATED_APPROVED_FINGERPRINT:-}" =~ ^[a-f0-9]{64}$ ]] || die "curated-apply requires the explicitly approved preview fingerprint"
+    with_retries 1 1 app --app.curated.command=apply "--app.curated.expected-fingerprint=$CURATED_APPROVED_FINGERPRINT" --app.refresh.extra-approved-hosts=opintopolku.fi,www.aalto.fi,www.helsinki.fi,www.tuni.fi,www.lut.fi,www.oulu.fi,www.jyu.fi,www.utu.fi; rc=$? ;;
   verify)    with_retries 2 "$((BASE < 60 ? BASE : 60))" app --app.refresh.command=verify-data; rc=$? ;;
   freshness) with_retries 2 "$((BASE < 60 ? BASE : 60))" app --app.refresh.command=freshness-check "--app.refresh.max-age-hours=$MAX_AGE_HOURS"; rc=$? ;;
   bootstrap)
     # step 1 loads only the taxonomy and the three reviewed universities (the application exits after startup), step 2 syncs the programs
     with_retries "$ATTEMPTS" "$BASE" env IMPORT_REFERENCE_DATA=true IMPORT_UNIVERSITY_CATALOGUE=true \
-        java -jar "$JAR" --spring.main.web-application-type=none; rc=$?
+        java -jar "$JAR" --spring.main.web-application-type=none --spring.flyway.enabled=true; rc=$?
     if [ "$rc" -eq 0 ]; then with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=sync "${fail_flags[@]}"; rc=$?; fi ;;
 esac
 

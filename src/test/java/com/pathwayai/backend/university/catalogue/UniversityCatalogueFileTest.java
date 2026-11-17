@@ -40,8 +40,9 @@ class UniversityCatalogueFileTest {
         }
         assertThat(catalogue.universities().stream().map(UniversityData::slug).collect(Collectors.toSet()))
                 .isEqualTo(connectorBacked)
-                .containsExactlyInAnyOrder("university-of-helsinki", "aalto-university", "university-of-oulu");
-        assertThat(catalogue.universities()).hasSize(3).allMatch(u -> u.verificationStatus().equals("VERIFIED"))
+                .containsExactlyInAnyOrder("university-of-helsinki", "aalto-university", "university-of-oulu",
+                        "tampere-university", "lut-university", "university-of-jyvaskyla", "university-of-turku");
+        assertThat(catalogue.universities()).hasSize(7).allMatch(u -> u.verificationStatus().equals("VERIFIED"))
                 .allMatch(u -> u.country().equals("FI"));
     }
 

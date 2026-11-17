@@ -40,6 +40,8 @@ public class ProgramService {
     private final AcademicCalendar calendar;
     private final DiscoveryPolicy discovery;
     private final ProgramSyncInfo syncInfo;
+    @Autowired(required=false) private CuratedCatalog curated;
+    @Autowired(required=false) private UniversityFacts universityFacts;
 
     /** Without a discovery restriction (hand-built services in unit tests). */
     public ProgramService(DegreeProgramRepository programs, ProgramIntakeRepository intakes,
@@ -83,6 +85,7 @@ public class ProgramService {
                 .and(atUniversity(c.universitySlug()))
                 .and(taughtIn(c.languageCode()))
                 .and(discovery.programs())
+                .and(curated==null ? (root,query,cb)->cb.conjunction() : curated.programs())
                 .and(tuitionAtMost(c.tuitionMax(), c.tuitionCurrency(), c.tuitionCategory(),
                         calendar.currentStartYear(), calendar.today()));
         return PageResponse.from(programs.findAll(spec, pageable), mapper::toListItem);
@@ -107,6 +110,8 @@ public class ProgramService {
                 intakes.findByProgramIdOrderByAcademicYearDescApplicationDeadlineAscIdAsc(program.getId()),
                 tuitionFees.findByProgramIdOrderByAcademicYearDescStudentCategoryAsc(program.getId()),
                 requirements.findByProgramIdOrderByApplicationCycleDescRequirementTypeAscIdAsc(program.getId()));
-        return syncInfo == null ? detail : detail.withSynchronization(syncInfo.forProgram(program.getId()));
+        if(syncInfo!=null) detail=detail.withSynchronization(syncInfo.forProgram(program.getId()));
+        return universityFacts==null ? detail : detail.withUniversityInformation(universityFacts.forProgram(program.getId()),
+                curated.membership(program.getId()));
     }
 }

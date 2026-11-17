@@ -1,0 +1,86 @@
+[
+  {
+    "university": "aalto-university",
+    "entryLevel": "BACHELOR",
+    "purpose": "ADMISSIONS",
+    "url": "https://www.aalto.fi/en/admission-services/apply-to-bachelors-programmes-in-english",
+    "heading": "Apply to Bachelor's programmes in English"
+  },
+  {
+    "university": "aalto-university",
+    "entryLevel": "MASTER",
+    "purpose": "ADMISSIONS",
+    "url": "https://www.aalto.fi/en/admission-services/apply-to-masters-programmes",
+    "heading": "Apply to master’s programmes"
+  },
+  {
+    "university": "aalto-university",
+    "entryLevel": "MASTER",
+    "purpose": "LANGUAGE",
+    "url": "https://www.aalto.fi/en/admission-services/language-requirements-in-masters-admissions",
+    "heading": "Language requirements in Master's admissions"
+  },
+  {
+    "university": "aalto-university",
+    "entryLevel": "ALL",
+    "purpose": "FINANCIAL",
+    "url": "https://www.aalto.fi/en/admission-services/scholarships-and-tuition-fees",
+    "heading": "Scholarships and Tuition Fees"
+  },
+  {
+    "university": "university-of-oulu",
+    "entryLevel": "BACHELOR",
+    "purpose": "ADMISSIONS",
+    "url": "https://www.oulu.fi/en/apply/how-apply/applying-bachelors-programmes",
+    "heading": "Applying to bachelor's programmes"
+  },
+  {
+    "university": "university-of-oulu",
+    "entryLevel": "MASTER",
+    "purpose": "ADMISSIONS",
+    "url": "https://www.oulu.fi/en/apply/how-apply/applying-masters-programmes",
+    "heading": "Applying to master's programmes"
+  },
+  {
+    "university": "university-of-oulu",
+    "entryLevel": "ALL",
+    "purpose": "FINANCIAL",
+    "url": "https://www.oulu.fi/en/apply/how-apply/university-oulu-tuition-fees-and-scholarships-for-international-applicants",
+    "heading": "University of Oulu tuition fees and scholarships for international applicants"
+  },
+  {
+    "university": "university-of-oulu",
+    "entryLevel": "ALL",
+    "purpose": "ELIGIBILITY",
+    "url": "https://www.oulu.fi/en/apply/how-apply/eligibility",
+    "heading": "Eligibility"
+  },
+  {
+    "university": "university-of-oulu",
+    "entryLevel": "ALL",
+    "purpose": "DOCUMENTS",
+    "url": "https://www.oulu.fi/en/apply/how-apply/documents",
+    "heading": "Application documents"
+  },
+  {
+    "university": "university-of-oulu",
+    "entryLevel": "BACHELOR",
+    "purpose": "LANGUAGE",
+    "url": "https://www.oulu.fi/en/apply/how-apply/applying-bachelors-programmes/language-requirements-for-bachelors-degrees",
+    "heading": "Language requirements for bachelor's degrees"
+  },
+  {
+    "university": "university-of-oulu",
+    "entryLevel": "MASTER",
+    "purpose": "LANGUAGE",
+    "url": "https://www.oulu.fi/en/apply/how-apply/applying-masters-programmes/language-requirements-for-masters-degrees",
+    "heading": "Language requirements for master's degrees"
+  },
+  {
+    "university": "university-of-oulu",
+    "entryLevel": "BACHELOR",
+    "purpose": "SAT",
+    "url": "https://www.oulu.fi/en/apply/how-apply/applying-bachelors-programmes/sat-test-results",
+    "heading": "SAT and ACT test results"
+  }
+]

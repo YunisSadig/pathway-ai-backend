@@ -125,7 +125,7 @@ class PublicCatalogueIT {
 
     static final Set<String> PROGRAM_FIELDS = Set.of("identifier", "slug", "name", "degreeLevel", "field", "studyMode", "durationMonths",
             "teachingLanguages", "campusCity", "university", "officialProgramUrl", "officialAdmissionsUrl", "officialApplicationUrl", "verification");
-    static final Set<String> PROGRAM_DETAIL_FIELDS = new java.util.HashSet<>(PROGRAM_FIELDS) {{ add("lastCheckedOn"); }};
+    static final Set<String> PROGRAM_DETAIL_FIELDS = new java.util.HashSet<>(PROGRAM_FIELDS) {{ add("lastCheckedOn"); add("catalogMembership"); }};
 
     @Test
     void visitorsBrowseProgramsWithAnAllowListAndNothingRestricted() throws Exception {

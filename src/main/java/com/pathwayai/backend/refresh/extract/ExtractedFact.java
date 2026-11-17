@@ -23,7 +23,9 @@ public record ExtractedFact(FactType type, String key, Map<String, String> value
         PROGRAM_NAME,
         DEGREE_LEVEL,
         ACADEMIC_FIELD,
-        CAMPUS_CITY
+        CAMPUS_CITY,
+        /** Named facts extracted from a university-owned page; changes require review. */
+        UNIVERSITY_FACT
     }
 
     public ExtractedFact {

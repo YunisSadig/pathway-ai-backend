@@ -126,8 +126,12 @@ public class StudyinfoImporter {
             if (onlySlug != null && !onlySlug.equals(u.slug())) {
                 continue;
             }
-            universities++;
             int quota = limit != null ? Math.min(limit, u.maxPrograms()) : u.maxPrograms();
+            if (quota <= 0) {
+                // curated-only university: its programs come only from the reviewed curated selection, never discovery
+                continue;
+            }
+            universities++;
             Long universityId = dryRun ? lookupUniversity(u.slug()) : ensureUniversity(u, notes);
             if (universityId == null && !(dryRun && u.createIfMissing() != null)) {
                 notes.add(u.slug() + ": university is not in the catalogue and is not configured to be created; skipped");
@@ -327,6 +331,50 @@ public class StudyinfoImporter {
     private boolean programExists(String koulutusOid) {
         return jdbc.sql("select count(*) from program_external_id where scheme = :s and value = :v")
                 .param("s", StudyinfoParser.SCHEME_KOULUTUS).param("v", koulutusOid).query(Long.class).single() > 0;
+    }
+
+    /**
+     * The program that already carries this education OID, else the one that carries this implementation OID (older
+     * imports stored programs under their implementation). Never matched by name. Two different programs -> conflict.
+     */
+    public java.util.Optional<Long> existingProgram(String educationOid,String implementationOid) {
+        var byEducation=jdbc.sql("select program_id from program_external_id where scheme=:scheme and value=:oid")
+                .param("scheme",StudyinfoParser.SCHEME_KOULUTUS).param("oid",educationOid).query(Long.class).optional();
+        var byImplementation=jdbc.sql("select program_id from program_external_id where scheme=:scheme and value=:oid")
+                .param("scheme",StudyinfoParser.SCHEME_TOTEUTUS).param("oid",implementationOid).query(Long.class).optional();
+        if(byEducation.isPresent() && byImplementation.isPresent() && !byEducation.get().equals(byImplementation.get()))
+            throw new IllegalArgumentException("Education "+educationOid+" and implementation "+implementationOid+" belong to different programs");
+        return byEducation.isPresent()?byEducation:byImplementation;
+    }
+
+    /** Curated imports reuse the existing creation pipeline and unique external ID. Caller owns the enclosing transaction. */
+    public long importReviewed(com.pathwayai.backend.provider.universitypages.CuratedSources.Candidate candidate,
+                               StudyinfoParser.Program program, PageFetcher.Result response, Instant now) {
+        Long universityId=lookupUniversity(candidate.university());
+        if(universityId==null)throw new IllegalStateException("Reviewed university is absent: "+candidate.university());
+        var existing=existingProgram(candidate.educationOid(),candidate.implementationOid());
+        if(existing.isPresent()) {
+            jdbc.sql("insert into program_external_id(program_id,scheme,value) values(:p,:scheme,:oid) on conflict do nothing")
+                    .param("p",existing.get()).param("scheme",StudyinfoParser.SCHEME_KOULUTUS).param("oid",candidate.educationOid()).update();
+            var educationOwner=jdbc.sql("select program_id from program_external_id where scheme=:scheme and value=:oid")
+                    .param("scheme",StudyinfoParser.SCHEME_KOULUTUS).param("oid",candidate.educationOid()).query(Long.class).single();
+            if(!educationOwner.equals(existing.get()))
+                throw new IllegalArgumentException("Reviewed education is already linked to another program");
+            boolean associated=jdbc.sql("select exists(select 1 from degree_program where id=:p and university_id=:u and degree_level=:level)")
+                    .param("p",existing.get()).param("u",universityId).param("level",candidate.entryLevel()).query(Boolean.class).single();
+            if(!associated)throw new IllegalArgumentException("Existing education identifier belongs to another university or entry level");
+            var implementationOwner=jdbc.sql("select program_id from program_external_id where scheme=:scheme and value=:oid")
+                    .param("scheme",StudyinfoParser.SCHEME_TOTEUTUS).param("oid",candidate.implementationOid()).query(Long.class).optional();
+            if(implementationOwner.isPresent() && !implementationOwner.get().equals(existing.get()))
+                throw new IllegalArgumentException("Reviewed implementation is already linked to another program");
+            jdbc.sql("insert into program_external_id(program_id,scheme,value) values(:p,:scheme,:oid) on conflict do nothing")
+                    .param("p",existing.get()).param("scheme",StudyinfoParser.SCHEME_TOTEUTUS).param("oid",candidate.implementationOid()).update();
+            return existing.get();
+        }
+        createProgram(universityId,program,new Fetched(recordUrl(program.koulutusOid()),response.body(),response.etag(),
+                response.lastModified(),response.durationMs(),null),now);
+        return jdbc.sql("select program_id from program_external_id where scheme=:scheme and value=:oid")
+                .param("scheme",StudyinfoParser.SCHEME_KOULUTUS).param("oid",candidate.educationOid()).query(Long.class).single();
     }
 
     private void createProgram(long universityId, StudyinfoParser.Program p, Fetched f, Instant now) {

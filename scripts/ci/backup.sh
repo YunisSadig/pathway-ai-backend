@@ -95,4 +95,7 @@ expected="$(cat "$OUT_DIR/manifest.txt")"
 echo "   expected: $expected"
 echo "   restored: $restored"
 [ "$restored" = "$expected" ] || die "the restored data does not match the manifest" 1
+if [ -n "${REHEARSAL_JAR:-}" ]; then
+  REHEARSAL_DATABASE_PASSWORD="$scratch_pw" bash scripts/ci/rehearse-curated.sh "$name" "$REHEARSAL_JAR" "$OUT_DIR"
+fi
 echo "== restore test PASSED: the backup restores completely into an independent database (scratch container removed)"

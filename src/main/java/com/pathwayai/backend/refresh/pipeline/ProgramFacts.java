@@ -58,6 +58,20 @@ public class ProgramFacts {
             case DEGREE_LEVEL -> scalar(programId, "select degree_level from degree_program where id = :p", v.get("level"));
             case ACADEMIC_FIELD -> scalar(programId, FIELD_SLUG_SQL, v.get("field"));
             case CAMPUS_CITY -> scalar(programId, "select campus_city from degree_program where id = :p", v.get("city"));
+            case UNIVERSITY_FACT -> {
+                checkUniversityAssociation(programId, v);
+                String current=jdbc.sql("select value from program_university_fact where program_id=:p and field_name=:f and scope_key=:k")
+                        .param("p",programId).param("f",v.get("field")).param("k",v.getOrDefault("scope", ""))
+                        .query(String.class).optional().orElse(null);
+                if(current==null && (v.get("field").equals("official_program_url") || v.get("field").equals("official_admissions_url"))) {
+                    current=currentOf(programId,"select "+v.get("field")+" from degree_program where id=:p");
+                    if(com.pathwayai.backend.provider.universitypages.OfficialProgramPages.studyinfo(current)) current=null;
+                    // A matching physical link still needs university-specific provenance on its first extraction.
+                    if(java.util.Objects.equals(current,v.get("value")))current=null;
+                }
+                yield current == null ? new Comparison(Kind.NEW,null) : new Comparison(current.equals(v.get("value"))
+                        ? Kind.UNCHANGED : Kind.CONFLICT,current);
+            }
             case REQUIREMENT, SOURCE_CONTENT -> new Comparison(Kind.NEW, null);
         };
     }
@@ -129,6 +143,43 @@ public class ProgramFacts {
      */
     public void apply(long programId, long sourceId, FactType type, Map<String, String> v, Instant now, String parserVersion) {
         switch (type) {
+            case UNIVERSITY_FACT -> {
+                checkUniversityAssociation(programId,v);
+                String field=v.get("field");
+                String scope=v.getOrDefault("scope", "");
+                String old=jdbc.sql("select value from program_university_fact where program_id=:p and field_name=:f and scope_key=:k")
+                        .param("p",programId).param("f",field).param("k",scope).query(String.class).optional().orElse(null);
+                boolean hadScopedFact=old!=null;
+                if(old==null && (field.equals("official_program_url") || field.equals("official_admissions_url")))
+                    old=currentOf(programId,"select "+field+" from degree_program where id=:p");
+                if(hadScopedFact) {
+                    jdbc.sql("""
+                            insert into program_fact_history(program_id,field_name,value,recorded_source_id,superseded_at,superseded_by_source,note)
+                            select program_id,field_name,value,source_id,:now,:source,
+                              'reviewed university update; scope='||scope_key||'; cycle='||coalesce(application_cycle,'unknown')
+                            from program_university_fact where program_id=:p and field_name=:f and scope_key=:k and value<>:newValue""")
+                            .param("now",java.sql.Timestamp.from(now)).param("source",sourceId).param("p",programId)
+                            .param("f",field).param("k",scope).param("newValue",v.get("value")).update();
+                } else archive(programId,field,old,v.get("value"),sourceId,now);
+                jdbc.sql("""
+                        insert into program_university_fact(program_id,field_name,scope_key,value,source_id,checked_at,application_cycle,
+                                                            applicant_category,academic_year)
+                        values(:p,:f,:k,:v,:s,:now,:cycle,:category,:year)
+                        on conflict(program_id,field_name,scope_key) do update set value=excluded.value,source_id=excluded.source_id,
+                        checked_at=excluded.checked_at,application_cycle=excluded.application_cycle,
+                        applicant_category=excluded.applicant_category,academic_year=excluded.academic_year""")
+                        .param("p",programId).param("f",field).param("k",scope).param("v",v.get("value")).param("s",sourceId)
+                        .param("now",java.sql.Timestamp.from(now)).param("cycle",blankToNull(v.get("cycle")))
+                        .param("category",blankToNull(v.get("applicantCategory"))).param("year",blankToNull(v.get("academicYear"))).update();
+                if (field.equals("official_program_url") || field.equals("official_admissions_url")) {
+                    jdbc.sql("update degree_program set " + field + "=:v,updated_at=:now where id=:p")
+                            .param("v",v.get("value")).param("now",java.sql.Timestamp.from(now)).param("p",programId).update();
+                }
+                if(field.equals("study_mode") && "Full-time".equals(v.get("value")))
+                    jdbc.sql("update degree_program set study_mode='FULL_TIME',updated_at=:now where id=:p")
+                            .param("now",java.sql.Timestamp.from(now)).param("p",programId).update();
+                provenance(programId,field,sourceId,now,parserVersion);
+            }
             case PROGRAM_NAME -> {
                 archive(programId, "name", currentOf(programId, "select name from degree_program where id = :p"), v.get("name"), sourceId, now);
                 jdbc.sql("update degree_program set name = :n, updated_at = now() where id = :p")
@@ -200,6 +251,18 @@ public class ProgramFacts {
 
     private String currentOf(long programId, String sql) {
         return jdbc.sql(sql).param("p", programId).query((rs, i) -> rs.getString(1)).optional().orElse(null);
+    }
+
+    private void checkUniversityAssociation(long programId, Map<String,String> values) {
+        boolean match=jdbc.sql("select exists(select 1 from program_external_id where program_id=:p and scheme='STUDYINFO_KOULUTUS_OID' and value=:v)")
+                .param("p",programId).param("v",values.get("educationOid")).query(Boolean.class).single();
+        if (!match) throw new IllegalArgumentException("University fact belongs to a different Studyinfo offering");
+        if(values.get("field")!=null && values.get("field").endsWith("url")) {
+            String university=jdbc.sql("select u.slug from degree_program p join university u on u.id=p.university_id where p.id=:p")
+                    .param("p",programId).query(String.class).single();
+            if(!com.pathwayai.backend.provider.universitypages.CuratedSources.owned(values.get("value"),university))
+                throw new IllegalArgumentException("University URL belongs to a different institution");
+        }
     }
 
     /** Keeps the value that is about to be replaced. The provider does not say when it stopped being valid. */

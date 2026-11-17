@@ -24,7 +24,35 @@
       "organisationOid": "1.2.246.562.10.38417217288",
       "officialName": "University of Oulu",
       "maxPrograms": 30,
-      "createIfMissing": {"name": "University of Oulu", "countryCode": "FI", "city": "Oulu"}
+      "createIfMissing": {
+        "name": "University of Oulu",
+        "countryCode": "FI",
+        "city": "Oulu"
+      }
+    },
+    {
+      "slug": "tampere-university",
+      "organisationOid": "1.2.246.562.10.79559059674",
+      "officialName": "Tampere University",
+      "maxPrograms": 0
+    },
+    {
+      "slug": "lut-university",
+      "organisationOid": "1.2.246.562.10.42777795784",
+      "officialName": "LUT University",
+      "maxPrograms": 0
+    },
+    {
+      "slug": "university-of-jyvaskyla",
+      "organisationOid": "1.2.246.562.10.91392558028",
+      "officialName": "University of Jyväskylä",
+      "maxPrograms": 0
+    },
+    {
+      "slug": "university-of-turku",
+      "organisationOid": "1.2.246.562.10.78305677532",
+      "officialName": "University of Turku",
+      "maxPrograms": 0
     }
   ]
 }

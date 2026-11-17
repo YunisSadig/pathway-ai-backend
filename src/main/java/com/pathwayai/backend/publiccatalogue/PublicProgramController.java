@@ -72,7 +72,8 @@ class PublicProgramController {
                          ProgramListItemResponse.FieldRef field, com.pathwayai.backend.program.entity.StudyMode studyMode,
                          Integer durationMonths, java.util.List<String> teachingLanguages, String campusCity,
                          ProgramListItemResponse.UniversityRef university, String officialProgramUrl, String officialAdmissionsUrl,
-                         String officialApplicationUrl, ProgramListItemResponse.Verification verification, java.time.LocalDate lastCheckedOn) {
+                         String officialApplicationUrl, ProgramListItemResponse.Verification verification, java.time.LocalDate lastCheckedOn,
+                         String catalogMembership) {
     }
 
     /** {@code identifier} is {@code <university-slug>--<program-slug>}. */
@@ -84,7 +85,7 @@ class PublicProgramController {
                 : sync.lastSuccessfulSyncAt().atZone(java.time.ZoneOffset.UTC).toLocalDate();
         return new PublicProgram(d.identifier(), d.slug(), d.name(), d.degreeLevel(), d.field(), d.studyMode(), d.durationMonths(),
                 d.teachingLanguages(), d.campusCity(), d.university(), d.officialProgramUrl(), d.officialAdmissionsUrl(), null,
-                d.verification(), checked);
+                d.verification(), checked,d.catalogMembership());
     }
 
     /** The application link is not part of the public tier. */
