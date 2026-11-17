@@ -36,19 +36,27 @@ student_digest() {
     sql "select '$table:'||count(*)||':'||md5(coalesce(string_agg(payload,'' order by payload),'')) from (select row_to_json(t)::text payload from $table t) rows"
   done
 }
-# byte-level digests of rows that must not change: every pre-existing university (+ its identifiers, aliases, sources)
 table_digest() { sql "select md5(coalesce(string_agg(row_to_json(t)::text,'' order by row_to_json(t)::text),'')) from ($1) t"; }
-universities_digest() {
-  table_digest 'select * from university where id in (select id from rehearsal_university_snapshot)'
-  table_digest 'select * from university_external_id where university_id in (select id from rehearsal_university_snapshot)'
-  table_digest 'select * from university_alias where university_id in (select id from rehearsal_university_snapshot)'
-  table_digest 'select * from university_source where university_id in (select id from rehearsal_university_snapshot)'
+# Pre-existing universities: copies of their rows at each stage (before / catalogue / final), compared row by row.
+# These rows are public reference data (no personal data), so any difference is printed in full.
+UTABLES='university:id university_external_id:university_id university_alias:university_id university_source:university_id'
+snapshot_universities() {
+  for spec in $UTABLES; do t="${spec%%:*}"; k="${spec##*:}"
+    sql "create table rehearsal_${1}_${t} as select * from $t where $k in (select id from rehearsal_university_snapshot)" >/dev/null
+  done
+}
+# rows of stage $1 missing at stage $2 ("removed") and rows of stage $2 not present at stage $1 ("added")
+university_diff() {
+  for spec in $UTABLES; do t="${spec%%:*}"
+    sql "select '$t removed: '||row_to_json(d)::text from (select * from rehearsal_${1}_${t} except select * from rehearsal_${2}_${t}) d"
+    sql "select '$t added: '||row_to_json(d)::text from (select * from rehearsal_${2}_${t} except select * from rehearsal_${1}_${t}) d"
+  done
 }
 student_digest > "$out/student-before.manifest"
 sql 'create table rehearsal_identity_snapshot as select id,university_id,slug from degree_program'
 sql 'create table rehearsal_university_snapshot as select id,slug,name from university'
 sql 'create table rehearsal_program_rows as select * from degree_program'
-universities_digest > "$out/universities-before.manifest"
+snapshot_universities before
 programs_before="$(table_digest 'select * from degree_program')"
 echo "== rehearsal: restored copy has $(sql 'select count(*) from degree_program') programs, $(sql 'select count(*) from university') universities"
 
@@ -62,6 +70,10 @@ echo "== rehearsal: universities now $(sql 'select count(*) from university'); n
 [ "$(table_digest 'select * from degree_program')" = "$programs_before" ] || { echo '== REHEARSAL FAILED: the catalogue step changed program rows'; exit 1; }
 [ "$(sql 'select count(*) from (select slug from university group by slug having count(*)>1) d')" = 0 ] || { echo '== REHEARSAL FAILED: duplicate university slug'; exit 1; }
 step catalogue-repeat java_app true --spring.flyway.enabled=false
+snapshot_universities catalogue
+university_diff before catalogue > "$out/universities-catalogue.diff"
+echo "== rehearsal: catalogue step changes to pre-existing universities: $(wc -l < "$out/universities-catalogue.diff") row(s)"
+cat "$out/universities-catalogue.diff"
 universities_after_catalogue="$(sql 'select count(*) from university')"
 echo "== rehearsal: catalogue repeated: universities still $universities_after_catalogue; program rows unchanged"
 
@@ -80,8 +92,25 @@ step repeat java_app false --spring.flyway.enabled=false --app.curated.command=a
 
 student_digest > "$out/student-after.manifest"
 cmp "$out/student-before.manifest" "$out/student-after.manifest" || { echo '== REHEARSAL FAILED: student/account/save rows changed'; exit 1; }
-universities_digest > "$out/universities-after.manifest"
-cmp "$out/universities-before.manifest" "$out/universities-after.manifest" || { echo '== REHEARSAL FAILED: a pre-existing university record changed'; exit 1; }
+snapshot_universities final
+university_diff catalogue final > "$out/universities-apply.diff"
+# The import may only ADD provenance links from a pre-existing university to the Studyinfo record of a program it
+# newly created there (StudyinfoImporter links each created program's source to its university, as discovery always did).
+if grep -v '^university_source added: ' "$out/universities-apply.diff" | grep -q .; then
+  echo '== REHEARSAL FAILED: the curated import changed or removed pre-existing university data:'
+  grep -v '^university_source added: ' "$out/universities-apply.diff"; exit 1
+fi
+unexplained="$(sql "select count(*) from (select * from rehearsal_final_university_source except select * from rehearsal_catalogue_university_source) a
+  where a.source_id not in (select ps.source_id from program_source ps join catalog_membership m on m.program_id=ps.program_id
+                            where m.program_id not in (select id from rehearsal_identity_snapshot))")"
+[ "$unexplained" = 0 ] || { echo "== REHEARSAL FAILED: $unexplained provenance link(s) added by the import do not belong to a newly created curated program"; cat "$out/universities-apply.diff"; exit 1; }
+echo "== RESULT provenance links added by the import (new curated programs' Studyinfo records): $(grep -c '^university_source added: ' "$out/universities-apply.diff" || true)"
+# the catalogue step may only ADD provenance links (university_source rows); any other change or removal fails
+if grep -v '^university_source added: ' "$out/universities-catalogue.diff" | grep -q .; then
+  echo '== REHEARSAL FAILED: the catalogue step changed or removed pre-existing university data:'
+  grep -v '^university_source added: ' "$out/universities-catalogue.diff"; exit 1
+fi
+echo "== RESULT pre-existing universities: rows, identifiers and aliases unchanged; provenance links added by the catalogue: $(grep -c '^university_source added: ' "$out/universities-catalogue.diff" || true)"
 [ "$(sql 'select count(*) from university')" = "$universities_after_catalogue" ] || { echo '== REHEARSAL FAILED: university count changed during apply'; exit 1; }
 untouched_changed="$(sql 'select count(*) from (select * from rehearsal_program_rows where id not in (select program_id from catalog_membership) except select * from degree_program) d')"
 [ "$untouched_changed" = 0 ] || { echo "== REHEARSAL FAILED: $untouched_changed non-curated program rows changed"; exit 1; }
