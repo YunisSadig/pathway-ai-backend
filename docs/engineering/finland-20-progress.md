@@ -165,3 +165,18 @@ Branch is cut from `feat/official-program-links` (PR #39) and includes the prese
 ### Next (Phase B)
 1. `UniversityAdmissionsAdapter`: replace whole-section prose (<= 6000 chars) with short structured values + link.
 2. Admissions/financial supporting sources for Helsinki, Tampere, LUT, Jyväskylä, Turku (read pages first).
+
+## Phase B: university admissions/financial sources (2026-11-17) — DONE, committed
+- `UniversityAdmissionsAdapter`: no copied passages. Every value <= 400 chars, else only the official link is kept.
+  Language tests are structured "TEST SCORE" lines (e.g. LUT: "IELTS Academic 6.5; New TOEFL iBT 4.5; TOEFL iBT 92;
+  PTE Academic 68"); a page without such lines yields only its link. Heading check normalises apostrophes.
+- `curated-supporting-sources.json`: +16 pages, all read 2026-11-17 (raw: research folder `supporting/`), each taken
+  from a link on the program page or its site navigation: Tampere (2 admissions, 2 language, financial; final URLs
+  after redirect), Turku (admissions, 2 language, financial), Jyväskylä (bachelor admissions, financial),
+  LUT (bachelor/master admissions, master language, bachelor + master financial).
+- Separate references per fact family: deadlines/routes = Studyinfo record; tuition = program page fact box (+
+  financial page link); requirements/language = admissions/language pages; scholarships = financial pages.
+- Gap: Helsinki exposes no admissions/financial links in server-rendered HTML (navigation is client-side); no URL was
+  guessed. Helsinki programs carry program-page facts (level, language, credits, fee) + Studyinfo routes only.
+- Gap: Tampere language pages and Turku language pages render their test lists client-side -> link only, no tests.
+- Tests: `UniversityAdmissionsAdapterTest` (4) + evidence tests (8) pass.

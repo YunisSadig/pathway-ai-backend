@@ -59,7 +59,7 @@ public class UniversityAdmissionsAdapter implements ContextualScopedExtractionAd
     public static List<ExtractedFact> extract(String html,String finalUrl,SourceSpec source,CuratedSources.Candidate candidate) {
         if(!applies(source,candidate) || !CuratedSources.owned(finalUrl,source.university()))throw new IllegalArgumentException("Wrong institution or entry route");
         Document doc=Jsoup.parse(html,finalUrl);
-        if(doc.select("h1").size()!=1 || !doc.select("h1").text().equals(source.heading()))throw new IllegalArgumentException("Supporting source identity changed");
+        if(doc.select("h1").size()!=1 || !UniversityProgramAdapter.normalize(doc.select("h1").text()).equals(UniversityProgramAdapter.normalize(source.heading())))throw new IllegalArgumentException("Supporting source identity changed");
         doc.select("nav,header,footer,aside,script,style").remove();
         Map<String,String> values=new LinkedHashMap<>();
         if(source.purpose().equals("ADMISSIONS")) {
@@ -71,8 +71,8 @@ public class UniversityAdmissionsAdapter implements ContextualScopedExtractionAd
             add(values,"entrance_tests",section(doc,"(?i)^(SAT|ACT|SAT and ACT|entrance exam|admission based on SAT).*"));
         }
         if(source.purpose().equals("LANGUAGE")) {
-            String requirements=section(doc,"(?i)^(IELTS|TOEFL|accepted language tests|english language tests).*" );
-            if(requirements!=null)values.put("language_tests",requirements);
+            String tests=languageTests(doc);
+            if(tests!=null)values.put("language_tests",tests);
             values.put("instructions",finalUrl);
         }
         if(source.purpose().equals("FINANCIAL")) {
@@ -95,11 +95,29 @@ public class UniversityAdmissionsAdapter implements ContextualScopedExtractionAd
             if(common!=null)requirements.add(common);
             if(!requirements.isEmpty())values.put("entrance_tests",String.join("\n\n",requirements));
         }
+        // Short structured values only; longer guidance stays on the university's page, reachable through its link.
+        values.values().removeIf(v->v==null || v.length()>UniversityProgramAdapter.MAX_VALUE);
         List<ExtractedFact> facts=new ArrayList<>();
         String scope=source.purpose().toLowerCase(java.util.Locale.ROOT);
         for(var e:values.entrySet()) facts.add(ExtractedFact.of(ExtractedFact.FactType.UNIVERSITY_FACT,e.getKey()+"|"+scope,
                 Map.of("field",e.getKey(),"scope",scope,"value",e.getValue(),"educationOid",candidate.educationOid())));
         return facts;
+    }
+
+    private static final Pattern TEST_LINE=Pattern.compile(
+            "^((?:New )?TOEFL iBT|IELTS Academic|PTE Academic|C1 Advanced|C2 Proficiency|Duolingo English Test)\\s+(\\d{1,3}(?:\\.\\d)?)$");
+
+    /** Lines that state exactly one accepted test and its minimum score, e.g. "IELTS Academic 6.5"; else null. */
+    static String languageTests(Document doc) {
+        java.util.LinkedHashSet<String> tests=new java.util.LinkedHashSet<>();
+        for(Element e:doc.select("li,p,td,dd,div")) {
+            if(!e.children().isEmpty() && !e.tagName().equals("li") && !e.tagName().equals("p")) continue;
+            Element own=e.clone();
+            own.select("ul,ol").remove(); // a list item's notes ("... are also accepted") are not part of its test line
+            var m=TEST_LINE.matcher(UniversityProgramAdapter.normalize(own.text()));
+            if(m.matches()) tests.add(m.group(1)+" "+m.group(2));
+        }
+        return tests.isEmpty()?null:String.join("; ",tests);
     }
 
     static String section(Document doc,String regex) {

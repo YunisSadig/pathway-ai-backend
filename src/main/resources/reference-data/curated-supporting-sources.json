@@ -82,5 +82,117 @@
     "purpose": "SAT",
     "url": "https://www.oulu.fi/en/apply/how-apply/applying-bachelors-programmes/sat-test-results",
     "heading": "SAT and ACT test results"
+  },
+  {
+    "university": "tampere-university",
+    "entryLevel": "BACHELOR",
+    "purpose": "ADMISSIONS",
+    "url": "https://www.tuni.fi/en/tau/bachelors-programmes/applying",
+    "heading": "Applying to Tampere University bachelor’s programmes"
+  },
+  {
+    "university": "tampere-university",
+    "entryLevel": "MASTER",
+    "purpose": "ADMISSIONS",
+    "url": "https://www.tuni.fi/en/tau/masters-programmes/applying",
+    "heading": "Applying to Tampere University master’s programmes"
+  },
+  {
+    "university": "tampere-university",
+    "entryLevel": "ALL",
+    "purpose": "FINANCIAL",
+    "url": "https://www.tuni.fi/en/tau/financial-matters/tuition-fees-and-scholarships",
+    "heading": "Tuition Fees and Scholarships at Tampere University"
+  },
+  {
+    "university": "tampere-university",
+    "entryLevel": "BACHELOR",
+    "purpose": "LANGUAGE",
+    "url": "https://www.tuni.fi/en/tau/bachelors-programmes/language-requirements",
+    "heading": "Language requirements for Tampere University bachelor's programmes"
+  },
+  {
+    "university": "tampere-university",
+    "entryLevel": "MASTER",
+    "purpose": "LANGUAGE",
+    "url": "https://www.tuni.fi/en/tau/masters-programmes/language-requirements",
+    "heading": "Language requirements for Tampere University master's programmes"
+  },
+  {
+    "university": "university-of-turku",
+    "entryLevel": "ALL",
+    "purpose": "ADMISSIONS",
+    "url": "https://www.utu.fi/en/study-at-utu/how-when-to-apply",
+    "heading": "How and when to apply"
+  },
+  {
+    "university": "university-of-turku",
+    "entryLevel": "BACHELOR",
+    "purpose": "LANGUAGE",
+    "url": "https://www.utu.fi/en/study-at-utu/language-requirements-for-bachelors-degree-programmes",
+    "heading": "Language requirements for Bachelor's Degree Programmes"
+  },
+  {
+    "university": "university-of-turku",
+    "entryLevel": "MASTER",
+    "purpose": "LANGUAGE",
+    "url": "https://www.utu.fi/en/study-at-utu/language-requirements-for-masters-degree-programmes",
+    "heading": "Language requirements for Master's Degree Programmes"
+  },
+  {
+    "university": "university-of-turku",
+    "entryLevel": "ALL",
+    "purpose": "FINANCIAL",
+    "url": "https://www.utu.fi/en/study-at-utu/scholarships-and-tuition-fees",
+    "heading": "Tuition fees and scholarships"
+  },
+  {
+    "university": "university-of-jyvaskyla",
+    "entryLevel": "BACHELOR",
+    "purpose": "ADMISSIONS",
+    "url": "https://www.jyu.fi/en/study-with-us/bachelors-degree-programmes/how-to-apply-for-international-bachelors-programmes",
+    "heading": "How to apply for international bachelor's programmes"
+  },
+  {
+    "university": "university-of-jyvaskyla",
+    "entryLevel": "ALL",
+    "purpose": "FINANCIAL",
+    "url": "https://www.jyu.fi/en/study-with-us/tuition-fees-and-other-financial-matters",
+    "heading": "Tuition fees and other financial matters"
+  },
+  {
+    "university": "lut-university",
+    "entryLevel": "BACHELOR",
+    "purpose": "ADMISSIONS",
+    "url": "https://www.lut.fi/en/studies/apply-lut/applying-bachelors-programmes",
+    "heading": "Applying to bachelor's programmes"
+  },
+  {
+    "university": "lut-university",
+    "entryLevel": "BACHELOR",
+    "purpose": "FINANCIAL",
+    "url": "https://www.lut.fi/en/studies/apply-lut/applying-bachelors-programmes/early-bird-discount-and-scholarships-bachelors",
+    "heading": "Early bird discount and scholarships for bachelor's studies"
+  },
+  {
+    "university": "lut-university",
+    "entryLevel": "MASTER",
+    "purpose": "ADMISSIONS",
+    "url": "https://www.lut.fi/en/studies/apply-lut/applying-masters-programmes",
+    "heading": "Applying to Master's programmes"
+  },
+  {
+    "university": "lut-university",
+    "entryLevel": "MASTER",
+    "purpose": "LANGUAGE",
+    "url": "https://www.lut.fi/en/studies/apply-lut/applying-masters-programmes/rolling-admission-masters-studies/english-proficiency-for-masters-programmes",
+    "heading": "English proficiency for master's programmes"
+  },
+  {
+    "university": "lut-university",
+    "entryLevel": "MASTER",
+    "purpose": "FINANCIAL",
+    "url": "https://www.lut.fi/en/studies/apply-lut/applying-masters-programmes/rolling-admission-masters-studies/tuition-fees",
+    "heading": "Tuition fees for master's programmes"
   }
 ]

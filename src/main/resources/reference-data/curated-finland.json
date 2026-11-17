@@ -69,7 +69,7 @@
     "combined": true,
     "programUrl": "https://www.tuni.fi/en/tau/bachelors-programmes/computing-sciences-and-electrical-engineering",
     "heading": "Computing Sciences and Electrical Engineering",
-    "admissionsUrl": null,
+    "admissionsUrl": "https://www.tuni.fi/en/tau/bachelors-programmes/applying",
     "implementationProviderOid": "1.2.246.562.10.40357610647",
     "reviewedTitleCodes": null,
     "studyOption": null
@@ -84,7 +84,7 @@
     "combined": true,
     "programUrl": "https://www.lut.fi/en/studies/business/bachelors-programmes-business-administration/bachelors-programme-digital-business",
     "heading": "Bachelor's Programme in Digital Business",
-    "admissionsUrl": null,
+    "admissionsUrl": "https://www.lut.fi/en/studies/apply-lut/applying-bachelors-programmes",
     "implementationProviderOid": "1.2.246.562.10.29787818623",
     "reviewedTitleCodes": null,
     "studyOption": null
@@ -114,7 +114,7 @@
     "combined": false,
     "programUrl": "https://www.jyu.fi/en/study-with-us/bachelors-degree-programmes/bachelors-degree-programme-in-immersive-software-engineering-and-artificial-intelligence",
     "heading": "Bachelor’s Degree Programme in Immersive Software Engineering and AI",
-    "admissionsUrl": null,
+    "admissionsUrl": "https://www.jyu.fi/en/study-with-us/bachelors-degree-programmes/how-to-apply-for-international-bachelors-programmes",
     "implementationProviderOid": "1.2.246.562.10.949530408410",
     "reviewedTitleCodes": null,
     "studyOption": null
@@ -129,7 +129,7 @@
     "combined": true,
     "programUrl": "https://www.jyu.fi/en/study-with-us/bachelors-degree-programmes/bachelors-degree-programme-in-business-innovation-and-sustainability",
     "heading": "Bachelor's Degree Programme in Business Innovation and Sustainability",
-    "admissionsUrl": null,
+    "admissionsUrl": "https://www.jyu.fi/en/study-with-us/bachelors-degree-programmes/how-to-apply-for-international-bachelors-programmes",
     "implementationProviderOid": "1.2.246.562.10.77576502296",
     "reviewedTitleCodes": null,
     "studyOption": null
@@ -144,7 +144,7 @@
     "combined": true,
     "programUrl": "https://www.utu.fi/en/study-at-utu/bachelors-degree-programme-in-information-and-communication-technology",
     "heading": "Degree Programme in Information and Communication Technology",
-    "admissionsUrl": null,
+    "admissionsUrl": "https://www.utu.fi/en/study-at-utu/how-when-to-apply",
     "implementationProviderOid": "1.2.246.562.10.19909253056",
     "reviewedTitleCodes": [
       "tutkintonimikekk_150",
@@ -222,7 +222,7 @@
     "combined": false,
     "programUrl": "https://www.tuni.fi/en/tau/masters-programmes/ai-native-software-computing-sciences-and-electrical-engineering",
     "heading": "AI-native Software, Computing Sciences and Electrical Engineering",
-    "admissionsUrl": null,
+    "admissionsUrl": "https://www.tuni.fi/en/tau/masters-programmes/applying",
     "implementationProviderOid": "1.2.246.562.10.40357610647",
     "reviewedTitleCodes": null,
     "studyOption": null
@@ -237,7 +237,7 @@
     "combined": false,
     "programUrl": "https://www.lut.fi/en/studies/technology/masters-programmes-technology/masters-programme-software-engineering",
     "heading": "Master's Programme in Software Engineering",
-    "admissionsUrl": null,
+    "admissionsUrl": "https://www.lut.fi/en/studies/apply-lut/applying-masters-programmes",
     "implementationProviderOid": "1.2.246.562.10.22417098567",
     "reviewedTitleCodes": null,
     "studyOption": null
@@ -252,7 +252,7 @@
     "combined": false,
     "programUrl": "https://www.lut.fi/en/studies/business/masters-programmes-business-administration/masters-programme-business-analytics",
     "heading": "Master's Programme in Business Analytics",
-    "admissionsUrl": null,
+    "admissionsUrl": "https://www.lut.fi/en/studies/apply-lut/applying-masters-programmes",
     "implementationProviderOid": "1.2.246.562.10.22417098567",
     "reviewedTitleCodes": null,
     "studyOption": null
@@ -297,7 +297,7 @@
     "combined": false,
     "programUrl": "https://www.utu.fi/en/study-at-utu/masters-degree-programme-in-global-innovation-management",
     "heading": "Master's Degree Programme in Global Innovation Management",
-    "admissionsUrl": null,
+    "admissionsUrl": "https://www.utu.fi/en/study-at-utu/how-when-to-apply",
     "implementationProviderOid": "1.2.246.562.10.35830094294",
     "reviewedTitleCodes": null,
     "studyOption": null
