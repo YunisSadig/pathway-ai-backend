@@ -200,3 +200,19 @@ Branch is cut from `feat/official-program-links` (PR #39) and includes the prese
 - Not verified yet: scheduled operation. `SYNC_ENABLED` is unset and `HEALTHCHECK_PING_URL` absent (owner decisions);
   nothing runs unattended until the owner enables it and a scheduled run succeeds.
 - Tests: OfficialLinkMonitorIT 6, evidence 9 (incl. new-cycle), CuratedCatalogIT 5, ProgramApiIT 24, PublicCatalogueIT 6.
+
+## Phase D: website integration (2026-11-17) — DONE, committed in both repos (branch `feat/finland-curated-20`)
+- Backend public detail adds `qualificationPathway`, `studyOption`, `programLinkStatus` (no fact values; allow-list test
+  extended deliberately). README "Curated catalogue fields" documents every additive field.
+- Frontend (built on the preserved Codex WIP of PR #50): types for pathway/study option/link checks/fee audience+year;
+  `degreeLabelKey` (combined 3+2 = "Bachelor's entry · combined bachelor's + master's pathway"; JYU ISE&AI = "Bachelor's
+  degree"); study-option line; fee shows "Applies to non-EU/EEA applicants" + "Academic year not stated by the
+  university"; a STALE/BROKEN/PENDING_REVIEW program page is never the primary button (notice + "last known page" link);
+  SOURCE_UNAVAILABLE keeps the button. EN + RU strings.
+- Data freshness on the site: the proxy fetches with `no-store` and forwards the backend's Cache-Control/ETag, so a
+  published backend change is visible on the next page load; nothing is hardcoded in the frontend.
+- Filters: degree level, university, subject, language, country use the existing explorer. Tuition-range filtering
+  only matches dated CURRENT fees (`tuition` rows); the curated fees are undated university facts, so they are shown
+  on the program page but deliberately NOT used by the tuition filter (rule: never present an undated fee as current).
+- Tests: frontend 156 unit tests, typecheck, lint, format pass; backend PublicCatalogueIT 6, CuratedCatalogIT 5,
+  UniversityApiIT 12 pass.
