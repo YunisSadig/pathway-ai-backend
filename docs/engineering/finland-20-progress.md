@@ -216,3 +216,26 @@ Branch is cut from `feat/official-program-links` (PR #39) and includes the prese
   on the program page but deliberately NOT used by the tuition filter (rule: never present an undated fee as current).
 - Tests: frontend 156 unit tests, typecheck, lint, format pass; backend PublicCatalogueIT 6, CuratedCatalogIT 5,
   UniversityApiIT 12 pass.
+
+## Correction (2026-11-17)
+Studyinfo records DO carry a fee type and amount (`toteutukset[].metadata.opetus.maksut`, e.g. `lukuvuosimaksu 16000`)
+and a scholarship flag, but no academic year. The earlier table row "Tuition: Studyinfo no" was too strong. The
+connector does not read it yet; the university fact box remains the fee source (also undated).
+
+## Phase E: release preparation (2026-11-17)
+- Backend `clean verify`: 178 unit + 293 integration tests; the only 2 failures (FlywayMigrationIT pinned V12 and 45 FKs)
+  were fixed (V13, +7 FKs). Frontend: 156 unit tests, typecheck, lint, format, production build pass.
+- Production applies NO migration on deploy (`FLYWAY_ENABLED` defaults false in `application-prod.yaml`). The merged code
+  is inert until V13 exists: every curated path checks `to_regclass('public.catalog_release')`.
+
+### Production runbook (each numbered step after 1 needs the owner's explicit approval; nothing below has run)
+1. Review/merge backend + frontend PRs after green CI (code deploy only; no schema or data change).
+2. Run workflow "Curated catalogue rehearsal" (main): read-only encrypted Neon dump -> isolated restore -> V13 ->
+   preview -> apply twice -> proves account/profile/save rows byte-identical and old program identities kept, 10+10.
+3. Workflow "Source refresh" mode `migrate`: applies V13 to Neon (additive: 5 tables, 1 CHECK widened incl. LIFECYCLE).
+4. Mode `curated-preview`: prints the plan + fingerprint (read-only). Owner reviews.
+5. Mode `curated-apply` with that exact fingerprint: imports 16 new programs, reuses 4 existing, registers monitors,
+   enables release `finland-curated-v1`. Rollback: `update catalog_release set enabled=false` restores the previous
+   discovery (no rows deleted); a scoped restore from step 2's backup is the last resort.
+6. Mode `links` then `status`; check the live site (programs list 10+10, detail pages, buttons).
+7. Unattended sync: owner sets `SYNC_ENABLED=true` (+ optional `HEALTHCHECK_PING_URL`); verify one scheduled run.
