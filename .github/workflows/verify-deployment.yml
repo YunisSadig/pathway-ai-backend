@@ -24,9 +24,9 @@ on:
 
 permissions: {}
 
-concurrency:
-  group: verify-deployment
-  cancel-in-progress: true
+# No workflow-level concurrency on purpose: the verify job below runs in the "staging" environment, and every environment job creates its own
+# GitHub deployment, whose status events start this workflow again. A workflow-level "cancel-in-progress" group would let those runs cancel
+# the real verification. The group is on the verify job instead (a job skipped by its "if" never joins it).
 
 jobs:
   verify:
@@ -35,6 +35,9 @@ jobs:
     if: >-
       ${{ vars.API_BASE_URL != '' && (github.event_name == 'workflow_dispatch' ||
       (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'main - pathway-ai-api')) }}
+    concurrency:
+      group: verify-deployment
+      cancel-in-progress: false   # two deployments in a row are verified one after the other
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: staging
