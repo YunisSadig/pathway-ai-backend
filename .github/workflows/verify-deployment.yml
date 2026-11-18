@@ -1,29 +1,45 @@
-# Post-deployment verification of the hosted API. The deployment itself is done by the hosting platform (Render Blueprint render.yaml,
-# autoDeployTrigger: checksPass = only after this repository's CI passed). This workflow proves the deploy: it waits until the live service
-# reports the merged commit, then smoke-tests it. A failed CI run never reaches this workflow (only conclusion == success continues).
+# Post-deployment verification of the hosted API.
+#
+# WHY THIS RUNS AFTER THE DEPLOYMENT AND NOT AFTER CI: render.yaml uses `autoDeployTrigger: checksPass`. Render deploys a push to main only
+# if every GitHub check run on that commit has completed successfully when it looks (docs: "After CI Checks Pass"; success, neutral and
+# skipped count as passing; a failed or cancelled check means no deploy). A verification job that starts when CI finishes therefore becomes
+# another check on the very commit Render is gating, and it can only finish once Render has deployed: a circular wait (mistakes-and-fixes
+# no. 49). This workflow is started by the deployment itself (Render reports each deploy to GitHub as a deployment), so its check run
+# exists only after the deploy happened and can never delay it. It is also started by hand (workflow_dispatch) as an independent trigger.
+#
+# A failed smoke test, or a deployment that Render reports as failed, opens or updates a GitHub issue (see the alert job).
 #
 # It does nothing until the owner sets the repository VARIABLE API_BASE_URL (the https origin of the deployed API) and the environment
-# "staging" holds the secret STAGING_ACCESS_KEY (docs/deployment-api.md).
+# "staging" (restricted to main) holds the secret STAGING_ACCESS_KEY (docs/deployment-api.md). The script only issues GET requests.
 name: Verify deployment
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
+  deployment_status:
   workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: "commit the live API must report (default: the latest commit of the selected branch)"
+        type: string
+        required: false
 
 permissions: {}
 
-concurrency:
-  group: verify-deployment
-  cancel-in-progress: true
+# No workflow-level concurrency on purpose: the verify job below runs in the "staging" environment, and every environment job creates its own
+# GitHub deployment, whose status events start this workflow again. A workflow-level "cancel-in-progress" group would let those runs cancel
+# the real verification. The group is on the verify job instead (a job skipped by its "if" never joins it).
 
 jobs:
   verify:
-    if: ${{ vars.API_BASE_URL != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') }}
+    # Only a successful Render deployment of main (Render names its GitHub deployments "<branch> - <service>"), or a manual run.
+    # Queued / in_progress / failed statuses start nothing here (a failed deployment is reported by the alert job below).
+    if: >-
+      ${{ vars.API_BASE_URL != '' && (github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'main - pathway-ai-api')) }}
+    concurrency:
+      group: verify-deployment
+      cancel-in-progress: false   # two deployments in a row are verified one after the other
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     environment: staging
     permissions:
       contents: read
@@ -31,9 +47,45 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Wait for the merged commit to be live, then smoke-test
+      - name: Smoke-test the live API (it must report the deployed commit)
         env:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
           STAGING_ACCESS_KEY: ${{ secrets.STAGING_ACCESS_KEY }}
-          EXPECTED_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          EXPECTED_SHA: ${{ github.event_name == 'deployment_status' && github.event.deployment.sha || inputs.expected_sha || github.sha }}
+          # the deployment is already live when this starts; the wait only covers a sleeping instance and the routing switch-over
+          VERIFY_TIMEOUT_SECONDS: "600"
         run: bash scripts/ci/verify-deployment.sh
+
+  alert:
+    needs: verify
+    if: >-
+      ${{ always() && (needs.verify.result == 'failure' ||
+      (github.event_name == 'deployment_status' && github.event.deployment.environment == 'main - pathway-ai-api' &&
+      (github.event.deployment_status.state == 'failure' || github.event.deployment_status.state == 'error'))) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write          # the only permission this job has; it holds no secret
+    steps:
+      - name: Open or update the alert issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EVENT: ${{ github.event_name }}
+          DEPLOY_STATE: ${{ github.event.deployment_status.state }}
+          DEPLOY_SHA: ${{ github.event.deployment.sha }}
+          VERIFY_RESULT: ${{ needs.verify.result }}
+        run: |
+          title="Production deployment needs attention"
+          if [ "$EVENT" = "deployment_status" ] && { [ "$DEPLOY_STATE" = failure ] || [ "$DEPLOY_STATE" = error ]; }; then
+            body="Render reported the deployment of ${DEPLOY_SHA:0:7} as '${DEPLOY_STATE}'. The previous version may still be serving. Run: ${RUN_URL}"
+          else
+            body="The post-deployment smoke test failed (verify job: ${VERIFY_RESULT}; event: ${EVENT}). Check the run log for the failing check. Run: ${RUN_URL}"
+          fi
+          existing=$(gh issue list --repo "$REPO" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$REPO" --body "$body"
+          else
+            gh issue create --repo "$REPO" --title "$title" --body "$body"
+          fi
