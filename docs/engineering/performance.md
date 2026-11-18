@@ -40,7 +40,16 @@ Root causes (code, not only hosting):
 | "Log in" visible | 1.2–1.5 s | 0.6 s |
 | Public data source | Render (MISS) | Vercel CDN (HIT, ~0.7 s) |
 
-Cold-backend "after" measurement: see the release log below (taken after ≥16 idle minutes).
+Cold backend, after (2026-11-18 07:37 UTC, ≥17 idle minutes, signed-out):
+
+| Measure | Before | After |
+|---|---|---|
+| `/universities` first university card | up to ~2 min (waited for `/account/me`) | **4.3 s** (public data `X-Vercel-Cache: STALE`, served while revalidating) |
+| "Log in" visible | after the backend woke | 4.1 s |
+| `/` usable | 0.7 s | 0.57 s |
+| Render wake (`/actuator/health`) | 84.6 s (2026-11-15) | 103 s (hosting limit, unchanged) |
+
+The ~3.9 s first paint on the cold `/universities` run is Vercel's own idle page function, not the backend.
 
 ## What free hosting can and cannot guarantee
 
