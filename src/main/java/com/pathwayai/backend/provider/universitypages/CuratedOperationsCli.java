@@ -81,5 +81,30 @@ public class CuratedOperationsCli implements ApplicationRunner {
                 +curated+") and i.application_deadline >= :today order by i.application_deadline,p.slug limit 25")
                 .param("today",LocalDate.now(clock)).query((rs,n)->"upcoming deadline "+rs.getDate(3)+" "+rs.getString(1)+" | "+rs.getString(2))
                 .list().forEach(System.out::println);
+        detailLines().forEach(System.out::println);
+    }
+
+    /**
+     * Itemised, read-only evidence of what the curated programs publish (published catalogue data only: no account,
+     * profile or saved-program data is read). A fee without a source-stated academic year shows "not stated".
+     */
+    List<String> detailLines() {
+        String curated="select m.program_id from catalog_membership m join catalog_release r on r.id=m.release_id where r.enabled";
+        List<String> out=new java.util.ArrayList<>();
+        out.add("== Curated data detail");
+        out.addAll(jdbc.sql("select p.slug,coalesce(af.slug,'none') from degree_program p left join academic_field af on af.id=p.academic_field_id"
+                +" where p.id in ("+curated+") order by p.slug").query((rs,n)->"field "+rs.getString(1)+" = "+rs.getString(2)).list());
+        out.add("tuition rows on curated programs: "+jdbc.sql("select count(*) from tuition_fee where program_id in ("+curated+")").query(Long.class).single());
+        out.add("tuition rows with an academic year: "+jdbc.sql("select count(*) from tuition_fee where academic_year is not null and program_id in ("
+                +curated+")").query(Long.class).single());
+        out.addAll(jdbc.sql("select p.slug,t.student_category,t.amount,t.currency,t.billing_period,coalesce(t.academic_year,'not stated'),s.url"
+                +" from tuition_fee t join degree_program p on p.id=t.program_id join source s on s.id=t.source_id"
+                +" where t.program_id in ("+curated+") order by p.slug,t.student_category")
+                .query((rs,n)->"tuition "+rs.getString(1)+" | "+rs.getString(2)+" | "+rs.getBigDecimal(3).stripTrailingZeros().toPlainString()+" "+rs.getString(4)
+                        +" | billing "+rs.getString(5)+" | academic year: "+rs.getString(6)+" | source: "+rs.getString(7)).list());
+        out.addAll(jdbc.sql("select field_name,scope_key,count(*),count(distinct program_id) from program_university_fact where program_id in ("+curated
+                +") group by 1,2 order by 1,2").query((rs,n)->"university facts "+rs.getString(1)+"/"+(rs.getString(2).isEmpty()?"(page)":rs.getString(2))
+                +" = "+rs.getLong(3)+" rows on "+rs.getLong(4)+" programs").list());
+        return out;
     }
 }
