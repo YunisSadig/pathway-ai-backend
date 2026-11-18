@@ -69,7 +69,7 @@ class AdmissionCycleTest {
         assertThat(parsed.program().degreeLevel()).isEqualTo("MASTER");
         assertThat(parsed.program().deadlines()).extracting(StudyinfoParser.Deadline::date).containsExactly("2028-01-18");
         assertThat(StudyinfoParser.toFacts(parsed.program())).filteredOn(f -> f.type() == ExtractedFact.FactType.TUITION)
-                .singleElement().satisfies(f -> assertThat(f.values()).containsEntry("academicYear", "2028/2029"));
+                .singleElement().satisfies(f -> assertThat(f.values()).as("a new intake does not date a fee").doesNotContainKey("academicYear"));
         assertThat(adopted.educationOid()).as("the program identity never changes").isEqualTo(helsinki.educationOid());
     }
 

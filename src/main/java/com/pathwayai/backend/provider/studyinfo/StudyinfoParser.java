@@ -49,13 +49,13 @@ public final class StudyinfoParser {
 
     /**
      * Structured facts of one REVIEWED implementation, read only from the provider's coded fields (no free text is stored).
-     * Every part is null when the record does not state it. {@code feeAcademicYear} is set only when the record states an
-     * autumn start term and year for the implementation (its own, or every application round of it, all agreeing): the
-     * first academic year of that intake (Finnish academic years run August to July). {@code feeLiableStated}: the
+     * Every part is null when the record does not state it. {@code feeAcademicYear} is set ONLY when the provider's own fee
+     * description names an academic year ("2027-2028", "academic year 2027/2028"); an intake or start term never implies a
+     * fee period (owner rule 2026-11-18), so most fees are published without a year. {@code feeLiableStated}: the
      * provider's fee description names the fee-liable audience (non-EU/EEA); without it no fee is published from here.
      */
     public record Details(String degreeTitles, String credits, String studyMode, String feeAmount, String feeAcademicYear,
-                          String feeStartTerm, boolean feeLiableStated, String scholarship) {
+                          boolean feeLiableStated, String scholarship) {
     }
 
     /** {@code program} is null when the record cannot be used at all. */
@@ -207,7 +207,7 @@ public final class StudyinfoParser {
         List<Deadline> deadlines = implementationOid==null ? deadlines(deadlineRoot, issues) : routeDeadlines(deadlineRoot, issues);
 
         Details details = implementationOid == null || toteutukset.size() != 1 ? null
-                : details(root, toteutukset.get(0), deadlineRoot, issues);
+                : details(root, toteutukset.get(0), issues);
         String cleanName = INTAKE_SUFFIX.matcher(name.value()).replaceFirst("").strip();
         if (implementationOid != null) {
             cleanName = withoutRoutePrefix(cleanName, localized(root.get("nimi")));
@@ -236,7 +236,7 @@ public final class StudyinfoParser {
     private static final Pattern FEE_LIABLE = Pattern.compile("(?i)\\b(EU/EEA|EEA|European Economic Area)\\b");
 
     /** See {@link Details}. Only coded fields; the free-text descriptions are read for the audience check alone. */
-    private static Details details(Map<String, Object> root, Map<String, Object> toteutus, Map<String, Object> routesRoot,
+    private static Details details(Map<String, Object> root, Map<String, Object> toteutus,
                                    List<String> issues) {
         Map<String, Object> rootMeta = map(root.get("metadata"));
         Map<String, Object> opetus = map(map(toteutus.get("metadata")).get("opetus"));
@@ -269,22 +269,18 @@ public final class StudyinfoParser {
         }
         Localized feeText = localized(opetus.get("maksullisuusKuvaus"));
         boolean liable = feeText != null && "en".equals(feeText.language()) && FEE_LIABLE.matcher(feeText.value()).find();
-        // start term: the implementation's own statement and every application round of it must agree
-        Set<String> starts = new TreeSet<>();
-        String own = startTerm(map(opetus.get("koulutuksenAlkamiskausi")));
-        if (own != null) starts.add(own);
-        for (Object h : list(routesRoot.get("haut"))) {
-            String s = startTerm(map(map(map(h).get("metadata")).get("koulutuksenAlkamiskausi")));
-            if (s != null) starts.add(s);
-        }
-        String startTerm = starts.size() == 1 ? starts.iterator().next() : null;
-        if (starts.size() > 1) {
-            issues.add("the record states different start terms " + starts + ": no academic year for the fee");
-        }
+        // an academic year only when the provider's own fee text states one (two consecutive years); never from an intake
         String academicYear = null;
-        if (startTerm != null && startTerm.startsWith("autumn ")) {
-            int year = Integer.parseInt(startTerm.substring(7));
-            academicYear = year + "/" + (year + 1);
+        if (feeText != null && "en".equals(feeText.language())) {
+            var years = ACADEMIC_YEAR_STATED.matcher(feeText.value());
+            Set<String> stated = new TreeSet<>();
+            while (years.find()) {
+                int first = Integer.parseInt(years.group(1));
+                int second = years.group(2).length() == 2 ? first / 100 * 100 + Integer.parseInt(years.group(2)) : Integer.parseInt(years.group(2));
+                if (second == first + 1) stated.add(first + "/" + second);
+            }
+            if (stated.size() == 1) academicYear = stated.iterator().next();
+            else if (stated.size() > 1) issues.add("the fee text names several academic years " + stated + ": no academic year for the fee");
         }
         // scholarship: a stated range in euros or as a share of the tuition fee
         String scholarship = null;
@@ -297,18 +293,11 @@ public final class StudyinfoParser {
             else if ("prosentti".equals(u)) scholarship = "Tuition-fee scholarship of " + range + "% available";
         }
         return new Details(titles.isEmpty() ? null : String.join(" + ", titles), credits,
-                modes.isEmpty() ? null : String.join(", ", modes), fee, academicYear, startTerm, liable, scholarship);
+                modes.isEmpty() ? null : String.join(", ", modes), fee, academicYear, liable, scholarship);
     }
 
-    /** "autumn 2027" / "spring 2028" from a coded start term (kausi_s = autumn, kausi_k = spring); null otherwise. */
-    private static String startTerm(Map<String, Object> start) {
-        String season = unversioned(str(map(start.get("koulutuksenAlkamiskausi")).get("koodiUri")));
-        String year = str(start.get("koulutuksenAlkamisvuosi"));
-        if (year == null || !year.matches("\\d{4}")) return null;
-        if ("kausi_s".equals(season)) return "autumn " + year;
-        if ("kausi_k".equals(season)) return "spring " + year;
-        return null;
-    }
+    /** "2027-2028", "2027/28", "2027 – 2028" in a fee description (the caller requires two consecutive years). */
+    private static final Pattern ACADEMIC_YEAR_STATED = Pattern.compile("\\b(20\\d{2})\\s*[–\\-/]\\s*(20\\d{2}|\\d{2})\\b");
 
     /** The facts the program states, as pipeline input. Empty parts are simply absent. */
     public static List<ExtractedFact> toFacts(Program p) {
@@ -334,13 +323,16 @@ public final class StudyinfoParser {
         }
         Details d = p.details();
         if (d != null) {
-            // an annual fee is published only with its stated audience and the academic year of a stated intake
-            if (d.feeAmount() != null && d.feeLiableStated() && d.feeAcademicYear() != null) {
-                out.add(ExtractedFact.of(FactType.TUITION, d.feeAcademicYear() + "|INTERNATIONAL", Map.of(
-                        "studentCategory", "INTERNATIONAL", "amount", d.feeAmount(), "currency", "EUR", "billingPeriod", "PER_YEAR",
-                        "academicYear", d.feeAcademicYear(),
-                        "scopeNote", "Annual tuition fee for fee-liable (non-EU/EEA) students; first academic year of the "
-                                + d.feeStartTerm() + " intake (Studyinfo)")));
+            // an annual fee is published only with its stated audience; its academic year only if the provider's fee text
+            // states one. Otherwise the row has no year (the API reports it as "year not stated") and says so itself.
+            if (d.feeAmount() != null && d.feeLiableStated()) {
+                Map<String, String> fee = new java.util.LinkedHashMap<>(Map.of(
+                        "studentCategory", "INTERNATIONAL", "amount", d.feeAmount(), "currency", "EUR", "billingPeriod", "PER_YEAR"));
+                if (d.feeAcademicYear() != null) fee.put("academicYear", d.feeAcademicYear());
+                fee.put("scopeNote", "Annual tuition fee for fee-liable (non-EU/EEA) students, as published in Studyinfo; "
+                        + (d.feeAcademicYear() != null ? "academic year " + d.feeAcademicYear() + " as stated by the provider."
+                        : "the source does not state which academic year it applies to."));
+                out.add(ExtractedFact.of(FactType.TUITION, (d.feeAcademicYear() == null ? "undated" : d.feeAcademicYear()) + "|INTERNATIONAL", fee));
             }
             Map<String, String> structured = new java.util.LinkedHashMap<>();
             if (d.degreeTitles() != null) structured.put("qualification", d.degreeTitles());
