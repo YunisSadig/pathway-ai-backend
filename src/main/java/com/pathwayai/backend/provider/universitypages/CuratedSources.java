@@ -24,6 +24,42 @@ public class CuratedSources {
                             String entryLevel,boolean combined,String programUrl,String heading,String admissionsUrl,
                             String implementationProviderOid,List<String> reviewedTitleCodes,String studyOption,String reviewedField) {
         public List<String> titleCodes(){return reviewedTitleCodes==null?List.of():reviewedTitleCodes;}
+        /** The same reviewed offering, now served by another implementation of the same education. */
+        public Candidate withImplementation(String implementation){
+            return new Candidate(key,university,educationOid,implementation,providerOid,entryLevel,combined,programUrl,heading,
+                    admissionsUrl,implementationProviderOid,reviewedTitleCodes,studyOption,reviewedField);
+        }
+    }
+
+    /**
+     * A new admission cycle that can be adopted without a person: the reviewed implementation is no longer published and
+     * EXACTLY ONE other published implementation of the same education exists that has the reviewed providing unit as its
+     * only provider, English as its only teaching language and at least one published application target. Anything else
+     * (none, several, another provider or language) returns empty and stays a review alert. The caller must still run
+     * the full reviewed validation (level, titles, eligibility) on the successor.
+     */
+    public static java.util.Optional<String> successor(Candidate candidate,String json) {
+        var root=JsonMapper.builder().build().readTree(json);
+        if(!candidate.educationOid().equals(root.path("oid").asText()) || !"julkaistu".equals(root.path("tila").asText()))
+            return java.util.Optional.empty();
+        for(var t:root.path("toteutukset"))
+            if(candidate.implementationOid().equals(t.path("oid").asText()) && "julkaistu".equals(t.path("tila").asText()))
+                return java.util.Optional.empty(); // the reviewed implementation is still published: nothing to adopt
+        var found=new java.util.ArrayList<String>();
+        for(var t:root.path("toteutukset")) {
+            String oid=t.path("oid").asText();
+            if(!"julkaistu".equals(t.path("tila").asText()) || oid.equals(candidate.implementationOid())) continue;
+            var providers=t.path("tarjoajat");
+            if(providers.size()!=1 || !candidate.implementationProviderOid().equals(providers.get(0).path("oid").asText())) continue;
+            var languages=new java.util.TreeSet<String>();
+            t.path("metadata").path("opetus").path("opetuskieli").forEach(l->languages.add(l.path("koodiUri").asText().replaceFirst("#.*$","")));
+            if(!languages.equals(java.util.Set.of("oppilaitoksenopetuskieli_4"))) continue;
+            boolean target=false;
+            for(var h:root.path("hakukohteet"))
+                if(oid.equals(h.path("toteutusOid").asText()) && "julkaistu".equals(h.path("tila").asText())) target=true;
+            if(target) found.add(oid);
+        }
+        return found.size()==1 ? java.util.Optional.of(found.getFirst()) : java.util.Optional.empty();
     }
 
     /** The one official web host and publisher name per connector-backed university. Code, not configuration. */

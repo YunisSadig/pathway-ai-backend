@@ -83,6 +83,13 @@ public final class FactValidator {
                     e.add("city is required (max 120 characters)");
                 }
             }
+            case IMPLEMENTATION -> {
+                if (blank(v.get("educationOid")) || v.get("implementationOid") == null
+                        || !v.get("implementationOid").matches("1\\.2\\.246\\.562\\.17\\.\\d{20}") || blank(v.get("previous"))
+                        || v.get("implementationOid").equals(v.get("previous"))) {
+                    e.add("an implementation change needs the education, a new Studyinfo implementation OID and the previous one");
+                }
+            }
             case UNIVERSITY_FACT -> {
                 if (v.get("field")==null || !com.pathwayai.backend.program.service.UniversityFacts.FIELDS.contains(v.get("field"))
                         || blank(v.get("value")) || v.get("value").length() > 12000
