@@ -43,7 +43,7 @@ Sources: production public API (live) and the local scratch copy of the identica
 ## 3. Plan (in order; each step a focused PR with tests on recorded fixtures)
 
 A. **Studyinfo structured facts (official API, no scraping):** read degree titles, ECTS, teaching mode,
-   annual fee (intake-scoped: amount + EUR + per year + the source-stated start term), scholarship range + unit,
+   annual fee (amount + EUR + per year + audience; academic year ONLY if the fee text states one; see mistakes 48), scholarship range + unit,
    study places, attachment titles (names only, no prose), entrance exams (names + dates only). Store as facts with
    OFFICIAL_API provenance. Fee: `tuition_fee` row labelled with the intake ("students starting Autumn 2027"), applicant
    category only where a source states it. No provider free text stored.
@@ -57,7 +57,7 @@ D. **Cycle successor adoption:** when the reviewed implementation of an educatio
    (HISTORICAL). Tested with synthetic "next year" variants of the recorded records.
 E. **Change detection without URL change:** the university-program and guidance monitors already hash content and
    stage changed facts; add per-field change history to the status report.
-F. **UI:** hide empty study-track row; tuition card from intake-scoped fees; scholarship ranges; documents/exams list;
+F. **UI:** hide empty study-track row; tuition card from undated/dated fees with their stated audience; scholarship ranges; documents/exams list;
    clearer "awaiting review" / "year not stated" states.
 G. **Unattended sync:** still disabled (SYNC_ENABLED unset, no HEALTHCHECK_PING_URL). Owner action required.
 H. **Poland / Czech Republic:** source research report + 2x20 candidate lists for approval (no import).

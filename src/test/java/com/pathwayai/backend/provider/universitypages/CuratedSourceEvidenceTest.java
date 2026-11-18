@@ -151,27 +151,48 @@ class CuratedSourceEvidenceTest {
         return StudyinfoParser.toFacts(parse(c,fixture(c.key()+".json")).program());
     }
 
-    @Test void studyinfoFeesNeedAStatedAudienceAndAStatedIntakeAndConflictingStartsPublishNoFee() throws Exception {
+    @Test void studyinfoFeesNeedAStatedAudienceAndNeverGetAnAcademicYearFromAnIntake() throws Exception {
         int fees=0;
         for(var c:sources.candidates()) {
             var tuition=studyinfoFacts(c).stream().filter(f->f.type()==ExtractedFact.FactType.TUITION).toList();
             fees+=tuition.size();
-            for(var f:tuition) assertThat(f.values()).as(c.key()).containsEntry("studentCategory","INTERNATIONAL")
-                    .containsEntry("currency","EUR").containsEntry("billingPeriod","PER_YEAR").containsEntry("academicYear","2027/2028");
+            for(var f:tuition) {
+                assertThat(f.values()).as(c.key()).containsEntry("studentCategory","INTERNATIONAL")
+                        .containsEntry("currency","EUR").containsEntry("billingPeriod","PER_YEAR").doesNotContainKey("academicYear");
+                assertThat(f.values().get("scopeNote")).as(c.key()).contains("does not state which academic year");
+                assertThat(f.key()).startsWith("undated|");
+            }
         }
-        // no audience stated: LUT x3, Turku GIM. No single stated start: Tampere CSEE (implementation 2026, rounds 2027),
-        // Oulu CSE (transfer routes start in spring), Aalto CS and Economics master's (no start term stated at all)
-        assertThat(fees).isEqualTo(12);
-        for(String key:List.of("lut-digital-business","lut-software-engineering","lut-business-analytics","turku-global-innovation",
-                "tampere-computing-sciences","oulu-computer-science","aalto-computer-science","aalto-economics-master"))
+        // 16 name the fee-liable audience; LUT x3 and Turku GIM do not, so no fee is published for them from Studyinfo.
+        // No fee text of the 20 names an academic year, and every one has a 2027 intake: that alone dates nothing.
+        assertThat(fees).isEqualTo(16);
+        for(String key:List.of("lut-digital-business","lut-software-engineering","lut-business-analytics","turku-global-innovation"))
             assertThat(studyinfoFacts(candidate(key))).as(key).noneMatch(f->f.type()==ExtractedFact.FactType.TUITION);
         var aalto=studyinfoFacts(candidate("aalto-data-science")).stream().filter(f->f.type()==ExtractedFact.FactType.TUITION).findFirst().orElseThrow();
         assertThat(aalto.values()).containsEntry("amount","12000");
-        assertThat(aalto.values().get("scopeNote")).contains("autumn 2027 intake");
-        var tampere=candidate("tampere-computing-sciences");
-        assertThat(studyinfoFacts(tampere)).noneMatch(f->f.type()==ExtractedFact.FactType.TUITION);
-        assertThat(parse(tampere,fixture(tampere.key()+".json")).issues()).anyMatch(i->i.contains("different start terms"));
-        assertThat(studyinfoFacts(candidate("lut-digital-business"))).noneMatch(f->f.type()==ExtractedFact.FactType.TUITION);
+    }
+
+    @Test void aFeeTextThatStatesAnAcademicYearDatesTheFeeAndSeveralYearsDateNothing() throws Exception {
+        var c=candidate("aalto-data-science");
+        String json=fixture(c.key()+".json");
+        String text="Tuition fee for the academic year 2027-2028 is 12,000 euros per year. EU/EEA citizens do not pay.";
+        String dated=withFeeText(json,c,text);
+        var fee=StudyinfoParser.toFacts(parse(c,dated).program()).stream().filter(f->f.type()==ExtractedFact.FactType.TUITION).findFirst().orElseThrow();
+        assertThat(fee.values()).containsEntry("academicYear","2027/2028");
+        assertThat(fee.values().get("scopeNote")).contains("as stated by the provider");
+        for(String ambiguous:List.of("Fees 2027-2028 and 2028-2029 apply. EU/EEA citizens do not pay.",
+                "The intake starts in 2027-2030. EU/EEA citizens do not pay."))
+            assertThat(StudyinfoParser.toFacts(parse(c,withFeeText(json,c,ambiguous)).program())
+                    .stream().filter(f->f.type()==ExtractedFact.FactType.TUITION).findFirst().orElseThrow().values()).doesNotContainKey("academicYear");
+    }
+
+    /** The recorded record with the reviewed implementation's English fee description replaced. */
+    static String withFeeText(String json,CuratedSources.Candidate c,String text) throws Exception {
+        var root=(tools.jackson.databind.node.ObjectNode)tools.jackson.databind.json.JsonMapper.builder().build().readTree(json);
+        for(var t:root.get("toteutukset"))
+            if(t.get("oid").asText().equals(c.implementationOid()))
+                ((tools.jackson.databind.node.ObjectNode)t.get("metadata").get("opetus").get("maksullisuusKuvaus")).put("en",text);
+        return root.toString();
     }
 
     @Test void studyinfoStructuredFactsComeFromCodedFieldsWithTheirOwnScope() throws Exception {
