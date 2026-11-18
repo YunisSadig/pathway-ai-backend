@@ -27,7 +27,7 @@ class CuratedSourceEvidenceTest {
     }
     CuratedSources.Candidate candidate(String key){return sources.candidates().stream().filter(c->c.key().equals(key)).findFirst().orElseThrow();}
     static StudyinfoParser.Parsed parse(CuratedSources.Candidate c,String json){
-        return StudyinfoParser.parse(json,FieldTaxonomy.of(Map.of()),c.implementationOid(),c.combined(),c.providerOid(),c.titleCodes());
+        return StudyinfoParser.parse(json,FieldTaxonomy.of(Map.of()),c.implementationOid(),c.combined(),c.providerOid(),c.titleCodes(),c.reviewedField());
     }
     static List<ExtractedFact> page(CuratedSources.Candidate c) throws Exception {
         try { return UniversityProgramAdapter.extract(fixture(c.key()+".html"),c.programUrl(),c); }
@@ -145,6 +145,65 @@ class CuratedSourceEvidenceTest {
                 .hasMessageContaining("NEW ADMISSION CYCLE").hasMessageContaining(next);
         // the reviewed parse refuses the unknown implementation instead of attaching it to the program
         assertThat(parse(c,json).program()).isNull();
+    }
+
+    static List<ExtractedFact> studyinfoFacts(CuratedSources.Candidate c) throws Exception {
+        return StudyinfoParser.toFacts(parse(c,fixture(c.key()+".json")).program());
+    }
+
+    @Test void studyinfoFeesNeedAStatedAudienceAndAStatedIntakeAndConflictingStartsPublishNoFee() throws Exception {
+        int fees=0;
+        for(var c:sources.candidates()) {
+            var tuition=studyinfoFacts(c).stream().filter(f->f.type()==ExtractedFact.FactType.TUITION).toList();
+            fees+=tuition.size();
+            for(var f:tuition) assertThat(f.values()).as(c.key()).containsEntry("studentCategory","INTERNATIONAL")
+                    .containsEntry("currency","EUR").containsEntry("billingPeriod","PER_YEAR").containsEntry("academicYear","2027/2028");
+        }
+        // no audience stated: LUT x3, Turku GIM. No single stated start: Tampere CSEE (implementation 2026, rounds 2027),
+        // Oulu CSE (transfer routes start in spring), Aalto CS and Economics master's (no start term stated at all)
+        assertThat(fees).isEqualTo(12);
+        for(String key:List.of("lut-digital-business","lut-software-engineering","lut-business-analytics","turku-global-innovation",
+                "tampere-computing-sciences","oulu-computer-science","aalto-computer-science","aalto-economics-master"))
+            assertThat(studyinfoFacts(candidate(key))).as(key).noneMatch(f->f.type()==ExtractedFact.FactType.TUITION);
+        var aalto=studyinfoFacts(candidate("aalto-data-science")).stream().filter(f->f.type()==ExtractedFact.FactType.TUITION).findFirst().orElseThrow();
+        assertThat(aalto.values()).containsEntry("amount","12000");
+        assertThat(aalto.values().get("scopeNote")).contains("autumn 2027 intake");
+        var tampere=candidate("tampere-computing-sciences");
+        assertThat(studyinfoFacts(tampere)).noneMatch(f->f.type()==ExtractedFact.FactType.TUITION);
+        assertThat(parse(tampere,fixture(tampere.key()+".json")).issues()).anyMatch(i->i.contains("different start terms"));
+        assertThat(studyinfoFacts(candidate("lut-digital-business"))).noneMatch(f->f.type()==ExtractedFact.FactType.TUITION);
+    }
+
+    @Test void studyinfoStructuredFactsComeFromCodedFieldsWithTheirOwnScope() throws Exception {
+        Map<String,String> isea=new java.util.HashMap<>(), aalto=new java.util.HashMap<>();
+        studyinfoFacts(candidate("jyu-immersive-software-ai")).stream().filter(f->f.type()==ExtractedFact.FactType.UNIVERSITY_FACT)
+                .forEach(f->isea.put(f.values().get("field"),f.values().get("value")));
+        studyinfoFacts(candidate("aalto-data-science")).stream().filter(f->f.type()==ExtractedFact.FactType.UNIVERSITY_FACT)
+                .forEach(f->aalto.put(f.values().get("field"),f.values().get("value")));
+        assertThat(isea).containsEntry("credits","180 ECTS").containsEntry("qualification","Bachelor of Science (Technology)")
+                .containsEntry("scholarship","Scholarship of €0–6,000 available").containsKey("study_mode");
+        assertThat(aalto).containsEntry("credits","300 ECTS").containsEntry("scholarship","Tuition-fee scholarship of 0–100% available");
+        assertThat(studyinfoFacts(candidate("aalto-data-science"))).filteredOn(f->f.type()==ExtractedFact.FactType.UNIVERSITY_FACT)
+                .allSatisfy(f->assertThat(f.values()).containsEntry("scope",StudyinfoParser.STUDYINFO_SCOPE));
+        // an unreviewed parse (general discovery) never carries these details
+        assertThat(StudyinfoParser.parse(fixture("aalto-data-science.json"),FieldTaxonomy.of(Map.of())).program()).satisfiesAnyOf(
+                p->assertThat(p).isNull(), p->assertThat(p.details()).isNull());
+    }
+
+    @Test void fieldsComeFromOfficialCodesAndAReviewedChoiceOnlyAmongTheStatedFields() throws Exception {
+        var taxonomy=new com.pathwayai.backend.provider.studyinfo.FieldTaxonomy(); // the reviewed map shipped with the application
+        var science=candidate("helsinki-science");
+        assertThat(StudyinfoParser.parse(fixture(science.key()+".json"),taxonomy,science.implementationOid(),science.combined(),
+                science.providerOid(),science.titleCodes(),science.reviewedField()).program().fieldSlug()).isEqualTo("natural-sciences");
+        var tampere=candidate("tampere-computing-sciences");
+        String json=fixture(tampere.key()+".json");
+        assertThat(StudyinfoParser.parse(json,taxonomy,tampere.implementationOid(),tampere.combined(),tampere.providerOid(),
+                tampere.titleCodes(),null).program().fieldSlug()).as("two stated fields and no reviewed choice").isNull();
+        assertThat(StudyinfoParser.parse(json,taxonomy,tampere.implementationOid(),tampere.combined(),tampere.providerOid(),
+                tampere.titleCodes(),tampere.reviewedField()).program().fieldSlug()).isEqualTo("computer-and-data-science");
+        // the reviewed choice cannot introduce a field the record does not state
+        assertThat(StudyinfoParser.parse(json,taxonomy,tampere.implementationOid(),tampere.combined(),tampere.providerOid(),
+                tampere.titleCodes(),"law").program().fieldSlug()).isNull();
     }
 
     @Test void datesAreReadFromExplicitSourceDatesAndNeverRelabelAnExpiredPeriod() {

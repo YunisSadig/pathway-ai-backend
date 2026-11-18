@@ -53,7 +53,7 @@ class CuratedImportProvenanceIT {
     long importCurated(String key) throws Exception {
         var c=sources.candidates().stream().filter(x->x.key().equals(key)).findFirst().orElseThrow();
         String json=CuratedSourceEvidenceTest.fixture(key+".json");
-        var program=StudyinfoParser.parse(json,FieldTaxonomy.of(Map.of()),c.implementationOid(),c.combined(),c.providerOid(),c.titleCodes()).program();
+        var program=StudyinfoParser.parse(json,FieldTaxonomy.of(Map.of()),c.implementationOid(),c.combined(),c.providerOid(),c.titleCodes(),c.reviewedField()).program();
         var response=new PageFetcher.Result(PageFetcher.Kind.OK,200,importer.recordUrl(c.educationOid()),"application/json",json,null,null,null,null,1);
         return importer.importReviewed(c,program,response,NOW);
     }

@@ -53,7 +53,20 @@ public class ProgramSyncInfo {
         if (hasDeadline) {
             fields.add(new FieldSync("application_deadline", SyncPolicy.modeOf("application_deadline").name(), null));
         }
-        List<String> unavailable = SyncPolicy.isOfficialApi(adapter) ? SyncPolicy.UNAVAILABLE_FROM_STUDYINFO : List.of();
+        List<String> unavailable = new ArrayList<>(SyncPolicy.isOfficialApi(adapter) ? SyncPolicy.UNAVAILABLE_FROM_STUDYINFO : List.of());
+        // a reviewed (curated) offering may get its fee and scholarship from the official API: then they ARE synchronized
+        if (jdbc.sql("""
+                select exists (select 1 from tuition_fee t join source_monitor x on x.source_id = t.source_id
+                               where t.program_id = :p and x.extraction_method = 'ADAPTER')""").param("p", programId).query(Boolean.class).single()) {
+            unavailable.remove("tuition");
+        }
+        if (jdbc.sql("select to_regclass('public.program_university_fact') is not null").query(Boolean.class).single()
+                && jdbc.sql("""
+                select exists (select 1 from program_university_fact f join source_monitor x on x.source_id = f.source_id
+                               where f.program_id = :p and f.field_name = 'scholarship' and x.extraction_method = 'ADAPTER')""")
+                .param("p", programId).query(Boolean.class).single()) {
+            unavailable.remove("scholarships");
+        }
         return new Synchronization("AUTOMATIC", adapter, SyncPolicy.isOfficialApi(adapter) ? "OFFICIAL_API" : "STRUCTURED_DATA",
                 last, instant(m.get("next_check_at")), fresh, policy.maxSourceAgeDays(), fields, unavailable);
     }

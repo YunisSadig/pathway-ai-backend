@@ -71,7 +71,7 @@ public class CuratedCatalogCli implements ApplicationRunner {
             var studyinfo=read(importer.recordUrl(candidate.educationOid()));
             CuratedSources.validateStudyinfo(candidate,studyinfo.body());
             CuratedSources.validateStudyOption(candidate,studyinfo.body());
-            var parsed=StudyinfoParser.parse(studyinfo.body(),taxonomy,candidate.implementationOid(),candidate.combined(),candidate.providerOid(),candidate.titleCodes());
+            var parsed=StudyinfoParser.parse(studyinfo.body(),taxonomy,candidate.implementationOid(),candidate.combined(),candidate.providerOid(),candidate.titleCodes(),candidate.reviewedField());
             if(parsed.program()==null || !candidate.entryLevel().equals(parsed.program().degreeLevel())
                     || !parsed.program().languages().contains("en"))throw new IllegalStateException("Offering is not a verified English entry route: "+candidate.key());
             if(parsed.program().deadlines().stream().noneMatch(d->!LocalDate.parse(d.date()).isBefore(LocalDate.now(clock))))
@@ -130,7 +130,7 @@ public class CuratedCatalogCli implements ApplicationRunner {
             long university=jdbc.sql("select university_id from degree_program where id=:p").param("p",id).query(Long.class).single();
             var studyMonitor=register(importer.recordUrl(o.candidate().educationOid()),"Studyinfo official offering", "Opetushallitus",
                     "GOVERNMENT",university,id,StudyinfoAdapter.NAME,StudyinfoAdapter.VERSION,now);
-            publish(studyMonitor,StudyinfoParser.toFacts(o.program()),o.studyinfo(),now,false);
+            publish(studyMonitor,StudyinfoParser.toFacts(o.program()),o.studyinfo(),now,true); // new facts are covered by the approved fingerprint; changed ones still stop the import
             var universityMonitor=register(o.candidate().programUrl(),o.candidate().heading(),publisher(o.candidate().university()),
                     "UNIVERSITY_WEBSITE",university,id,UniversityProgramAdapter.NAME,"1",now);
             publish(universityMonitor,o.facts(),o.university(),now,true);

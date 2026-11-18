@@ -22,7 +22,7 @@ public class CuratedSources {
      */
     public record Candidate(String key,String university,String educationOid,String implementationOid,String providerOid,
                             String entryLevel,boolean combined,String programUrl,String heading,String admissionsUrl,
-                            String implementationProviderOid,List<String> reviewedTitleCodes,String studyOption) {
+                            String implementationProviderOid,List<String> reviewedTitleCodes,String studyOption,String reviewedField) {
         public List<String> titleCodes(){return reviewedTitleCodes==null?List.of():reviewedTitleCodes;}
     }
 

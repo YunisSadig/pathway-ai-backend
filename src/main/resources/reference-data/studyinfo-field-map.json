@@ -37,6 +37,11 @@
       "label": "Law"
     },
     {
+      "code": "050",
+      "slug": "natural-sciences",
+      "label": "Broad programmes and qualifications involving natural sciences, mathematics and statistics"
+    },
+    {
       "code": "051",
       "slug": "natural-sciences",
       "label": "Biological and related sciences"
