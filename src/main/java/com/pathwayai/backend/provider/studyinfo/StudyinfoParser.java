@@ -44,7 +44,18 @@ public final class StudyinfoParser {
     public record Program(String koulutusOid, String toteutusOid, String organisationOid, String organisationName,
                           String name, String nameLanguage, String degreeLevel, String fieldSlug, String fieldCode,
                           String fieldLabel, String campusCity, Integer durationMonths, List<String> languages,
-                          List<Deadline> deadlines) {
+                          List<Deadline> deadlines, Details details) {
+    }
+
+    /**
+     * Structured facts of one REVIEWED implementation, read only from the provider's coded fields (no free text is stored).
+     * Every part is null when the record does not state it. {@code feeAcademicYear} is set only when the record states an
+     * autumn start term and year for the implementation (its own, or every application round of it, all agreeing): the
+     * first academic year of that intake (Finnish academic years run August to July). {@code feeLiableStated}: the
+     * provider's fee description names the fee-liable audience (non-EU/EEA); without it no fee is published from here.
+     */
+    public record Details(String degreeTitles, String credits, String studyMode, String feeAmount, String feeAcademicYear,
+                          String feeStartTerm, boolean feeLiableStated, String scholarship) {
     }
 
     /** {@code program} is null when the record cannot be used at all. */
@@ -105,9 +116,19 @@ public final class StudyinfoParser {
      * for general university eligibility and for no completed degree. Names are never used. Any difference leaves the
      * level unknown, so the offering goes to review instead of being relabelled.
      */
-    @SuppressWarnings("unchecked")
     public static Parsed parse(String json, FieldTaxonomy taxonomy,String implementationOid,boolean combinedEntry,String reviewedProviderOid,
                                List<String> reviewedTitleCodes) {
+        return parse(json,taxonomy,implementationOid,combinedEntry,reviewedProviderOid,reviewedTitleCodes,null);
+    }
+
+    /**
+     * {@code reviewedField}: for a reviewed offering whose education codes map to SEVERAL taxonomy fields, the one a
+     * reviewer chose among them. It applies only while the record still maps to that field; otherwise the field stays
+     * unknown as before. Never taken from a name.
+     */
+    @SuppressWarnings("unchecked")
+    public static Parsed parse(String json, FieldTaxonomy taxonomy,String implementationOid,boolean combinedEntry,String reviewedProviderOid,
+                               List<String> reviewedTitleCodes,String reviewedField) {
         List<String> issues = new ArrayList<>();
         Map<String, Object> root;
         try {
@@ -166,7 +187,7 @@ public final class StudyinfoParser {
         if(combinedEntry && implementationOid!=null && reviewedTitleCodes!=null && !reviewedTitleCodes.isEmpty()) {
             level=bachelorEntryByEvidence(root,implementationOid,reviewedTitleCodes,issues) ? "BACHELOR" : null;
         }
-        String[] field = field(root, taxonomy, issues);
+        String[] field = field(root, taxonomy, issues, implementationOid == null ? null : reviewedField);
         Integer months = distinctSingle(durations(toteutukset), "planned duration", issues);
         Set<String> languages = distinctSingleSet(languageSets(toteutukset), "teaching language", issues);
         String city = distinctSingle(cities(toteutukset), "campus city", issues);
@@ -185,11 +206,108 @@ public final class StudyinfoParser {
         }
         List<Deadline> deadlines = implementationOid==null ? deadlines(deadlineRoot, issues) : routeDeadlines(deadlineRoot, issues);
 
+        Details details = implementationOid == null || toteutukset.size() != 1 ? null
+                : details(root, toteutukset.get(0), deadlineRoot, issues);
         String cleanName = INTAKE_SUFFIX.matcher(name.value()).replaceFirst("").strip();
+        if (implementationOid != null) {
+            cleanName = withoutRoutePrefix(cleanName, localized(root.get("nimi")));
+        }
         Program p = new Program(oid, toteutusOid, orgOid, orgName == null ? null : orgName.value(), cleanName.isEmpty() ? name.value() : cleanName, name.language(),
                 level, field[0], field[1], field[2], city, months,
-                languages == null ? List.of() : List.copyOf(languages), deadlines);
+                languages == null ? List.of() : List.copyOf(languages), deadlines, details);
         return new Parsed(p, issues);
+    }
+
+    /**
+     * Some providers prefix an implementation's name with its admission route ("Rolling Admission, Digital Business ,
+     * …"). Leading comma-separated segments that the education's own name does not contain are dropped; the rest is kept
+     * verbatim (with a stray space before a comma removed). Nothing is dropped when the education name is unknown.
+     */
+    static String withoutRoutePrefix(String implementationName, Localized educationName) {
+        if (educationName == null) return implementationName;
+        String education = educationName.value().replaceAll("\\s+,", ",").toLowerCase(java.util.Locale.ROOT);
+        String[] segments = implementationName.split(",");
+        int first = 0;
+        while (first < segments.length - 1 && !education.contains(segments[first].strip().toLowerCase(java.util.Locale.ROOT))) first++;
+        if (first == 0) return implementationName;
+        return String.join(",", java.util.Arrays.copyOfRange(segments, first, segments.length)).replaceAll("\\s+,", ",").strip();
+    }
+
+    private static final Pattern FEE_LIABLE = Pattern.compile("(?i)\\b(EU/EEA|EEA|European Economic Area)\\b");
+
+    /** See {@link Details}. Only coded fields; the free-text descriptions are read for the audience check alone. */
+    private static Details details(Map<String, Object> root, Map<String, Object> toteutus, Map<String, Object> routesRoot,
+                                   List<String> issues) {
+        Map<String, Object> rootMeta = map(root.get("metadata"));
+        Map<String, Object> opetus = map(map(toteutus.get("metadata")).get("opetus"));
+        List<String> titles = new ArrayList<>();
+        for (Object t : list(rootMeta.get("tutkintonimike"))) {
+            Localized n = localized(map(t).get("nimi"));
+            if (n != null && "en".equals(n.language())) titles.add(n.value());
+        }
+        String credits = null;
+        Object ects = rootMeta.get("opintojenLaajuusNumero");
+        String unit = unversioned(str(map(rootMeta.get("opintojenLaajuusyksikko")).get("koodiUri")));
+        if (ects instanceof Number n && n.doubleValue() > 0 && n.doubleValue() == Math.rint(n.doubleValue())
+                && "opintojenlaajuusyksikko_2".equals(unit)) {
+            credits = n.intValue() + " ECTS";
+        }
+        List<String> modes = new ArrayList<>();
+        for (Object m : list(opetus.get("opetustapa"))) {
+            Localized n = localized(map(m).get("nimi"));
+            if (n != null && "en".equals(n.language())) modes.add(n.value());
+        }
+        // fee: exactly one annual tuition fee, as a whole number of euros
+        String fee = null;
+        List<Object> fees = list(opetus.get("maksut"));
+        if (fees.size() == 1 && "lukuvuosimaksu".equals(str(map(fees.get(0)).get("maksullisuustyyppi")))
+                && map(fees.get(0)).get("maksunMaara") instanceof Number amount && amount.doubleValue() > 0
+                && amount.doubleValue() == Math.rint(amount.doubleValue())) {
+            fee = String.valueOf(amount.longValue());
+        } else if (!fees.isEmpty()) {
+            issues.add("fee is not a single annual tuition fee: not imported");
+        }
+        Localized feeText = localized(opetus.get("maksullisuusKuvaus"));
+        boolean liable = feeText != null && "en".equals(feeText.language()) && FEE_LIABLE.matcher(feeText.value()).find();
+        // start term: the implementation's own statement and every application round of it must agree
+        Set<String> starts = new TreeSet<>();
+        String own = startTerm(map(opetus.get("koulutuksenAlkamiskausi")));
+        if (own != null) starts.add(own);
+        for (Object h : list(routesRoot.get("haut"))) {
+            String s = startTerm(map(map(map(h).get("metadata")).get("koulutuksenAlkamiskausi")));
+            if (s != null) starts.add(s);
+        }
+        String startTerm = starts.size() == 1 ? starts.iterator().next() : null;
+        if (starts.size() > 1) {
+            issues.add("the record states different start terms " + starts + ": no academic year for the fee");
+        }
+        String academicYear = null;
+        if (startTerm != null && startTerm.startsWith("autumn ")) {
+            int year = Integer.parseInt(startTerm.substring(7));
+            academicYear = year + "/" + (year + 1);
+        }
+        // scholarship: a stated range in euros or as a share of the tuition fee
+        String scholarship = null;
+        Map<String, Object> grant = map(opetus.get("apuraha"));
+        if (Boolean.TRUE.equals(opetus.get("onkoApuraha")) && grant.get("min") instanceof Number min && grant.get("max") instanceof Number max
+                && min.doubleValue() >= 0 && max.doubleValue() >= min.doubleValue()) {
+            String u = str(grant.get("yksikko"));
+            String range = min.longValue() == max.longValue() ? String.valueOf(max.longValue()) : min.longValue() + "–" + max.longValue();
+            if ("euro".equals(u)) scholarship = "Scholarship of €" + range.replaceAll("(\\d)(?=(\\d{3})+(\\D|$))", "$1,") + " available";
+            else if ("prosentti".equals(u)) scholarship = "Tuition-fee scholarship of " + range + "% available";
+        }
+        return new Details(titles.isEmpty() ? null : String.join(" + ", titles), credits,
+                modes.isEmpty() ? null : String.join(", ", modes), fee, academicYear, startTerm, liable, scholarship);
+    }
+
+    /** "autumn 2027" / "spring 2028" from a coded start term (kausi_s = autumn, kausi_k = spring); null otherwise. */
+    private static String startTerm(Map<String, Object> start) {
+        String season = unversioned(str(map(start.get("koulutuksenAlkamiskausi")).get("koodiUri")));
+        String year = str(start.get("koulutuksenAlkamisvuosi"));
+        if (year == null || !year.matches("\\d{4}")) return null;
+        if ("kausi_s".equals(season)) return "autumn " + year;
+        if ("kausi_k".equals(season)) return "spring " + year;
+        return null;
     }
 
     /** The facts the program states, as pipeline input. Empty parts are simply absent. */
@@ -214,8 +332,31 @@ public final class StudyinfoParser {
         for (Deadline d : p.deadlines()) {
             out.add(ExtractedFact.of(FactType.DEADLINE, d.label(), Map.of("label", d.label(), "applicationDeadline", d.date())));
         }
+        Details d = p.details();
+        if (d != null) {
+            // an annual fee is published only with its stated audience and the academic year of a stated intake
+            if (d.feeAmount() != null && d.feeLiableStated() && d.feeAcademicYear() != null) {
+                out.add(ExtractedFact.of(FactType.TUITION, d.feeAcademicYear() + "|INTERNATIONAL", Map.of(
+                        "studentCategory", "INTERNATIONAL", "amount", d.feeAmount(), "currency", "EUR", "billingPeriod", "PER_YEAR",
+                        "academicYear", d.feeAcademicYear(),
+                        "scopeNote", "Annual tuition fee for fee-liable (non-EU/EEA) students; first academic year of the "
+                                + d.feeStartTerm() + " intake (Studyinfo)")));
+            }
+            Map<String, String> structured = new java.util.LinkedHashMap<>();
+            if (d.degreeTitles() != null) structured.put("qualification", d.degreeTitles());
+            if (d.credits() != null) structured.put("credits", d.credits());
+            if (d.studyMode() != null) structured.put("study_mode", d.studyMode());
+            if (d.scholarship() != null) structured.put("scholarship", d.scholarship());
+            for (var e : structured.entrySet()) {
+                out.add(ExtractedFact.of(FactType.UNIVERSITY_FACT, e.getKey() + "|" + STUDYINFO_SCOPE, Map.of("field", e.getKey(),
+                        "value", e.getValue(), "educationOid", p.koulutusOid(), "scope", STUDYINFO_SCOPE)));
+            }
+        }
         return out;
     }
+
+    /** Scope of the structured facts this connector adds next to the university pages' own facts. */
+    public static final String STUDYINFO_SCOPE = "studyinfo";
 
     // ---- level and field --------------------------------------------------------------------------------------
 
@@ -246,7 +387,7 @@ public final class StudyinfoParser {
 
     /** {slug, code, label}; all null when the code is absent, ambiguous or not in the reviewed mapping. */
     @SuppressWarnings("unchecked")
-    private static String[] field(Map<String, Object> root, FieldTaxonomy taxonomy, List<String> issues) {
+    private static String[] field(Map<String, Object> root, FieldTaxonomy taxonomy, List<String> issues, String reviewedField) {
         Set<String> slugs = new LinkedHashSet<>();
         Map<String, FieldTaxonomy.Entry> hit = new LinkedHashMap<>();
         List<String> unmapped = new ArrayList<>();
@@ -273,6 +414,10 @@ public final class StudyinfoParser {
             } else {
                 unmapped.add(d3 != null ? d3 : d2);
             }
+        }
+        if (slugs.size() > 1 && reviewedField != null && hit.containsKey(reviewedField)) {
+            FieldTaxonomy.Entry e = hit.get(reviewedField);
+            return new String[] {e.slug(), e.code(), e.label()};
         }
         if (slugs.size() == 1) {
             FieldTaxonomy.Entry e = hit.values().iterator().next();

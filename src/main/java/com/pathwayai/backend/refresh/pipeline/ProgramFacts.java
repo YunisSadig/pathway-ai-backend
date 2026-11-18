@@ -52,6 +52,16 @@ public class ProgramFacts {
                         : sortedCodes(v.get("codes")).equals(existing) ? new Comparison(Kind.UNCHANGED, existing)
                         : new Comparison(Kind.CONFLICT, existing);
             }
+            case IMPLEMENTATION -> {
+                String current = jdbc.sql("""
+                        select m.implementation_oid from catalog_membership m join catalog_release r on r.id = m.release_id
+                        where r.enabled and m.program_id = :p and m.education_oid = :e""")
+                        .param("p", programId).param("e", v.get("educationOid")).query(String.class).optional().orElse(null);
+                if (current == null) {
+                    throw new IllegalArgumentException("implementation change for a program outside the curated release or another education");
+                }
+                yield current.equals(v.get("implementationOid")) ? new Comparison(Kind.UNCHANGED, current) : new Comparison(Kind.CONFLICT, current);
+            }
             case TUITION -> compareTuition(programId, v);
             case DEADLINE -> compareDeadline(programId, v);
             case PROGRAM_NAME -> scalar(programId, "select name from degree_program where id = :p", v.get("name"));
@@ -143,6 +153,27 @@ public class ProgramFacts {
      */
     public void apply(long programId, long sourceId, FactType type, Map<String, String> v, Instant now, String parserVersion) {
         switch (type) {
+            case IMPLEMENTATION -> {
+                String implementation = v.get("implementationOid");
+                var owner = jdbc.sql("select program_id from program_external_id where scheme = :s and value = :v")
+                        .param("s", com.pathwayai.backend.provider.studyinfo.StudyinfoParser.SCHEME_TOTEUTUS).param("v", implementation)
+                        .query(Long.class).optional();
+                if (owner.isPresent() && owner.get() != programId) {
+                    throw new IllegalArgumentException("implementation " + implementation + " already belongs to another program");
+                }
+                String old = jdbc.sql("""
+                        select m.implementation_oid from catalog_membership m join catalog_release r on r.id = m.release_id
+                        where r.enabled and m.program_id = :p""").param("p", programId).query(String.class).single();
+                archive(programId, "implementation_oid", old, implementation, sourceId, now);
+                jdbc.sql("""
+                        update catalog_membership set implementation_oid = :i where program_id = :p
+                        and release_id in (select id from catalog_release where enabled)""").param("i", implementation).param("p", programId).update();
+                // the old identifier stays: links and history keep resolving; the new one is added beside it
+                jdbc.sql("insert into program_external_id (program_id, scheme, value) values (:p, :s, :v) on conflict do nothing")
+                        .param("p", programId).param("s", com.pathwayai.backend.provider.studyinfo.StudyinfoParser.SCHEME_TOTEUTUS)
+                        .param("v", implementation).update();
+                provenance(programId, "implementation_oid", sourceId, now, parserVersion);
+            }
             case UNIVERSITY_FACT -> {
                 checkUniversityAssociation(programId,v);
                 String field=v.get("field");

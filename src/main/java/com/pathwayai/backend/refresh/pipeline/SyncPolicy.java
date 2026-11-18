@@ -20,7 +20,9 @@ public final class SyncPolicy {
     }
 
     /** A different value from the official API replaces the published one automatically. */
-    public static final Set<FactType> AUTO_REPLACE = Set.of(FactType.DURATION_MONTHS, FactType.LANGUAGES, FactType.CAMPUS_CITY);
+    public static final Set<FactType> AUTO_REPLACE = Set.of(FactType.DURATION_MONTHS, FactType.LANGUAGES, FactType.CAMPUS_CITY,
+            // a successor implementation that passed every reviewed identity check (CuratedSources.successor + validation)
+            FactType.IMPLEMENTATION);
 
     /** A value that does not exist yet (a new application round, or a field of education that was unknown) is added automatically; an existing one is never overwritten. */
     public static final Set<FactType> AUTO_ADD = Set.of(FactType.DEADLINE, FactType.ACADEMIC_FIELD);
@@ -40,7 +42,7 @@ public final class SyncPolicy {
     public static UpdateMode modeOf(String provenanceField) {
         if(com.pathwayai.backend.program.service.UniversityFacts.FIELDS.contains(provenanceField))return UpdateMode.REVIEW_REQUIRED;
         return switch (provenanceField) {
-            case "duration_months", "languages", "campus_city" -> UpdateMode.AUTOMATIC;
+            case "duration_months", "languages", "campus_city", "implementation_oid" -> UpdateMode.AUTOMATIC;
             case "name", "degree_level", "official_program_url" -> UpdateMode.REVIEW_REQUIRED;
             case "application_deadline", "academic_field" -> UpdateMode.ADDITIVE_AUTOMATIC;
             default -> UpdateMode.FIXED_AT_CREATION;

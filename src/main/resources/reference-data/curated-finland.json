@@ -12,7 +12,8 @@
     "admissionsUrl": "https://www.aalto.fi/en/admission-services/apply-to-bachelors-programmes-in-english",
     "implementationProviderOid": "1.2.246.562.10.39920288212",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "aalto-economics-bachelor",
@@ -27,7 +28,8 @@
     "admissionsUrl": "https://www.aalto.fi/en/admission-services/apply-to-bachelors-programmes-in-english",
     "implementationProviderOid": "1.2.246.562.10.61042218794",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "aalto-international-business",
@@ -42,7 +44,8 @@
     "admissionsUrl": "https://www.aalto.fi/en/admission-services/apply-to-bachelors-programmes-in-english",
     "implementationProviderOid": "1.2.246.562.10.61042218794",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "helsinki-science",
@@ -57,7 +60,8 @@
     "admissionsUrl": null,
     "implementationProviderOid": "1.2.246.562.10.94639300915",
     "reviewedTitleCodes": null,
-    "studyOption": "computer/data science"
+    "studyOption": "computer/data science",
+    "reviewedField": null
   },
   {
     "key": "tampere-computing-sciences",
@@ -72,7 +76,8 @@
     "admissionsUrl": "https://www.tuni.fi/en/tau/bachelors-programmes/applying",
     "implementationProviderOid": "1.2.246.562.10.40357610647",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": "computer-and-data-science"
   },
   {
     "key": "lut-digital-business",
@@ -87,7 +92,8 @@
     "admissionsUrl": "https://www.lut.fi/en/studies/apply-lut/applying-bachelors-programmes",
     "implementationProviderOid": "1.2.246.562.10.29787818623",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "oulu-computer-science",
@@ -102,7 +108,8 @@
     "admissionsUrl": "https://www.oulu.fi/en/apply/how-apply/applying-bachelors-programmes",
     "implementationProviderOid": "1.2.246.562.10.2014040310274375839224",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "jyu-immersive-software-ai",
@@ -117,7 +124,8 @@
     "admissionsUrl": "https://www.jyu.fi/en/study-with-us/bachelors-degree-programmes/how-to-apply-for-international-bachelors-programmes",
     "implementationProviderOid": "1.2.246.562.10.949530408410",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "jyu-business-innovation",
@@ -132,7 +140,8 @@
     "admissionsUrl": "https://www.jyu.fi/en/study-with-us/bachelors-degree-programmes/how-to-apply-for-international-bachelors-programmes",
     "implementationProviderOid": "1.2.246.562.10.77576502296",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "turku-ict",
@@ -150,7 +159,8 @@
       "tutkintonimikekk_150",
       "tutkintonimikekk_130"
     ],
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "aalto-computer-science",
@@ -165,7 +175,8 @@
     "admissionsUrl": "https://www.aalto.fi/en/admission-services/apply-to-masters-programmes",
     "implementationProviderOid": "1.2.246.562.10.39920288212",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "aalto-economics-master",
@@ -180,7 +191,8 @@
     "admissionsUrl": "https://www.aalto.fi/en/admission-services/apply-to-masters-programmes",
     "implementationProviderOid": "1.2.246.562.10.61042218794",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "helsinki-computer-science",
@@ -195,7 +207,8 @@
     "admissionsUrl": null,
     "implementationProviderOid": "1.2.246.562.10.94639300915",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "helsinki-data-science",
@@ -210,7 +223,8 @@
     "admissionsUrl": null,
     "implementationProviderOid": "1.2.246.562.10.94639300915",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "tampere-ai-native-software",
@@ -225,7 +239,8 @@
     "admissionsUrl": "https://www.tuni.fi/en/tau/masters-programmes/applying",
     "implementationProviderOid": "1.2.246.562.10.40357610647",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "lut-software-engineering",
@@ -240,7 +255,8 @@
     "admissionsUrl": "https://www.lut.fi/en/studies/apply-lut/applying-masters-programmes",
     "implementationProviderOid": "1.2.246.562.10.22417098567",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "lut-business-analytics",
@@ -255,7 +271,8 @@
     "admissionsUrl": "https://www.lut.fi/en/studies/apply-lut/applying-masters-programmes",
     "implementationProviderOid": "1.2.246.562.10.22417098567",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "oulu-software",
@@ -270,7 +287,8 @@
     "admissionsUrl": "https://www.oulu.fi/en/apply/how-apply/applying-masters-programmes",
     "implementationProviderOid": "1.2.246.562.10.2014040310274375839224",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "oulu-business-analytics",
@@ -285,7 +303,8 @@
     "admissionsUrl": "https://www.oulu.fi/en/apply/how-apply/applying-masters-programmes",
     "implementationProviderOid": "1.2.246.562.10.2014040310342739394638",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   },
   {
     "key": "turku-global-innovation",
@@ -300,6 +319,7 @@
     "admissionsUrl": "https://www.utu.fi/en/study-at-utu/how-when-to-apply",
     "implementationProviderOid": "1.2.246.562.10.35830094294",
     "reviewedTitleCodes": null,
-    "studyOption": null
+    "studyOption": null,
+    "reviewedField": null
   }
 ]

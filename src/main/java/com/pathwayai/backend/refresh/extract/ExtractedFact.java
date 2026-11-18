@@ -25,7 +25,12 @@ public record ExtractedFact(FactType type, String key, Map<String, String> value
         ACADEMIC_FIELD,
         CAMPUS_CITY,
         /** Named facts extracted from a university-owned page; changes require review. */
-        UNIVERSITY_FACT
+        UNIVERSITY_FACT,
+        /**
+         * The official API now serves a curated program through a new implementation (a new admission cycle) that passed
+         * every reviewed identity check. Adopting it never changes the program's identity (its education OID).
+         */
+        IMPLEMENTATION
     }
 
     public ExtractedFact {

@@ -50,6 +50,7 @@ public class CuratedCatalogCli implements ApplicationRunner {
     private final Clock clock;
     private final TransactionTemplate transaction;
     private final String command,expected;
+    private boolean maintenance;
 
     public CuratedCatalogCli(CuratedSources candidates,UniversityAdmissionsAdapter admissions,PageFetcher fetcher,
                              FieldTaxonomy taxonomy,JdbcClient jdbc,StudyinfoImporter importer,SourceMonitorRepository monitors,
@@ -71,7 +72,7 @@ public class CuratedCatalogCli implements ApplicationRunner {
             var studyinfo=read(importer.recordUrl(candidate.educationOid()));
             CuratedSources.validateStudyinfo(candidate,studyinfo.body());
             CuratedSources.validateStudyOption(candidate,studyinfo.body());
-            var parsed=StudyinfoParser.parse(studyinfo.body(),taxonomy,candidate.implementationOid(),candidate.combined(),candidate.providerOid(),candidate.titleCodes());
+            var parsed=StudyinfoParser.parse(studyinfo.body(),taxonomy,candidate.implementationOid(),candidate.combined(),candidate.providerOid(),candidate.titleCodes(),candidate.reviewedField());
             if(parsed.program()==null || !candidate.entryLevel().equals(parsed.program().degreeLevel())
                     || !parsed.program().languages().contains("en"))throw new IllegalStateException("Offering is not a verified English entry route: "+candidate.key());
             if(parsed.program().deadlines().stream().noneMatch(d->!LocalDate.parse(d.date()).isBefore(LocalDate.now(clock))))
@@ -122,6 +123,9 @@ public class CuratedCatalogCli implements ApplicationRunner {
     private void apply(List<Offering> offerings,List<Guidance> guidance) {
         Instant now=clock.instant();
         jdbc.sql("select pg_advisory_xact_lock(721681203)").query((rs,n)->1).single();
+        // maintenance of an already active release: genuine changes wait in the review queue instead of blocking the
+        // approved additions; before activation nothing may be pending
+        maintenance=jdbc.sql("select exists(select 1 from catalog_release where id=:id and enabled)").param("id",RELEASE).query(Boolean.class).single();
         jdbc.sql("insert into catalog_release(id,country_code) values(:id,'FI') on conflict do nothing").param("id",RELEASE).update();
         Map<String,Long> ids=new LinkedHashMap<>();
         for(var o:offerings) {
@@ -130,7 +134,7 @@ public class CuratedCatalogCli implements ApplicationRunner {
             long university=jdbc.sql("select university_id from degree_program where id=:p").param("p",id).query(Long.class).single();
             var studyMonitor=register(importer.recordUrl(o.candidate().educationOid()),"Studyinfo official offering", "Opetushallitus",
                     "GOVERNMENT",university,id,StudyinfoAdapter.NAME,StudyinfoAdapter.VERSION,now);
-            publish(studyMonitor,StudyinfoParser.toFacts(o.program()),o.studyinfo(),now,false);
+            publish(studyMonitor,StudyinfoParser.toFacts(o.program()),o.studyinfo(),now,true); // new facts are covered by the approved fingerprint; changed ones still stop the import
             var universityMonitor=register(o.candidate().programUrl(),o.candidate().heading(),publisher(o.candidate().university()),
                     "UNIVERSITY_WEBSITE",university,id,UniversityProgramAdapter.NAME,"1",now);
             publish(universityMonitor,o.facts(),o.university(),now,true);
@@ -153,7 +157,7 @@ public class CuratedCatalogCli implements ApplicationRunner {
                 var facts=UniversityAdmissionsAdapter.extract(g.response().body(),g.response().finalUrl(),g.spec(),o.candidate());
                 com.pathwayai.backend.program.service.UniversityFacts.requireContinuity(jdbc,monitor.sourceId(),id,facts);
                 var result=pipeline.process(monitor.withProgramId(id),facts,"curated-1+university-admissions@1",now,true);
-                if(result.rejectedCount()>0 || result.pendingReview()>0)throw new IllegalStateException("Guidance conflicts need review before activation");
+                if(result.rejectedCount()>0 || result.pendingReview()>0 && !maintenance)throw new IllegalStateException("Guidance conflicts need review before activation");
             }
             success(monitor,g.response(),now);
         }
@@ -186,7 +190,8 @@ public class CuratedCatalogCli implements ApplicationRunner {
         if(monitor.adapterName().equals("university-program"))
             com.pathwayai.backend.program.service.UniversityFacts.requireContinuity(jdbc,monitor.sourceId(),monitor.programId(),facts);
         var result=pipeline.process(monitor,facts,"curated-1+"+monitor.adapterName()+"@"+monitor.adapterVersion(),now,reviewedNewFacts);
-        if(result.rejectedCount()>0 || result.pendingReview()>0)throw new IllegalStateException("Changed facts require review before curated activation");
+        if(result.rejectedCount()>0 || result.pendingReview()>0 && !maintenance)throw new IllegalStateException("Changed facts require review before curated activation");
+        if(result.pendingReview()>0)System.out.println("CURATED_REVIEW "+result.pendingReview()+" changed fact(s) of "+monitor.url()+" wait in the review queue");
         success(monitor,response,now);
     }
 
