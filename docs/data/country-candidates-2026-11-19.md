@@ -87,3 +87,14 @@ Counts: bachelor's entry 10, master's 10; IT 12, business 8; 8 public universiti
 
 Gaps: 11 of the 20 pages state no tuition (CTU x3, BUT x2, Charles x2, VSB, Mendel: the portal field is empty; these universities must be read directly); several deadlines are for the already closed 2026 cycle (Masaryk, Charles, Pardubice) and the next cycle is not yet published there; the tuition lines say "per academic year" without naming the year. Two rows carry joint/double degrees (Pardubice) and must be classified accordingly.
 Recommendation: choose reuse-confirmed source first (portal operator contact), then build a portal discovery + university adapter hybrid. No Czech programme is proposed for import until reuse is confirmed.
+
+## 4. Next official sources (first look only; none implemented, none verified beyond what is stated)
+Order proposed: Netherlands, Norway, Slovakia (one connector at a time, after Poland/Czechia decisions).
+| Country | Source | What was found | Gaps / next check |
+|---|---|---|---|
+| Netherlands | DUO RIO (Register Instellingen en Opleidingen) and DUO open data (`duo.nl/open_onderwijsdata`) | official open data downloadable as CSV and through an API; a Linked Open Data "Onderwijsregistratie" REST API with an OpenAPI description is mentioned; registers institutions and recognised programmes (CROHO for higher education) | licence not found in the pages searched; RIO states programme registration only (no tuition, deadlines or admission requirements); DUO does not guarantee completeness of voluntary registrations; actual English-taught coverage and field names unchecked |
+| Norway | utdanning.no open data (NLOD licence, JSON API, attribution required) and HKDIR DBH API (`dbh.hkdir.no`, PDF API documentation) | NLOD permits reuse with attribution; the utdanning.no datasets found describe education and occupation types (about 350 education descriptions), **not** concrete study offerings | no programme-offering dataset or Samordna opptak data found; DBH programme-level coverage unchecked; the data.norge.no entry shows no API count for the education dataset |
+| Slovakia | Ministry of Education database of accredited higher-education study programmes (web, SK/EN) and a 2025 PDF "Accredited study fields at Slovak HEIs"; data.gov.sk (run by NASES) | a web database exists | no downloadable dataset, API or licence found; PDF is not structured data; would need the Ministry to confirm an export or a per-university strategy |
+
+## 5. Rules for any new country connector
+Official source first; licence/terms confirmed in writing before storing a refreshed copy; stable external identifier; level classification by coded fields, never by name; academic year only when the source states it (published fees without a year stay undated); English-language instruction confirmed on the university's own page; link monitoring and review queue reused unchanged.
