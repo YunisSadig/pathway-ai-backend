@@ -34,10 +34,18 @@ on:
       mode:
         description: "run | sync | force (re-read all Studyinfo programs now) | bootstrap (first run on an empty database) | freshness | verify (read-only data audit) | links (check curated official links) | status (read-only curated report) | api-smoke (boot the API on the runner and read it over HTTP) | migrate (apply pending Flyway migrations only)"
         type: choice
-        options: [run, sync, force, bootstrap, freshness, verify, api-smoke, migrate, curated-universities, curated-preview, curated-apply, links, status]
+        options: [run, sync, force, bootstrap, freshness, verify, api-smoke, migrate, curated-universities, curated-preview, curated-apply, links, status, review-list, review-approve, review-reject]
         default: run
       curated_fingerprint:
         description: "curated-apply only: exact fingerprint from the separately reviewed and approved preview"
+        type: string
+        required: false
+      review_id:
+        description: "review-approve / review-reject only: the item number shown by review-list"
+        type: string
+        required: false
+      review_reason:
+        description: "review-reject only: why the change is rejected"
         type: string
         required: false
 
@@ -91,11 +99,14 @@ jobs:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           CURATED_APPROVED_FINGERPRINT: ${{ inputs.curated_fingerprint }}
+          REVIEW_ID: ${{ inputs.review_id }}
+          REVIEW_REASON: ${{ inputs.review_reason }}
+          REVIEW_ACTOR: ${{ github.actor }}
         run: bash scripts/ci/run-refresh.sh "$MODE"
 
       - name: Last-success watchdog
         id: freshness
-        if: ${{ !contains(fromJSON('["bootstrap","curated-universities","curated-preview","migrate","links","status"]'), steps.mode.outputs.mode) }}
+        if: ${{ !contains(fromJSON('["bootstrap","curated-universities","curated-preview","migrate","links","status","review-list","review-approve","review-reject"]'), steps.mode.outputs.mode) }}
         continue-on-error: true
         env:
           DB_URL: ${{ secrets.DB_URL }}

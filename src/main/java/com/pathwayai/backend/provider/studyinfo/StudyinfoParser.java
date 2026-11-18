@@ -209,10 +209,28 @@ public final class StudyinfoParser {
         Details details = implementationOid == null || toteutukset.size() != 1 ? null
                 : details(root, toteutukset.get(0), deadlineRoot, issues);
         String cleanName = INTAKE_SUFFIX.matcher(name.value()).replaceFirst("").strip();
+        if (implementationOid != null) {
+            cleanName = withoutRoutePrefix(cleanName, localized(root.get("nimi")));
+        }
         Program p = new Program(oid, toteutusOid, orgOid, orgName == null ? null : orgName.value(), cleanName.isEmpty() ? name.value() : cleanName, name.language(),
                 level, field[0], field[1], field[2], city, months,
                 languages == null ? List.of() : List.copyOf(languages), deadlines, details);
         return new Parsed(p, issues);
+    }
+
+    /**
+     * Some providers prefix an implementation's name with its admission route ("Rolling Admission, Digital Business ,
+     * …"). Leading comma-separated segments that the education's own name does not contain are dropped; the rest is kept
+     * verbatim (with a stray space before a comma removed). Nothing is dropped when the education name is unknown.
+     */
+    static String withoutRoutePrefix(String implementationName, Localized educationName) {
+        if (educationName == null) return implementationName;
+        String education = educationName.value().replaceAll("\\s+,", ",").toLowerCase(java.util.Locale.ROOT);
+        String[] segments = implementationName.split(",");
+        int first = 0;
+        while (first < segments.length - 1 && !education.contains(segments[first].strip().toLowerCase(java.util.Locale.ROOT))) first++;
+        if (first == 0) return implementationName;
+        return String.join(",", java.util.Arrays.copyOfRange(segments, first, segments.length)).replaceAll("\\s+,", ",").strip();
     }
 
     private static final Pattern FEE_LIABLE = Pattern.compile("(?i)\\b(EU/EEA|EEA|European Economic Area)\\b");

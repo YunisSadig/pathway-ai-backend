@@ -32,7 +32,7 @@ MAX_AGE_HOURS="${MAX_AGE_HOURS:-240}"
 
 die() { echo "ERROR: $*" >&2; exit "${2:-2}"; }
 
-case "$MODE" in run|sync|force|bootstrap|freshness|verify|api-smoke|migrate|curated-preview|curated-apply|curated-universities|links|status) ;; *) die "unknown mode '$MODE'";; esac
+case "$MODE" in run|sync|force|bootstrap|freshness|verify|api-smoke|migrate|curated-preview|curated-apply|curated-universities|links|status|review-list|review-approve|review-reject) ;; *) die "unknown mode '$MODE'";; esac
 
 for v in DB_URL DB_USERNAME DB_PASSWORD; do
   [ -n "${!v:-}" ] || die "$v is not set (on GitHub it comes from a repository secret)"
@@ -143,6 +143,12 @@ case "$MODE" in
   curated-universities) with_retries 1 1 env IMPORT_UNIVERSITY_CATALOGUE=true java -jar "$JAR" --spring.main.web-application-type=none; rc=$? ;;
   links)     with_retries 1 1 app --app.curated.command=links "--app.refresh.extra-approved-hosts=$CURATED_HOSTS"; rc=$? ;;
   status)    with_retries 1 1 app --app.curated.command=status; rc=$? ;;
+  # review queue (owner decisions on staged changes): list is read-only; approve/reject need the item number
+  review-list) with_retries 1 1 app --app.refresh.command=review-list; rc=$? ;;
+  review-approve|review-reject)
+    [[ "${REVIEW_ID:-}" =~ ^[0-9]+$ ]] || die "$MODE requires the numeric review_id shown by review-list"
+    reason_flag=(); [ -n "${REVIEW_REASON:-}" ] && reason_flag=("--app.refresh.reason=$REVIEW_REASON")
+    with_retries 1 1 app "--app.refresh.command=$MODE" "--app.refresh.id=$REVIEW_ID" "--app.refresh.actor=github:${REVIEW_ACTOR:-unknown}" "${reason_flag[@]}"; rc=$? ;;
   force)     with_retries "$ATTEMPTS" "$BASE" app --app.refresh.command=studyinfo-sync "${fail_flags[@]}"; rc=$? ;;
   api-smoke) with_retries 1 1 api_smoke; rc=$? ;;
   # migrate: starts the application once with every importer off, so Flyway applies pending migrations (as the owner role) and the process ends

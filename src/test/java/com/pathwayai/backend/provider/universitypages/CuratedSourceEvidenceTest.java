@@ -206,6 +206,19 @@ class CuratedSourceEvidenceTest {
                 tampere.titleCodes(),"law").program().fieldSlug()).isNull();
     }
 
+    @Test void anAdmissionRoutePrefixIsDroppedFromTheNameAndNoOtherNameChanges() throws Exception {
+        for(var c:sources.candidates()) {
+            String name=parse(c,fixture(c.key()+".json")).program().name();
+            if(c.key().equals("lut-digital-business"))
+                assertThat(name).isEqualTo("Digital Business, Bachelor and Master of Science in Economics and Business Administration (3 yrs + 2 yrs)");
+            else
+                assertThat(name).as(c.key()).doesNotStartWith("Rolling").doesNotContain(" ,");
+        }
+        // the same names as before for every other offering (no review items are created for them)
+        assertThat(parse(candidate("helsinki-computer-science"),fixture("helsinki-computer-science.json")).program().name())
+                .isEqualTo("Master's Programme in Computer Science");
+    }
+
     @Test void datesAreReadFromExplicitSourceDatesAndNeverRelabelAnExpiredPeriod() {
         assertThat(UniversityProgramAdapter.periodEnd("7 Dec 2026 – 5 Jan 2027")).isEqualTo(LocalDate.of(2027,1,5));
         assertThat(UniversityProgramAdapter.periodEnd("07.01.2027 - 21.01.2027")).isEqualTo(LocalDate.of(2027,1,21));
