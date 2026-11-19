@@ -2,7 +2,7 @@
 
 **Live website: https://pathway-ai-frontend-roan.vercel.app** · Frontend repository: https://github.com/YunisSadig/pathway-ai-frontend
 
-REST API for **Pathway AI**, a study-abroad planning platform for students from Azerbaijan, Kazakhstan, Georgia, Uzbekistan and Kyrgyzstan. It serves student accounts and profiles, and a **protected** catalogue of official university program data.
+REST API for **Pathway AI**, a global study-abroad planning platform. Registration is open for now to students from Azerbaijan, Kazakhstan, Georgia, Uzbekistan and Kyrgyzstan; the catalogue is designed for universities worldwide (EU, USA, Canada, Japan and more) and currently holds verified Finnish programs, with Poland next. It serves student accounts and profiles, and a **protected** catalogue of official university program data.
 
 | Part | Where it runs |
 | --- | --- |
