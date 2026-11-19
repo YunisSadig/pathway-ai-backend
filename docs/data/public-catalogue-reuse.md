@@ -32,7 +32,7 @@ The public page says the catalogue covers only the institutions actually synchro
 
 ## Synchronization status (unchanged by this work)
 
-`SYNC_ENABLED` is unset (no scheduled sync), the dead-man's-switch (Healthchecks.io) is not configured, and the permission email is unsent. Do not enable unattended sync until those are done (`docs/deployment-sync.md`). Stale data is already withheld from discovery after 45 days without a successful read.
+Since 2026-11-19 scheduled sync is ON (`SYNC_ENABLED=true`) with the Healthchecks.io dead-man's switch configured. The owner enabled it before the permission reply because sync only reads the public API and the catalogue stays private (`cataloguePublic=false`); public display of program details stays blocked until a written answer. The permission email was sent on 2026-11-19 (`official-api-connectors.md`). Stale data is already withheld from discovery after 45 days without a successful read.
 
 ## To widen the public tier later
 
@@ -42,6 +42,6 @@ Obtain the provider's written answer (licence and attribution), then add the per
 
 `GET /api/v1/public/programs[/{identifier}]` (no account) shows the PUBLISHED OFFERING the official Konfo external API exists to display: name, degree level, field, study mode, planned duration, teaching languages, campus city, the offering university, the official program and admissions pages and our verification date. Filters: name, field, level, country, university, language.
 
-Still restricted (catalogue gate): tuition, intakes and deadlines, admission requirements, source records, synchronization details and the application link. The licence question stays OPEN and unanswered in writing (`studyinfo-permission-request.md`, unsent); the public program fields are therefore a documented risk accepted by the owner, easy to narrow by editing `PublicProgramController`. A test pins the exact field set.
+Still restricted (catalogue gate): tuition, intakes and deadlines, admission requirements, source records, synchronization details and the application link. The licence question stays OPEN and unanswered in writing (`studyinfo-permission-request.md`, sent 2026-11-19, awaiting reply); the public program fields are therefore a documented risk accepted by the owner, easy to narrow by editing `PublicProgramController`. A test pins the exact field set.
 
 Email verification is separate from access: it never blocks sign-in, saving, profiles or browsing.
