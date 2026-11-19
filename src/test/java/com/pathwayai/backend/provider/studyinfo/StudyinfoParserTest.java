@@ -119,6 +119,18 @@ class StudyinfoParserTest {
 
     @Test
     @SuppressWarnings("unchecked")
+    void aDetailedFieldCodeWithoutItsNarrowCodeFallsBackToTheNarrowCode() {
+        var taxonomy = FieldTaxonomy.of(Map.of(
+                "041", new FieldTaxonomy.Entry("041", "business-and-administration", "Business and administration")));
+        String json = modified(root -> first(root, "koulutuskoodienAlatJaAsteet").put("koulutusalaKoodiUrit",
+                List.of("kansallinenkoulutusluokitus2016koulutusalataso3_0418")));
+        var parsed = StudyinfoParser.parse(json, taxonomy);
+        assertThat(parsed.program().fieldSlug()).isEqualTo("business-and-administration");
+        assertThat(parsed.issues()).noneMatch(i -> i.contains("not in the reviewed mapping"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
     void bachelorAndMasterLevelsComeFromTheOfficialLevelCodes() {
         for (var e : Map.of("6", "BACHELOR", "7", "MASTER").entrySet()) {
             String json = modified(root -> first(root, "koulutuskoodienAlatJaAsteet").put("koulutusasteKoodiUrit",
