@@ -36,6 +36,7 @@ independent of OPH". The API's source and OpenAPI text carry the EUPL-1.2 notice
   a named licence is not a licence, and a publicly reachable API is not one either.
 * **Our use** (periodic reads of selected programs, shown in our own service with the source and attribution) is the closest fit
   to the stated purpose. A public bulk export, a mirror, or re-offering the data as an API goes beyond it.
+* **Status (2026-11-19):** the owner sent the request to `palaute@opintopolku.fi` on 2026-11-19; an automatic acknowledgement arrived; no answer yet. Record the reply here. Follow up around 2026-12-03 if none.
 * **Action:** ask the contact named in the API documentation (`palaute@opintopolku.fi`) to confirm in writing the licence name,
   attribution wording, whether a persistent refreshed copy is allowed and any rate limits. Until then: keep attribution to
   Opetushallitus (stored as each record's source publisher), no bulk redistribution, honour the crawl delay, store none of the

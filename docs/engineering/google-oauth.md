@@ -1,6 +1,6 @@
 # Google sign-in ("Continue with Google")
 
-**Status:** IMPLEMENTED and TESTED with a stubbed Google (backend `GoogleAuthIT`, `GoogleIdentityValidationTest`; frontend `google.spec.ts`, proxy unit tests). NOT VERIFIED IN PRODUCTION: it needs the Google credentials below and a real sign-in with a disposable Google account. Until both variables are set the button is not shown and the endpoints answer with a redirect to `/login?error=google_unavailable`.
+**Status:** IMPLEMENTED and TESTED with a stubbed Google (backend `GoogleAuthIT`, `GoogleIdentityValidationTest`; frontend `google.spec.ts`, proxy unit tests). VERIFIED IN PRODUCTION on 2026-11-19: the owner signed in with a real Google account several times (first and repeat sign-in both worked). Until both variables are set the button is not shown and the endpoints answer with a redirect to `/login?error=google_unavailable`.
 
 ## How it works
 
