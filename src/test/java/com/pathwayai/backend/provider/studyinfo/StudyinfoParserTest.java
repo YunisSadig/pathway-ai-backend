@@ -202,6 +202,24 @@ class StudyinfoParserTest {
     }
 
     @Test
+    void anAdmissionRoutePrefixOfAnImplementationNameIsNotPartOfTheProgramName() {
+        String education = "Digital Business , Bachelor and Master of Science (3 yrs + 2 yrs)";
+        String impl = "1.2.246.562.17.00000000000000001637";
+        java.util.function.Function<String, String> nameFor = implName -> StudyinfoParser.parse(
+                modified(r -> {
+                    r.put("nimi", Map.of("en", education));
+                    first(r, "toteutukset").put("nimi", Map.of("en", implName));
+                }), TAXONOMY, impl, false).program().name();
+        // the shape LUT publishes (synthetic): route first, the education's own name after it
+        assertThat(nameFor.apply("Rolling Admission, " + education))
+                .isEqualTo("Digital Business, Bachelor and Master of Science (3 yrs + 2 yrs)");
+        assertThat(nameFor.apply("International Rolling Admission, " + education))
+                .isEqualTo("Digital Business, Bachelor and Master of Science (3 yrs + 2 yrs)");
+        // a name that already starts with the education's own name is left alone
+        assertThat(nameFor.apply(education)).isEqualTo(education);
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     void aTrailingIntakeTermIsNotPartOfTheProgramName() {
         for (String suffix : new String[] {", Autumn 2027", " Spring 2028", ", fall 2026"}) {
