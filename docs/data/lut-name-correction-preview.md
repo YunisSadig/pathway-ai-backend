@@ -31,3 +31,9 @@ record is not in the repo fixtures, so the exact output is confirmed only by ste
 4. Verify via the public API `GET /api/v1/programs/{id}` and the curated status report.
 
 Open check before step 3: that the slug/identifier stays stable when the name changes.
+
+## Slug fix: deferred
+Only the name is corrected. The slug (`rolling-admission-digital-business-…`) keeps the route prefix and stays as it is, because
+`saved_program.program_identifier` stores the public identifier `<university-slug>--<program-slug>` (no foreign key), so a slug
+change would orphan users' saved entries and break links. Needs, before `cataloguePublic=true`: a `saved_program` migration to the
+new identifier plus an old-identifier redirect in the API.
