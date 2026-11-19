@@ -396,6 +396,10 @@ public final class StudyinfoParser {
                     }
                 }
             }
+            // the reviewed map's rule: a 4-digit detailed code falls back to its own 3-digit narrow code, even when the record omits it
+            if (d2 == null && d3 != null && d3.length() == 4) {
+                d2 = d3.substring(0, 3);
+            }
             var entry = d3 == null ? java.util.Optional.<FieldTaxonomy.Entry>empty() : taxonomy.lookup(d3);
             if (entry.isEmpty() && d2 != null) {
                 entry = taxonomy.lookup(d2);
