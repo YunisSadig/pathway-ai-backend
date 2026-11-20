@@ -5,7 +5,8 @@
 # docs/deployment-sync.md.
 #
 # What runs (all in scripts/ci/run-refresh.sh, the same file you can run on a laptop):
-#   * daily 05:17 UTC  : `run`  = re-read every source that is due (each program weekly; daily inside an application window)
+#   * daily 05:17 and 17:17 UTC : `run`  = re-read every source that is due (each program weekly; daily inside an application window).
+#                        The second time exists because GitHub skipped the 05:17 run on 2026-11-20; concurrency prevents overlaps.
 #   * Mondays          : `sync` = discover new programs for the three reviewed universities, then `run`, then the weekly
 #                        curated link check (program/admissions pages; moved pages repaired only when certain)
 #   * every run        : `freshness` = last-success watchdog; fails unless EVERY extractor-maintained program was read within 10 days
@@ -29,6 +30,7 @@ name: Source refresh
 on:
   schedule:
     - cron: "17 5 * * *"   # daily, off the hour on purpose (GitHub delays :00 runs under load)
+    - cron: "17 17 * * *"  # second chance: GitHub drops scheduled runs now and then (observed 2026-11-20)
   workflow_dispatch:
     inputs:
       mode:
@@ -86,7 +88,7 @@ jobs:
           INPUT_MODE: ${{ inputs.mode }}
         run: |
           if [ "$EVENT" = "workflow_dispatch" ]; then m="$INPUT_MODE"
-          elif [ "$(date -u +%u)" = "1" ]; then m=sync
+          elif [ "$(date -u +%u)" = "1" ] && [ "$(date -u +%H)" -lt 12 ]; then m=sync   # Monday morning run discovers; the evening run only refreshes
           else m=run; fi
           echo "mode=$m" >> "$GITHUB_OUTPUT"
 
