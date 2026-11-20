@@ -1,6 +1,7 @@
 # Poland: POL-on connector (private, not public)
 
-Status 2026-11-20: built and tested; **not applied to production**; `cataloguePublic` unchanged (false). Candidate list and source
+Status 2026-11-20: **applied to production** (PR #57, fingerprint `249381a4…`): 14 programmes (7 bachelor's, 7 master's) at 8 universities. **6 candidates are skipped**
+pending a person's identity mapping (Warsaw University of Technology x4, SGH x2). **Sync is not enabled.** `cataloguePublic` unchanged (false). Candidate list and source
 assessment: [country-candidates-2026-11-19.md](country-candidates-2026-11-19.md).
 
 ## Source and licence
@@ -8,7 +9,7 @@ assessment: [country-candidates-2026-11-19.md](country-candidates-2026-11-19.md)
 - Licence found: **CC0 1.0** on the dane.gov.pl record of the Ministry's courses dataset (dataset 1892, "Studia prowadzone na określonym kierunku",
   publisher Ministerstwo Nauki i Szkolnictwa Wyższego): `https://creativecommons.org/publicdomain/zero/1.0/legalcode.pl`
   (via `https://api.dane.gov.pl/1.4/catalog/dataset/1892.rdf?lang=pl`).
-- **Not stated:** reuse terms of the live RAD-on API itself (no terms page found). The data stays private until the owner decides.
+- **Not stated:** reuse terms of the live RAD-on API itself (no terms page found). Summary: licence CC0 on dane.gov.pl; API terms not stated. The data stays private until the owner decides.
 
 ## What is imported (and what is not)
 - From POL-on only: programme name, level, teaching language (English instance), duration (semesters, stored as months = semesters x 6),
@@ -18,6 +19,10 @@ assessment: [country-candidates-2026-11-19.md](country-candidates-2026-11-19.md)
   from the university's own registered domain, and only a page read in that preview is recorded as a source.
 - Identity: a candidate whose POL-on name is Polish or differs from the university page has `identityConfirmed=false` and is never imported
   until a person confirms the mapping (6 of 20 on 2026-11-20).
+
+- Slugs: a name shared by two programmes of one university carries the degree level on each (`artificial-intelligence-bachelor` / `-master`), never a number.
+  An existing numbered slug is renamed by `apply` only if no `saved_program` row references it (refused before any write otherwise); the old slug is
+  archived in `program_fact_history` (`field_name = 'slug'`).
 
 ## Files
 `reference-data/curated-poland.json` (candidates), `reference-data/universities-poland.json` (8 universities, registry-matched by SCHAC id,
