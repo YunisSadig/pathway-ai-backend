@@ -29,7 +29,7 @@ class PolonParserTest {
             var p = PolonParser.parse(fixture(c.courseUuid()), c, TAXONOMY);
             assertThat(p.degreeLevel()).as(c.key()).isEqualTo(c.entryLevel());
             assertThat(p.instanceUuid()).as(c.key()).isEqualTo(c.courseInstanceUuid());
-            assertThat(p.name()).as(c.key()).isEqualTo(c.polonName());
+            assertThat(p.name()).as(c.key()).isEqualTo(PolonParser.englishName(c.polonName())).doesNotContain("/");
             assertThat(p.semesters()).as(c.key()).isBetween(1, 12);
             var types = PolonParser.toFacts(p).stream().map(f -> f.type()).toList();
             assertThat(types).as(c.key()).contains(FactType.PROGRAM_NAME, FactType.DEGREE_LEVEL, FactType.DURATION_MONTHS, FactType.LANGUAGES)
@@ -49,6 +49,16 @@ class PolonParserTest {
             assertThat(f.type()).isEqualTo(FactType.DURATION_MONTHS);
             assertThat(f.values()).containsEntry("months", "42");
         });
+    }
+
+    @Test
+    void aBilingualPolOnNameIsStoredAsItsEnglishPartOnlyAndOtherNamesAreKeptAsStated() throws IOException {
+        assertThat(PolonParser.englishName("Sztuczna inteligencja/Artificial Intelligence")).isEqualTo("Artificial Intelligence");
+        assertThat(PolonParser.englishName("Computer Science")).isEqualTo("Computer Science");
+        assertThat(PolonParser.englishName("A/B/C")).isEqualTo("A/B/C");
+        assertThat(PolonParser.englishName("Informatyka/")).isEqualTo("Informatyka/");
+        var c = first("politechnika-sztuczna-inteligencja-artificial-intelligence-bachelor");
+        assertThat(PolonParser.parse(fixture(c.courseUuid()), c, TAXONOMY).name()).isEqualTo("Artificial Intelligence");
     }
 
     @Test

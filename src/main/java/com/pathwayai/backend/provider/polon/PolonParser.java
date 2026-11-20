@@ -52,7 +52,7 @@ public final class PolonParser {
             throw new IllegalStateException("The reviewed instance is not taught in English any more");
         if (!"3".equals(instance.path("statusCode").asText()) || !instance.path("liquidationDate").isNull())
             throw new IllegalStateException("POL-on states the instance is not active (" + instance.path("statusName").asText() + ")");
-        String name = instance.path("courseName").asText();
+        String name = englishName(instance.path("courseName").asText());
         int semesters = Integer.parseInt(instance.path("numberOfSemesters").asText());
         if (name.isBlank() || semesters <= 0) throw new IllegalStateException("Name or number of semesters missing for " + c.courseUuid());
         String ects = instance.path("ects").asText("");
@@ -62,6 +62,16 @@ public final class PolonParser {
                 instance.path("educationStartDate").asText(null), course.path("leadingInstitutionName").asText(),
                 course.path("leadingInstitutionCity").asText(), isced, course.path("iscedName").asText(),
                 field(isced, taxonomy).map(FieldTaxonomy.Entry::slug).orElse(null), course.path("lastRefresh").asText());
+    }
+
+    /**
+     * POL-on sometimes states an English instance's name in both languages as "Polish name/English name". The English part is
+     * used then (exactly one "/", both parts non-blank); any other name is kept exactly as stated.
+     */
+    static String englishName(String stated) {
+        int i = stated.indexOf('/');
+        if (i > 0 && i == stated.lastIndexOf('/') && !stated.substring(i + 1).isBlank()) return stated.substring(i + 1).strip();
+        return stated.strip();
     }
 
     /** ISCED-F code exactly as POL-on states it; only if the reviewed field map has the detailed or its narrow code. */
