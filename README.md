@@ -202,7 +202,7 @@ university page. The public `GET /api/v1/public/programs/{identifier}` adds only
   "notSynchronized": ["tuition", "scholarships", "admissionRequirements", "applicationUrl"]
 }
 ```
-`status: AUTOMATIC` means a working extractor maintains the program: `fresh` and `lastSuccessfulSyncAt` say how recently it was read. The daily GitHub-scheduled sync of the Finnish programs has been ON since 2026-11-19 (Healthchecks dead-man's switch). Poland sync is not enabled.
+`status: AUTOMATIC` means a working extractor maintains the program: `fresh` and `lastSuccessfulSyncAt` say how recently it was read. The daily GitHub-scheduled sync of the Finnish programs has been ON since 2026-11-19 (Healthchecks dead-man's switch). Poland sync has been ON since 2026-11-20.
 A field with `REVIEW_REQUIRED` is re-read automatically but a change waits for a person (the old value stays until approved). Facts listed in `notSynchronized` have no connector
 and are omitted rather than shown as maintained. A program the official source has discontinued, or whose extractor is failing or stale, is withheld from discovery.
 
@@ -233,7 +233,7 @@ Invoke-RestMethod "http://localhost:8080/api/v1/universities?q=tech&country=de&s
 | `REFERENCE_DATA_LOCATION` | `classpath:reference-data/taxonomy.json` | The taxonomy file (countries and academic fields only; a file with academic records is refused) |
 | `PORT` | `8080` | HTTP port (injected by most hosts) |
 | `STAGING_ACCESS_KEY` | *(production)* | Infrastructure key every `/api/v1` call must send as `X-Staging-Key` (set on the host, never committed) |
-| `REFRESH_EXCLUDED_ADAPTERS` | `polon-courses,pl-university-page` | Comma-separated adapters the scheduled run and the freshness watchdog skip (Poland sync is not enabled); empty = none |
+| `REFRESH_EXCLUDED_ADAPTERS` | *(empty)* | Comma-separated adapters the scheduled run and the freshness watchdog skip; `polon-courses,pl-university-page` pauses Poland sync |
 | `CATALOGUE_PUBLIC` | `false` | `true` opens the catalogue to everyone (only after the data-reuse terms are settled) |
 | `SITE_URL` | `http://localhost:3000` | Public site origin (links in emails, allowed origin) |
 | `SESSION_COOKIE_SECURE` | `true` in prod | Secure flag of the session cookie |

@@ -1,7 +1,7 @@
 # Poland: POL-on connector (private, not public)
 
 Status 2026-11-20: **applied to production** (PR #57, fingerprint `249381a4…`): 14 programmes (7 bachelor's, 7 master's) at 8 universities. **6 candidates are skipped**
-pending a person's identity mapping (Warsaw University of Technology x4, SGH x2). **Sync is not enabled.** `cataloguePublic` unchanged (false). Candidate list and source
+pending a person's identity mapping (Warsaw University of Technology x4, SGH x2). **Sync is enabled** (since 2026-11-20). `cataloguePublic` unchanged (false). Candidate list and source
 assessment: [country-candidates-2026-11-19.md](country-candidates-2026-11-19.md).
 
 ## Source and licence
@@ -51,12 +51,12 @@ Rehearse on a Neon branch first; never run against production without the owner'
 after 5 minutes (otherwise "Failed to obtain JDBC Connection"). A page whose connection fails is retried twice (15 s apart) in the plan,
 because some university servers drop connections at random and the apply refuses any plan that differs from the approved fingerprint.
 
-## Sync: NOT enabled (the scheduled run excludes Poland)
-The 14 monitors are registered (`ADAPTER polon-courses`, 7-day interval, first due 2026-11-27) and the daily Finland run (`run`) reads every
-due monitor, so the scheduled run EXCLUDES the adapter: `app.refresh.excluded-adapters` / env `REFRESH_EXCLUDED_ADAPTERS`, default
-`polon-courses` and `pl-university-page`. The freshness watchdog skips them too (otherwise it would turn the Finland run red). An operator can still read it on purpose
-with `--app.refresh.command=sync-adapter --app.refresh.adapter=polon-courses`. Consequence: Poland programs stay as imported and, after
-45 days without a read (`app.discovery.max-source-age-days`; last read 2026-11-20, so after about 2027-01-04), leave discovery.
-To enable Poland sync later (owner decision, API terms not stated): set `REFRESH_EXCLUDED_ADAPTERS` to empty. When enabled, a changed
-name/level/field waits for review, a status change to not-active is the only discontinuation signal, and errors never touch published facts. Fee and deadline extractors per university
-(AGH, TUL, PUT, WUT, SGH publish them per academic year) are the next increment.
+## Sync: ENABLED (since 2026-11-20)
+The 14 `polon-courses` monitors (7-day interval) and the 10 `pl-university-page` monitors are read by the daily scheduled run like Finland's.
+Enabled after two clean manual reads in production on 2026-11-20 (`sync-adapter`): `polon-courses` checked 14, unchanged 14, failed 0, auto-applied 0,
+pending review 0; `pl-university-page` checked 10, baseline 10, failed 0, auto-applied 0, pending review 0, rejected 0. A changed name/level/field waits for
+review, a status change to not-active is the only discontinuation signal, and errors never touch published facts.
+**To pause Poland** set `REFRESH_EXCLUDED_ADAPTERS=polon-courses,pl-university-page` (`app.refresh.excluded-adapters`): the scheduled run and the
+freshness watchdog then skip those monitors (the watchdog would otherwise turn Finland's run red) and Poland programs leave discovery 45 days after
+their last read (`app.discovery.max-source-age-days`). Reminder: the reuse terms of the live POL-on API are not stated (the dataset is CC0); the data stays private.
+Fee and deadline extractors for the other universities are the next increment.

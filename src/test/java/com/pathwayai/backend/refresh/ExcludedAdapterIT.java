@@ -17,11 +17,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Poland (POL-on) sync is not enabled: the scheduled run and the freshness watchdog skip the {@code polon-courses} monitors by
- * default (their programs stay as imported), while Finland's monitors are read as before. An explicit single-adapter read still
+ * Pausing Poland (REFRESH_EXCLUDED_ADAPTERS=polon-courses,pl-university-page): the scheduled run and the freshness watchdog skip those
+ * monitors (their programs stay as imported), while Finland's monitors are read as before. An explicit single-adapter read still
  * works. Synthetic data only.
  */
-@SpringBootTest
+@SpringBootTest(properties = "app.refresh.excluded-adapters=polon-courses,pl-university-page")
 @Import(TestcontainersConfiguration.class)
 class ExcludedAdapterIT {
 
@@ -40,6 +40,7 @@ class ExcludedAdapterIT {
                 values (?, 'zz-excl-u', 'Synthetic Exclusion University', 'VERIFIED', current_date) returning id""", Long.class, country);
         monitor("finland-like", "studyinfo-external");
         monitor("poland-like", "polon-courses");
+        monitor("poland-pages-like", "pl-university-page");
     }
 
     @AfterEach
@@ -78,7 +79,7 @@ class ExcludedAdapterIT {
     @Test
     void theFreshnessWatchdogDoesNotCountPolandSoItCannotTurnFinlandsRunRed() {
         var f = monitors.extractorFreshness(now.minus(Duration.ofDays(10)));
-        assertThat(f.total()).isEqualTo(1); // only the Finland-like monitor (30 days old: stale), the Poland one is not counted
+        assertThat(f.total()).isEqualTo(1); // only the Finland-like monitor (30 days old: stale), the paused Poland ones are not counted
         assertThat(f.stale()).isEqualTo(1);
     }
 }

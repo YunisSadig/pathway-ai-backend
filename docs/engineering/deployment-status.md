@@ -9,7 +9,7 @@ The rows below are the 2026-11-14 snapshot; they are not rewritten except where 
 * Live: frontend on Vercel, backend on Render, database on Neon (Flyway V14). An UptimeRobot check pings `/actuator/info` every 5 minutes.
 * The catalogue is private (`cataloguePublic=false`). Studyinfo permission was asked on 2026-11-19; no reply yet.
 * Finland: 7 universities, 72 programs (20 curated); daily sync ON since 2026-11-19 with Healthchecks; curated preview fingerprint baseline `3a38029b…` (finland-20-progress.md).
-* Poland: 8 universities, 14 programs imported 2026-11-20 from POL-on (CC0 dataset; API terms not stated); 6 candidates skipped pending identity mapping; no tuition or deadlines yet; sync NOT enabled: the scheduled run and the freshness watchdog exclude the `polon-courses` and `pl-university-page` monitors (`REFRESH_EXCLUDED_ADAPTERS`, default `polon-courses,pl-university-page`; docs/data/poland-polon.md).
+* Poland: 8 universities, 14 programs imported 2026-11-20 from POL-on (CC0 dataset; API terms not stated); 6 candidates skipped pending identity mapping; official programme links for 4 programmes and fee statements for 4 (AGH structured, Poznan UT x2 and Poznan UEB word for word) from the universities' own pages, no deadlines or requirements yet; sync ENABLED since 2026-11-20 after two clean manual production reads (`REFRESH_EXCLUDED_ADAPTERS=polon-courses,pl-university-page` pauses it; docs/data/poland-polon.md).
 * Google sign-in is verified in production. Email delivery is OFF (password reset and email verification unavailable), postponed: no domain yet; the SMTP configuration was reverted (#56).
 
 ## Live endpoints (public site, closed catalogue)
