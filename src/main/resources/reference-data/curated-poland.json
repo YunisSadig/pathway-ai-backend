@@ -9,7 +9,10 @@
     "feesUrl": "https://www.international.agh.edu.pl/en/studies/fees",
     "identityConfirmed": true,
     "polonName": "Computer Science",
-    "officialDomain": "agh.edu.pl"
+    "officialDomain": "agh.edu.pl",
+    "pageMatch": "Computer Science",
+    "feeStrategy": "AGH_TABLE",
+    "feeRow": "Computer Science"
   },
   {
     "key": "politechnika-computer-science-bachelor",
@@ -21,7 +24,10 @@
     "feesUrl": "https://apply.p.lodz.pl/en/enrollment/enroll/fees-and-scholarships",
     "identityConfirmed": true,
     "polonName": "Computer Science",
-    "officialDomain": "p.lodz.pl"
+    "officialDomain": "p.lodz.pl",
+    "pageMatch": "Computer Science",
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "politechnika-information-technology-bachelor",
@@ -33,7 +39,10 @@
     "feesUrl": "https://apply.p.lodz.pl/en/enrollment/enroll/fees-and-scholarships",
     "identityConfirmed": true,
     "polonName": "Information Technology",
-    "officialDomain": "p.lodz.pl"
+    "officialDomain": "p.lodz.pl",
+    "pageMatch": "Information Technology",
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "politechnika-sztuczna-inteligencja-artificial-intelligence-bachelor",
@@ -45,7 +54,10 @@
     "feesUrl": "https://put.poznan.pl/en/admission-for-international/first-cycle/fees",
     "identityConfirmed": true,
     "polonName": "Sztuczna inteligencja/Artificial Intelligence",
-    "officialDomain": "put.poznan.pl"
+    "officialDomain": "put.poznan.pl",
+    "pageMatch": "Artificial Intelligence",
+    "feeStrategy": "PUT_TABLE",
+    "feeRow": "ARTIFICIAL INTELLIGENCE"
   },
   {
     "key": "politechnika-informatyka-i-systemy-informacyjne-bachelor",
@@ -57,7 +69,10 @@
     "feesUrl": "https://www.students.pw.edu.pl/Studies-Offer/B.Sc.-offer",
     "identityConfirmed": false,
     "polonName": "Informatyka i Systemy Informacyjne",
-    "officialDomain": "pw.edu.pl"
+    "officialDomain": "pw.edu.pl",
+    "pageMatch": null,
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "politechnika-informatyka-bachelor",
@@ -69,7 +84,10 @@
     "feesUrl": "https://www.students.pw.edu.pl/Studies-Offer/B.Sc.-offer",
     "identityConfirmed": false,
     "polonName": "Informatyka",
-    "officialDomain": "pw.edu.pl"
+    "officialDomain": "pw.edu.pl",
+    "pageMatch": null,
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "uniwersytet-finance-international-investment-and-accounting-bachelor",
@@ -81,7 +99,10 @@
     "feesUrl": "https://rekrutacja.uw.edu.pl/en/application-and-tuition-fees/",
     "identityConfirmed": true,
     "polonName": "Finance, International Investment and Accounting",
-    "officialDomain": "uw.edu.pl"
+    "officialDomain": "uw.edu.pl",
+    "pageMatch": "Finance, International Investment and Accounting",
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "szkola-globalny-biznes-finanse-i-zarz-dzanie-governance-bachelor",
@@ -93,7 +114,10 @@
     "feesUrl": "https://www.sgh.waw.pl/en/fees-undergraduate-studies",
     "identityConfirmed": false,
     "polonName": "Globalny biznes, finanse i zarządzanie (governance)",
-    "officialDomain": "sgh.waw.pl"
+    "officialDomain": "sgh.waw.pl",
+    "pageMatch": null,
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "uniwersytet-international-business-bachelor",
@@ -105,7 +129,10 @@
     "feesUrl": "https://study.uek.krakow.pl/recruitment/fees_ba_programme/",
     "identityConfirmed": true,
     "polonName": "International Business",
-    "officialDomain": "uek.krakow.pl"
+    "officialDomain": "uek.krakow.pl",
+    "pageMatch": "International Business",
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "uniwersytet-global-finance-and-accounting-bachelor",
@@ -117,7 +144,10 @@
     "feesUrl": "https://study.uek.krakow.pl/recruitment/fees_ba_programme/",
     "identityConfirmed": true,
     "polonName": "Global Finance and Accounting",
-    "officialDomain": "uek.krakow.pl"
+    "officialDomain": "uek.krakow.pl",
+    "pageMatch": "Global Finance and Accounting",
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "uniwersytet-machine-learning-master",
@@ -129,7 +159,10 @@
     "feesUrl": "https://rekrutacja.uw.edu.pl/en/application-and-tuition-fees/",
     "identityConfirmed": true,
     "polonName": "Machine Learning",
-    "officialDomain": "uw.edu.pl"
+    "officialDomain": "uw.edu.pl",
+    "pageMatch": "Machine Learning",
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "politechnika-sztuczna-inteligencja-artificial-intelligence-master",
@@ -141,7 +174,10 @@
     "feesUrl": "https://put.poznan.pl/en/admission-for-international/second-cycle/fees",
     "identityConfirmed": true,
     "polonName": "Sztuczna inteligencja/Artificial Intelligence",
-    "officialDomain": "put.poznan.pl"
+    "officialDomain": "put.poznan.pl",
+    "pageMatch": "Artificial Intelligence",
+    "feeStrategy": "PUT_TABLE",
+    "feeRow": "ARTIFICIAL INTELLIGENCE"
   },
   {
     "key": "politechnika-computer-science-and-information-technology-master",
@@ -153,7 +189,10 @@
     "feesUrl": "https://apply.p.lodz.pl/en/enrollment/enroll/fees-and-scholarships",
     "identityConfirmed": true,
     "polonName": "Computer Science and Information Technology",
-    "officialDomain": "p.lodz.pl"
+    "officialDomain": "p.lodz.pl",
+    "pageMatch": "Computer Science and Information Technology",
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "politechnika-informatyka-master",
@@ -165,7 +204,10 @@
     "feesUrl": "https://www.students.pw.edu.pl/Studies-Offer/M.Sc.-offer",
     "identityConfirmed": false,
     "polonName": "Informatyka",
-    "officialDomain": "pw.edu.pl"
+    "officialDomain": "pw.edu.pl",
+    "pageMatch": null,
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "politechnika-in-ynieria-i-analiza-danych-master",
@@ -177,7 +219,10 @@
     "feesUrl": "https://www.students.pw.edu.pl/Studies-Offer/M.Sc.-offer",
     "identityConfirmed": false,
     "polonName": "Inżynieria i Analiza Danych",
-    "officialDomain": "pw.edu.pl"
+    "officialDomain": "pw.edu.pl",
+    "pageMatch": null,
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "szkola-analiza-danych-big-data-master",
@@ -189,7 +234,10 @@
     "feesUrl": "https://www.sgh.waw.pl/en/fees-graduate-studies",
     "identityConfirmed": false,
     "polonName": "Analiza danych - big data",
-    "officialDomain": "sgh.waw.pl"
+    "officialDomain": "sgh.waw.pl",
+    "pageMatch": null,
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "szkola-international-business-master",
@@ -201,7 +249,10 @@
     "feesUrl": "https://www.sgh.waw.pl/en/fees-graduate-studies",
     "identityConfirmed": true,
     "polonName": "International Business",
-    "officialDomain": "sgh.waw.pl"
+    "officialDomain": "sgh.waw.pl",
+    "pageMatch": "International Business",
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "uniwersytet-data-science-and-business-analytics-master",
@@ -213,7 +264,10 @@
     "feesUrl": "https://rekrutacja.uw.edu.pl/en/application-and-tuition-fees/",
     "identityConfirmed": true,
     "polonName": "Data Science and Business Analytics",
-    "officialDomain": "uw.edu.pl"
+    "officialDomain": "uw.edu.pl",
+    "pageMatch": "Data Science and Business Analytics",
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "uniwersytet-financial-analytics-master",
@@ -225,7 +279,10 @@
     "feesUrl": "https://study.uek.krakow.pl/recruitment/fees_master_programme/",
     "identityConfirmed": true,
     "polonName": "Financial Analytics",
-    "officialDomain": "uek.krakow.pl"
+    "officialDomain": "uek.krakow.pl",
+    "pageMatch": "Financial Analytics",
+    "feeStrategy": null,
+    "feeRow": null
   },
   {
     "key": "uniwersytet-master-in-international-business-master",
@@ -237,6 +294,9 @@
     "feesUrl": "https://ue.poznan.pl/en/applicants/masters-level/",
     "identityConfirmed": true,
     "polonName": "Master in International Business",
-    "officialDomain": "ue.poznan.pl"
+    "officialDomain": "ue.poznan.pl",
+    "pageMatch": "Master in International Business",
+    "feeStrategy": "UEP_LINES",
+    "feeRow": null
   }
 ]

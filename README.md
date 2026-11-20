@@ -233,7 +233,7 @@ Invoke-RestMethod "http://localhost:8080/api/v1/universities?q=tech&country=de&s
 | `REFERENCE_DATA_LOCATION` | `classpath:reference-data/taxonomy.json` | The taxonomy file (countries and academic fields only; a file with academic records is refused) |
 | `PORT` | `8080` | HTTP port (injected by most hosts) |
 | `STAGING_ACCESS_KEY` | *(production)* | Infrastructure key every `/api/v1` call must send as `X-Staging-Key` (set on the host, never committed) |
-| `REFRESH_EXCLUDED_ADAPTERS` | `polon-courses` | Comma-separated adapters the scheduled run and the freshness watchdog skip (Poland sync is not enabled); empty = none |
+| `REFRESH_EXCLUDED_ADAPTERS` | `polon-courses,pl-university-page` | Comma-separated adapters the scheduled run and the freshness watchdog skip (Poland sync is not enabled); empty = none |
 | `CATALOGUE_PUBLIC` | `false` | `true` opens the catalogue to everyone (only after the data-reuse terms are settled) |
 | `SITE_URL` | `http://localhost:3000` | Public site origin (links in emails, allowed origin) |
 | `SESSION_COOKIE_SECURE` | `true` in prod | Secure flag of the session cookie |

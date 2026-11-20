@@ -26,7 +26,13 @@ public class PolonSources {
      *                          (the POL-on name is Polish or differs from the English page); unconfirmed candidates are never imported
      */
     public record Candidate(String key, String university, String courseUuid, String courseInstanceUuid, String entryLevel,
-                            String programUrl, String feesUrl, boolean identityConfirmed, String polonName, String officialDomain) { }
+                            String programUrl, String feesUrl, boolean identityConfirmed, String polonName, String officialDomain,
+                            String pageMatch, String feeStrategy, String feeRow) {
+        /** The page that states this programme's fees: the fees page, else the programme page itself. */
+        public String feePageUrl() {
+            return feesUrl != null ? feesUrl : programUrl;
+        }
+    }
 
     private final List<Candidate> candidates;
 
@@ -43,6 +49,36 @@ public class PolonSources {
             if (!List.of("BACHELOR", "MASTER").contains(c.entryLevel()))
                 throw new IllegalStateException("Unknown entry level for " + c.key());
         }
+    }
+
+    private static volatile java.util.Map<String, String> domains;
+
+    private static java.util.Map<String, String> domains() {
+        var d = domains;
+        if (d == null) {
+            var m = new java.util.HashMap<String, String>();
+            for (Candidate c : load("reference-data/curated-poland.json")) m.put(c.university(), c.officialDomain());
+            domains = d = java.util.Map.copyOf(m);
+        }
+        return d;
+    }
+
+    /** An https page of this university's own registered domain (a page URL stored as a fact must satisfy this). */
+    public static boolean owned(String url, String university) {
+        String domain = domains().get(university);
+        if (url == null || domain == null) return false;
+        try {
+            var uri = java.net.URI.create(url);
+            String host = uri.getHost() == null ? "" : uri.getHost().toLowerCase(java.util.Locale.ROOT);
+            return "https".equals(uri.getScheme()) && uri.getUserInfo() == null && uri.getPort() == -1
+                    && (host.equals(domain) || host.endsWith("." + domain));
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public static boolean ownedByAny(String url) {
+        return domains().keySet().stream().anyMatch(u -> owned(url, u));
     }
 
     public List<Candidate> candidates() {

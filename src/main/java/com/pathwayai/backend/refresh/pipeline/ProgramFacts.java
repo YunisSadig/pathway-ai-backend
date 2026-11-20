@@ -285,13 +285,14 @@ public class ProgramFacts {
     }
 
     private void checkUniversityAssociation(long programId, Map<String,String> values) {
-        boolean match=jdbc.sql("select exists(select 1 from program_external_id where program_id=:p and scheme='STUDYINFO_KOULUTUS_OID' and value=:v)")
+        boolean match=jdbc.sql("select exists(select 1 from program_external_id where program_id=:p and scheme in ('STUDYINFO_KOULUTUS_OID','POLON_COURSE') and value=:v)")
                 .param("p",programId).param("v",values.get("educationOid")).query(Boolean.class).single();
         if (!match) throw new IllegalArgumentException("University fact belongs to a different Studyinfo offering");
         if(values.get("field")!=null && values.get("field").endsWith("url")) {
             String university=jdbc.sql("select u.slug from degree_program p join university u on u.id=p.university_id where p.id=:p")
                     .param("p",programId).query(String.class).single();
-            if(!com.pathwayai.backend.provider.universitypages.CuratedSources.owned(values.get("value"),university))
+            if(!com.pathwayai.backend.provider.universitypages.CuratedSources.owned(values.get("value"),university)
+                    && !com.pathwayai.backend.provider.polon.PolonSources.owned(values.get("value"),university))
                 throw new IllegalArgumentException("University URL belongs to a different institution");
         }
     }
@@ -321,11 +322,11 @@ public class ProgramFacts {
                 insert into program_field_provenance (program_id, field_name, source_id, mechanism, provider_ref, observed_at,
                                                       verified_on, parser_version)
                 values (:p, :f, :s,
-                        coalesce((select case when m.extraction_method = 'ADAPTER' and m.adapter_name like 'studyinfo%' then 'OFFICIAL_API'
+                        coalesce((select case when m.extraction_method = 'ADAPTER' and (m.adapter_name like 'studyinfo%' or m.adapter_name = 'polon-courses') then 'OFFICIAL_API'
                                               when m.extraction_method = 'JSON_LD' then 'STRUCTURED_DATA'
                                               else 'REVIEWED_PAGE' end
                                   from source_monitor m where m.source_id = :s), 'REVIEWED_PAGE'),
-                        (select e.value from program_external_id e where e.program_id = :p and e.scheme = 'STUDYINFO_KOULUTUS_OID'),
+                        (select e.value from program_external_id e where e.program_id = :p and e.scheme in ('STUDYINFO_KOULUTUS_OID','POLON_COURSE')),
                         :now, :on, :pv)
                 on conflict (program_id, field_name) do update set source_id = excluded.source_id,
                     mechanism = excluded.mechanism, provider_ref = excluded.provider_ref, observed_at = excluded.observed_at,
