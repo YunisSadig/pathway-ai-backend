@@ -174,10 +174,25 @@ public class PolandCuratedCli implements ApplicationRunner {
         String host = uri.getHost() == null ? "" : uri.getHost().toLowerCase(Locale.ROOT);
         if (!"https".equals(uri.getScheme()) || !(host.equals(c.officialDomain()) || host.endsWith("." + c.officialDomain())))
             throw new IllegalStateException("not an official https page of " + c.officialDomain() + ": " + url);
-        var r = pages.containsKey(url) ? pages.get(url) : fetcher.fetch(url, null, null);
+        var r = pages.containsKey(url) ? pages.get(url) : fetchWithRetry(url);
         // an unreadable page never blocks the programme (POL-on states it); the page is simply not recorded as verified
         if (r.kind() == PageFetcher.Kind.OK) pages.put(url, r);
         return r.kind() == PageFetcher.Kind.OK ? "OK " + r.httpStatus() : "NOT VERIFIED (" + r.kind() + ")";
+    }
+
+    /** A connection that fails is tried again (two more times, 15 s apart) so one flaky university server cannot change the plan. */
+    private PageFetcher.Result fetchWithRetry(String url) {
+        var r = fetcher.fetch(url, null, null);
+        for (int attempt = 1; attempt < 3 && r.kind() == PageFetcher.Kind.FAILED; attempt++) {
+            try {
+                Thread.sleep(15_000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+            r = fetcher.fetch(url, null, null);
+        }
+        return r;
     }
 
     private PageFetcher.Result fetch(String url) {

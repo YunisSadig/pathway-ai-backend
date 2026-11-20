@@ -41,7 +41,10 @@ home page read 2026-11-20), `provider/polon/*` (parser, adapter `polon-courses`,
 1. Universities (idempotent): `IMPORT_UNIVERSITY_CATALOGUE=true UNIVERSITY_CATALOGUE_LOCATION=classpath:reference-data/universities-poland.json`.
 2. Preview (read-only, prints per programme what is verified with URL and date read, and what is missing): `--app.poland.command=preview`.
 3. Apply only with the approved fingerprint: `--app.poland.command=apply --app.poland.expected-fingerprint=<fingerprint>`.
-Rehearse on a Neon branch first; never run against production without the owner's approval.
+Rehearse on a Neon branch first; never run against production without the owner's approval. Against Neon add
+`--spring.datasource.hikari.keepalive-time=60000`: the plan reads about 25 pages and takes over 5 minutes, and Neon suspends an idle compute
+after 5 minutes (otherwise "Failed to obtain JDBC Connection"). A page whose connection fails is retried twice (15 s apart) in the plan,
+because some university servers drop connections at random and the apply refuses any plan that differs from the approved fingerprint.
 
 ## Sync: NOT enabled (the scheduled run excludes Poland)
 The 14 monitors are registered (`ADAPTER polon-courses`, 7-day interval, first due 2026-11-27) and the daily Finland run (`run`) reads every
