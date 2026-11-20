@@ -73,7 +73,7 @@ class PolishPageAdapterTest {
             var facts = PolishPageAdapter.extract(page(entry.getValue()), c.feesUrl(), c.feesUrl(), c);
             var fee = one(facts, FactType.UNIVERSITY_FACT, "tuition_scope");
             assertThat(fee.values().get("value")).as(entry.getKey()).contains("EUR").contains("PLN").contains("semester");
-            assertThat(fee.values()).containsEntry("academicYear", "2026/2027");
+            assertThat(fee.values()).containsEntry("academicYear", "2026-2027"); // the column format of university facts
         }
     }
 

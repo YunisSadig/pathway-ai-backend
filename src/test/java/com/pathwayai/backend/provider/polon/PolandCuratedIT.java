@@ -26,7 +26,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Preview and apply against PostgreSQL with recorded POL-on responses and a faked network; Finland data is never touched. */
-@SpringBootTest(properties = {"app.refresh.min-host-interval-ms=0", "app.refresh.extra-approved-hosts=radon.nauka.gov.pl,www.international.agh.edu.pl,irk.uw.edu.pl"})
+@SpringBootTest(properties = {"app.refresh.min-host-interval-ms=0", "app.refresh.extra-approved-hosts=radon.nauka.gov.pl,www.international.agh.edu.pl,irk.uw.edu.pl,put.poznan.pl"})
 @Import({TestcontainersConfiguration.class, RefreshTestConfig.class})
 @Transactional
 class PolandCuratedIT {
@@ -46,6 +46,7 @@ class PolandCuratedIT {
 
     @BeforeEach
     void seed() throws Exception {
+        PolandCuratedCli.retryPauseMs = 0; // unscripted fake pages fail; do not wait between attempts
         jdbcTemplate.update("insert into country(iso2_code,name) values('PL','Synthetic Poland') on conflict do nothing");
         try (var in = new org.springframework.core.io.ClassPathResource("reference-data/studyinfo-field-map.json").getInputStream()) {
             for (var m : tools.jackson.databind.json.JsonMapper.builder().build().readTree(in).path("mappings")) // fields exist in production from the taxonomy import
@@ -133,6 +134,8 @@ class PolandCuratedIT {
     void recordedOfficialPagesGiveVerifiedLinksAndTheOneUnambiguousFeeThroughThePipeline() throws Exception {
         var agh = sources.candidates().stream().filter(c -> c.key().equals("akademia-computer-science-bachelor")).findFirst().orElseThrow();
         transport.reset(agh.programUrl(), FakeTransport.text("text/html", PolishPageAdapterTest.page("agh-programme.html")));
+        var put = sources.candidates().stream().filter(c -> c.key().equals("politechnika-sztuczna-inteligencja-artificial-intelligence-bachelor")).findFirst().orElseThrow();
+        transport.reset(put.feesUrl(), FakeTransport.text("text/html", PolishPageAdapterTest.page("put-first-cycle-fees.html")));
         var ml = sources.candidates().stream().filter(c -> c.key().equals("uniwersytet-machine-learning-master")).findFirst().orElseThrow();
         transport.reset(ml.programUrl(), FakeTransport.text("text/html", PolishPageAdapterTest.page("uw-irk-ml-programme.html")));
         transport.reset(agh.feesUrl(), FakeTransport.text("text/html", PolishPageAdapterTest.page("agh-fees.html")));
@@ -143,6 +146,9 @@ class PolandCuratedIT {
         long mlProgram = jdbcTemplate.queryForObject("select e.program_id from program_external_id e where e.scheme='POLON_COURSE' and e.value=?", Long.class, ml.courseUuid());
         assertThat(jdbcTemplate.queryForObject("select official_program_url from degree_program where id=?", String.class, mlProgram)).isEqualTo(ml.programUrl());
         assertThat(jdbcTemplate.queryForObject("select value from program_university_fact where program_id=? and field_name='financial_url'", String.class, program)).isEqualTo(agh.feesUrl());
+        long putProgram = jdbcTemplate.queryForObject("select e.program_id from program_external_id e where e.scheme='POLON_COURSE' and e.value=?", Long.class, put.courseUuid());
+        assertThat(jdbcTemplate.queryForObject("select academic_year from program_university_fact where program_id=? and field_name='tuition_scope'", String.class, putProgram)).isEqualTo("2026-2027");
+        assertThat(jdbcTemplate.queryForObject("select value from program_university_fact where program_id=? and field_name='tuition_scope'", String.class, putProgram)).contains("EUR").contains("PLN");
         assertThat(count("select count(*) from tuition_fee")).as("only AGH states an unambiguous fee").isEqualTo(1);
         var fee = jdbcTemplate.queryForMap("select amount, currency, billing_period, student_category from tuition_fee where program_id=" + program);
         assertThat(fee.get("amount").toString()).startsWith("3000");

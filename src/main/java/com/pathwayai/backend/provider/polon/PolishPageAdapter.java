@@ -161,7 +161,8 @@ public class PolishPageAdapter implements ContextualScopedExtractionAdapter {
                 if (name.strip().equalsIgnoreCase(c.feeRow())) { matches++; amount = norm(cells.get(1).text()); }
         }
         if (matches != 1 || amount == null || amount.isBlank() || amount.length() > MAX_VALUE) return java.util.Optional.empty();
-        return java.util.Optional.of(fact(c, "tuition_scope", "financial", amount, year));
+        // the university-fact table stores an academic year as 2026-2027 (a fee row keeps 2026/2027)
+        return java.util.Optional.of(fact(c, "tuition_scope", "financial", amount, year == null ? null : year.replace('/', '-')));
     }
 
     private static final Pattern UEP = Pattern.compile("(?i)current master['’]s degree fees are:?\\s*(\\d[\\d ]*\\d PLN per semester)\\s*(\\d[\\d ]*\\d PLN per year)?");

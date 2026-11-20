@@ -180,12 +180,15 @@ public class PolandCuratedCli implements ApplicationRunner {
         return r.kind() == PageFetcher.Kind.OK ? "OK " + r.httpStatus() : "NOT VERIFIED (" + r.kind() + ")";
     }
 
+    /** Pause between attempts of a failed page read (tests set it to 0). */
+    static volatile long retryPauseMs = 15_000;
+
     /** A connection that fails is tried again (two more times, 15 s apart) so one flaky university server cannot change the plan. */
     private PageFetcher.Result fetchWithRetry(String url) {
         var r = fetcher.fetch(url, null, null);
         for (int attempt = 1; attempt < 3 && r.kind() == PageFetcher.Kind.FAILED; attempt++) {
             try {
-                Thread.sleep(15_000);
+                Thread.sleep(retryPauseMs);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
