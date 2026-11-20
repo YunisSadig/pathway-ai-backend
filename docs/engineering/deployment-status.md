@@ -9,14 +9,14 @@ The rows below are the 2026-11-14 snapshot; they are not rewritten except where 
 * Live: frontend on Vercel, backend on Render, database on Neon (Flyway V14). An UptimeRobot check pings `/actuator/info` every 5 minutes.
 * The catalogue is private (`cataloguePublic=false`). Studyinfo permission was asked on 2026-11-19; no reply yet.
 * Finland: 7 universities, 72 programs (20 curated); daily sync ON since 2026-11-19 with Healthchecks; curated preview fingerprint baseline `3a38029b…` (finland-20-progress.md).
-* Poland: 8 universities, 14 programs imported 2026-11-20 from POL-on (CC0 dataset; API terms not stated); 6 candidates skipped pending identity mapping; no tuition or deadlines yet; sync NOT enabled (docs/data/poland-polon.md).
+* Poland: 8 universities, 14 programs imported 2026-11-20 from POL-on (CC0 dataset; API terms not stated); 6 candidates skipped pending identity mapping; no tuition or deadlines yet; sync NOT enabled: the scheduled run and the freshness watchdog exclude the `polon-courses` monitors (`REFRESH_EXCLUDED_ADAPTERS`, default `polon-courses`; docs/data/poland-polon.md).
 * Google sign-in is verified in production. Email delivery is OFF (password reset and email verification unavailable), postponed: no domain yet; the SMTP configuration was reverted (#56).
 
-## Live endpoints (protected staging: nothing public)
+## Live endpoints (public site, closed catalogue)
 
 | What | URL | Access |
 | --- | --- | --- |
-| Frontend (Vercel Hobby, project `pathway-ai-frontend`) | https://pathway-ai-frontend-roan.vercel.app | HTTP Basic password (user `staff`) in front of every page and the API proxy |
+| Frontend (Vercel Hobby, project `pathway-ai-frontend`) | https://pathway-ai-frontend-roan.vercel.app | Public site with no site password (the password prompt was removed; accounts and a closed catalogue, see the frontend repository's `docs/deployment.md`) |
 | Backend API (Render Free, service `pathway-ai-api`, Frankfurt) | https://pathway-ai-api.onrender.com | `/actuator/health/readiness` and `/actuator/info` are open; every `/api/v1/*` call needs the `X-Staging-Key` header. **Cold start measured: 84.6 s for the first request after 17 idle minutes** (then 0.4 s and 0.13 s) |
 | Database (Neon Free, project `pathway-ai`, Frankfurt, PostgreSQL 17) | not exposed | TLS `verify-full`; the API uses the read-only role `pathway_api` |
 

@@ -19,6 +19,7 @@ After hitting a real problem, add it to `mistakes-and-fixes.md` (error output, r
 - Never return `null` specifications / pass `null` to `Specification.and()` (Spring Data 4).
 - Never expose JPA entities in API responses; use DTO records.
 - Never commit `.env`, passwords or tokens.
+- Every PR that adds functionality, imports data or changes config/infrastructure/status must update the affected docs (README, docs/**, known-issues, deployment-status) in the same PR.
 - Use Conventional Commits; use feature branches + PRs after the initial commit; do not force-push.
 - Do not add Security/AI/Redis/Kafka/etc. dependencies without an explicit request.
 - Frontend contract: documented in README "REST API contract", pinned by `UniversityApiIT.jsonContractFieldNamesAreStable`. Renaming a JSON field is a breaking change: update README + test and tell the frontend.

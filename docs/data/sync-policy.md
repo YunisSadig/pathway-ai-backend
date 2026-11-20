@@ -69,7 +69,7 @@ java -jar target/pathway-ai-backend-*.jar --spring.main.web-application-type=non
   cron `0 0 5 * * *` UTC, only while the app runs) is off by default.
 * **Operational unattended:** **yes, since 2026-11-19** for Finland: the daily GitHub-scheduled run uses the hosted Neon database and
   pings a Healthchecks dead-man's switch. Programs show `synchronization.status: AUTOMATIC` (an extractor maintains them) and stay
-  fresh while runs succeed; if runs stop for 45 days they leave discovery by design. Poland sync is not enabled.
+  fresh while runs succeed; if runs stop for 45 days they leave discovery by design. Poland sync is not enabled: the scheduled run and the freshness watchdog exclude the `polon-courses` monitors (`REFRESH_EXCLUDED_ADAPTERS`, default `polon-courses`; docs/data/poland-polon.md).
 
 ## 4. Safe cleanup of the development database
 
