@@ -130,7 +130,7 @@
     "identityConfirmed": true,
     "polonName": "International Business",
     "officialDomain": "uek.krakow.pl",
-    "pageMatch": "International Business",
+    "pageMatch": null,
     "feeStrategy": null,
     "feeRow": null
   },
@@ -145,7 +145,7 @@
     "identityConfirmed": true,
     "polonName": "Global Finance and Accounting",
     "officialDomain": "uek.krakow.pl",
-    "pageMatch": "Global Finance and Accounting",
+    "pageMatch": null,
     "feeStrategy": null,
     "feeRow": null
   },
@@ -280,7 +280,7 @@
     "identityConfirmed": true,
     "polonName": "Financial Analytics",
     "officialDomain": "uek.krakow.pl",
-    "pageMatch": "Financial Analytics",
+    "pageMatch": null,
     "feeStrategy": null,
     "feeRow": null
   },

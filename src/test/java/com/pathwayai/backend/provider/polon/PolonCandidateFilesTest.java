@@ -50,6 +50,13 @@ class PolonCandidateFilesTest {
     }
 
     @Test
+    void uekPagesAreUnsupportedBecauseTheServerResetsRepeatedReads() {
+        var uek = SOURCES.candidates().stream().filter(c -> c.university().equals("uniwersytet-ekonomiczny-w-krakowie")).toList();
+        assertThat(uek).hasSize(3).allMatch(c -> c.pageMatch() == null);
+        assertThat(SOURCES.candidates().stream().filter(c -> c.pageMatch() == null && c.identityConfirmed()).count()).isEqualTo(3);
+    }
+
+    @Test
     void thePolishUniversityCatalogueIsValidVerifiedAndMatchesTheCandidates() throws IOException {
         var catalogue = UniversityCatalogue.parse(new ClassPathResource("reference-data/universities-poland.json").getInputStream());
         assertThat(UniversityCatalogueValidator.validate(catalogue)).isEmpty();

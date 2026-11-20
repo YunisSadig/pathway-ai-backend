@@ -23,6 +23,9 @@ assessment: [country-candidates-2026-11-19.md](country-candidates-2026-11-19.md)
   bachelor and master (the fee row word for word, year 2026/2027 from the heading) and Poznan UEB Master in International Business (7 350 PLN
   per semester, kept word for word; the page calls it "current" and prints no academic year, so none is stored). Every fact carries its
   source URL and read date; a changed value waits for review.
+- **Unsupported source:** `study.uek.krakow.pl` (UEK, 3 programmes) resets connections on repeated reads (observed in four rehearsal runs: the
+  first read succeeded, later ones failed even after two retries). A source that cannot be read reliably cannot be kept current, so its pages
+  are not read at all (`pageMatch` is null in the candidate file): no programme link, no fees link, no fee. Revisit when the site answers reliably.
 - **Not imported (Not stated):** tuition for the other programmes (TUL prints 9000 PLN without stating the period, UEK/UW/SGH/PW have no
   unambiguous row or page), deadlines, admission and language requirements, application URL, admissions URL. Nothing is guessed.
 - Page facts go through the normal pipeline (monitor bound to the university, program null, facts per programme slug), the POL-on course id
