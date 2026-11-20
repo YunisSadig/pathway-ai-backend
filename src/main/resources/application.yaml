@@ -23,6 +23,19 @@ spring:
     jdbc:
       initialize-schema: never    # Flyway (V9) owns the tables
       cleanup-cron: "0 */10 * * * *"
+  # SMTP is used only when SPRING_MAIL_HOST is set. JavaMail ignores the username/password unless smtp.auth is true, so the
+  # authenticated STARTTLS defaults live here; the timeouts stop a stuck mail server from hanging a request.
+  mail:
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
   jpa:
     open-in-view: false
     hibernate:
