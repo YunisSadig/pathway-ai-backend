@@ -101,6 +101,34 @@ class PolandCuratedIT {
         assertThat(count("select count(*) from program_external_id where scheme='POLON_COURSE'")).isEqualTo(14);
     }
 
+    String slugs(String university) {
+        return String.join(",", jdbcTemplate.queryForList("select p.slug from degree_program p join university u on u.id=p.university_id where u.slug=? order by p.slug", String.class, university));
+    }
+
+    @Test
+    void aSameNamePairGetsTheDegreeLevelAsSuffixOnBothNeverANumber() {
+        cli("apply", cli("preview", "").plan().fingerprint()).run(new DefaultApplicationArguments());
+        assertThat(slugs("politechnika-poznanska")).isEqualTo("artificial-intelligence-bachelor,artificial-intelligence-master");
+        assertThat(slugs("akademia-gorniczo-hutnicza")).isEqualTo("computer-science"); // a unique name keeps its plain slug
+    }
+
+    @Test
+    void anOldNumberedSlugIsRenamedWithAnArchiveRowUnlessSomeoneSavedIt() {
+        cli("apply", cli("preview", "").plan().fingerprint()).run(new DefaultApplicationArguments());
+        jdbcTemplate.update("update degree_program set slug='artificial-intelligence' where slug='artificial-intelligence-bachelor'");
+        jdbcTemplate.update("update degree_program set slug='artificial-intelligence-32400' where slug='artificial-intelligence-master'");
+        jdbcTemplate.update("insert into user_account (email, email_normalized, password_hash) values ('s@example.test','s@example.test','x')");
+        jdbcTemplate.update("insert into saved_program(account_id, program_identifier) select id, 'politechnika-poznanska--artificial-intelligence-32400' from user_account where email='s@example.test'");
+        var plan = cli("preview", "").plan();
+        assertThatThrownBy(() -> cli("apply", plan.fingerprint()).run(new DefaultApplicationArguments())).hasMessageContaining("saved item");
+        assertThat(slugs("politechnika-poznanska")).isEqualTo("artificial-intelligence,artificial-intelligence-32400"); // refused: nothing changed
+        jdbcTemplate.update("delete from saved_program");
+        cli("apply", plan.fingerprint()).run(new DefaultApplicationArguments());
+        assertThat(slugs("politechnika-poznanska")).isEqualTo("artificial-intelligence-bachelor,artificial-intelligence-master");
+        assertThat(count("select count(*) from program_fact_history where field_name='slug'")).isEqualTo(2);
+        assertThat(count("select count(*) from degree_program")).isEqualTo(14);
+    }
+
     @Test
     void anUnreadableUniversityPageNeverBlocksAProgrammeButIsNotRecordedAsVerified() {
         var c = sources.candidates().stream().filter(x -> x.identityConfirmed() && x.programUrl() != null).findFirst().orElseThrow();

@@ -70,7 +70,7 @@ public class PolandCuratedCli implements ApplicationRunner {
         this.clock = clock; this.transaction = new TransactionTemplate(tx); this.command = command; this.expected = expected;
     }
 
-    record Plan(List<Verified> verified, List<Skipped> skipped, String fingerprint) { }
+    record Plan(List<Verified> verified, List<Skipped> skipped, String fingerprint, java.util.Map<String, String> slugs) { }
 
     @Override
     public void run(ApplicationArguments args) {
@@ -83,12 +83,13 @@ public class PolandCuratedCli implements ApplicationRunner {
         for (var v : verified) printVerified(v, today);
         for (var s : skipped) System.out.println("POLAND_SKIPPED " + s.candidate().key() + " reason=" + s.reason());
         String fingerprint = plan.fingerprint();
+        plan.verified().forEach(v -> System.out.println("POLAND_SLUG " + v.candidate().key() + " planned=" + plan.slugs().get(v.candidate().key()) + " current=" + (v.existingId() == null ? "(new)" : jdbc.sql("select slug from degree_program where id=:i").param("i", v.existingId()).query(String.class).single())));
         System.out.println("POLAND_PLAN release=" + PolonSources.RELEASE + " candidates=" + sources.candidates().size() + " importable=" + verified.size()
                 + " skipped=" + skipped.size() + " newPrograms=" + verified.stream().filter(v -> v.existingId() == null).count()
                 + " fingerprint=" + fingerprint);
         if (command.equals("preview")) { System.out.println("POLAND_PREVIEW no writes, no activation, cataloguePublic unchanged"); return; }
         if (!fingerprint.equals(expected)) throw new IllegalArgumentException("Plan differs from the approved fingerprint; run and review a fresh preview");
-        transaction.executeWithoutResult(status -> apply(verified));
+        transaction.executeWithoutResult(status -> apply(verified, plan.slugs()));
         System.out.println("POLAND_APPLIED " + PolonSources.RELEASE + " " + verified.size() + " programmes; nothing was deleted");
     }
 
@@ -110,7 +111,23 @@ public class PolandCuratedCli implements ApplicationRunner {
                 skipped.add(new Skipped(c, "not verified: " + e.getMessage()));
             }
         }
-        return new Plan(verified, skipped, fingerprint(verified));
+        var slugs = slugs(verified);
+        return new Plan(verified, skipped, fingerprint(verified, slugs), slugs);
+    }
+
+    /**
+     * The programme slug per candidate key. A name shared by two programmes of one university (same slug) gets the degree level
+     * as suffix on EACH of them ("artificial-intelligence-bachelor"), never a number; a unique name keeps the plain slug.
+     */
+    static java.util.Map<String, String> slugs(List<Verified> verified) {
+        var byBase = new java.util.HashMap<String, Integer>();
+        for (var v : verified) byBase.merge(v.candidate().university() + "|" + slugify(v.program().name()), 1, Integer::sum);
+        var out = new java.util.LinkedHashMap<String, String>();
+        for (var v : verified) {
+            String base = slugify(v.program().name());
+            out.put(v.candidate().key(), byBase.get(v.candidate().university() + "|" + base) > 1 ? base + "-" + v.program().degreeLevel().toLowerCase(Locale.ROOT) : base);
+        }
+        return out;
     }
 
     private void printVerified(Verified v, String today) {
@@ -142,20 +159,22 @@ public class PolandCuratedCli implements ApplicationRunner {
         return r;
     }
 
-    private String fingerprint(List<Verified> verified) {
+    private String fingerprint(List<Verified> verified, java.util.Map<String, String> slugs) {
         List<String> rows = new ArrayList<>();
         for (var v : verified) {
-            rows.add(v.candidate().courseUuid() + "|" + v.candidate().courseInstanceUuid() + "|" + v.program().name() + "|" + v.program().degreeLevel());
+            rows.add(v.candidate().courseUuid() + "|" + v.candidate().courseInstanceUuid() + "|" + v.program().name() + "|" + v.program().degreeLevel() + "|" + slugs.get(v.candidate().key()));
             PolonParser.toFacts(v.program()).forEach(f -> rows.add(f.type() + f.key() + f.canonicalValue()));
         }
         rows.sort(String::compareTo);
         return PageCanonicalizer.sha256(String.join("\n", rows));
     }
 
-    private void apply(List<Verified> verified) {
+    private void apply(List<Verified> verified, java.util.Map<String, String> slugs) {
         Instant now = clock.instant();
         LocalDate today = LocalDate.ofInstant(now, ZoneOffset.UTC);
         jdbc.sql("select pg_advisory_xact_lock(721681204)").query((rs, n) -> 1).single();
+        for (var v : verified) // refuse BEFORE any write if a rename would orphan a saved item
+            if (v.existingId() != null) refuseIfSaved(v.existingId(), v.candidate().university(), slugs.get(v.candidate().key()));
         jdbc.sql("insert into catalog_release(id,country_code) values(:id,'PL') on conflict do nothing").param("id", PolonSources.RELEASE).update();
         for (var v : verified) {
             var c = v.candidate();
@@ -167,7 +186,8 @@ public class PolandCuratedCli implements ApplicationRunner {
                     on conflict(url) do update set retrieved_on=excluded.retrieved_on returning id""")
                     .param("u", url).param("t", "POL-on official course record: " + v.program().name()).param("p", PUBLISHER)
                     .param("d", today).query(Long.class).single();
-            long programId = v.existingId() != null ? v.existingId() : createProgram(university, v.program(), c, source, today);
+            long programId = v.existingId() != null ? v.existingId() : createProgram(university, v.program(), slugs.get(c.key()), today);
+            if (v.existingId() != null) renameSlug(programId, c.university(), slugs.get(c.key()), source, now);
             jdbc.sql("insert into program_source(program_id,source_id) values(:p,:s) on conflict do nothing").param("p", programId).param("s", source).update();
             jdbc.sql("insert into university_source(university_id,source_id) values(:u,:s) on conflict do nothing").param("u", university).param("s", source).update();
             if (v.pageStatus().startsWith("OK")) { // only a page read in this very preview is recorded as a source
@@ -206,10 +226,10 @@ public class PolandCuratedCli implements ApplicationRunner {
                 .param("now", Timestamp.from(now)).param("r", PolonSources.RELEASE).update();
     }
 
-    private long createProgram(long university, PolonParser.Program p, PolonSources.Candidate c, long source, LocalDate today) {
-        String slug = slugify(p.name());
-        if (jdbc.sql("select count(*) from degree_program where university_id=:u and slug=:s").param("u", university).param("s", slug).query(Long.class).single() > 0)
-            slug = slug + "-" + p.courseCode();
+    private long createProgram(long university, PolonParser.Program p, String planned, LocalDate today) {
+        String slug = planned;
+        if (taken(university, slug)) slug = planned + "-" + p.degreeLevel().toLowerCase(Locale.ROOT); // a later same-name programme: level, never a number
+        if (taken(university, slug)) throw new IllegalStateException("Programme slug already taken: " + slug);
         long id = jdbc.sql("""
                 insert into degree_program(university_id,slug,name,degree_level,official_program_url,verification_status,verified_on)
                 values(:u,:s,:n,:l,null,'VERIFIED',:d) returning id""")
@@ -217,6 +237,29 @@ public class PolandCuratedCli implements ApplicationRunner {
         jdbc.sql("insert into program_external_id(program_id,scheme,value) values(:p,:s,:v)").param("p", id).param("s", PolonParser.SCHEME_COURSE).param("v", p.courseUuid()).update();
         jdbc.sql("insert into program_external_id(program_id,scheme,value) values(:p,:s,:v)").param("p", id).param("s", PolonParser.SCHEME_INSTANCE).param("v", p.instanceUuid()).update();
         return id;
+    }
+
+    private boolean taken(long university, String slug) {
+        return jdbc.sql("select count(*) from degree_program where university_id=:u and slug=:s").param("u", university).param("s", slug).query(Long.class).single() > 0;
+    }
+
+    private void refuseIfSaved(long programId, String universitySlug, String planned) {
+        String current = jdbc.sql("select slug from degree_program where id=:i").param("i", programId).query(String.class).single();
+        if (current.equals(planned)) return;
+        long saved = jdbc.sql("select count(*) from saved_program where program_identifier=:p").param("p", universitySlug + "--" + current).query(Long.class).single();
+        if (saved > 0) throw new IllegalStateException(saved + " saved item(s) reference " + universitySlug + "--" + current + "; not renamed");
+    }
+
+    /** An explicit, archived rename of an identifier nobody has saved; refused if any saved item still points at the old one. */
+    private void renameSlug(long programId, String universitySlug, String planned, long source, Instant now) {
+        String current = jdbc.sql("select slug from degree_program where id=:i").param("i", programId).query(String.class).single();
+        if (current.equals(planned)) return;
+        long university = jdbc.sql("select university_id from degree_program where id=:i").param("i", programId).query(Long.class).single();
+        if (taken(university, planned)) throw new IllegalStateException("Cannot rename " + current + ": " + planned + " is taken");
+        refuseIfSaved(programId, universitySlug, planned);
+        jdbc.sql("insert into program_fact_history(program_id,field_name,value,recorded_source_id,superseded_by_source,note) values(:p,'slug',:v,null,:s,:n)")
+                .param("p", programId).param("v", current).param("s", source).param("n", "renamed to " + planned + ": same-name programmes of a university carry the degree level, not a number").update();
+        jdbc.sql("update degree_program set slug=:s where id=:i").param("s", planned).param("i", programId).update();
     }
 
     /** Lower-case words joined by single hyphens (the program identifier relies on "--" never appearing in a slug). */
