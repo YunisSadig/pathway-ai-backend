@@ -26,7 +26,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Preview and apply against PostgreSQL with recorded POL-on responses and a faked network; Finland data is never touched. */
-@SpringBootTest(properties = {"app.refresh.min-host-interval-ms=0", "app.refresh.extra-approved-hosts=radon.nauka.gov.pl,www.international.agh.edu.pl"})
+@SpringBootTest(properties = {"app.refresh.min-host-interval-ms=0", "app.refresh.extra-approved-hosts=radon.nauka.gov.pl,www.international.agh.edu.pl,irk.uw.edu.pl"})
 @Import({TestcontainersConfiguration.class, RefreshTestConfig.class})
 @Transactional
 class PolandCuratedIT {
@@ -133,18 +133,22 @@ class PolandCuratedIT {
     void recordedOfficialPagesGiveVerifiedLinksAndTheOneUnambiguousFeeThroughThePipeline() throws Exception {
         var agh = sources.candidates().stream().filter(c -> c.key().equals("akademia-computer-science-bachelor")).findFirst().orElseThrow();
         transport.reset(agh.programUrl(), FakeTransport.text("text/html", PolishPageAdapterTest.page("agh-programme.html")));
+        var ml = sources.candidates().stream().filter(c -> c.key().equals("uniwersytet-machine-learning-master")).findFirst().orElseThrow();
+        transport.reset(ml.programUrl(), FakeTransport.text("text/html", PolishPageAdapterTest.page("uw-irk-ml-programme.html")));
         transport.reset(agh.feesUrl(), FakeTransport.text("text/html", PolishPageAdapterTest.page("agh-fees.html")));
         String fingerprint = cli("preview", "").plan().fingerprint();
         cli("apply", fingerprint).run(new DefaultApplicationArguments());
         long program = jdbcTemplate.queryForObject("select e.program_id from program_external_id e where e.scheme='POLON_COURSE' and e.value=?", Long.class, agh.courseUuid());
-        assertThat(jdbcTemplate.queryForObject("select official_program_url from degree_program where id=?", String.class, program)).isEqualTo(agh.programUrl());
+        assertThat(jdbcTemplate.queryForObject("select official_program_url from degree_program where id=?", String.class, program)).as("AGH's page is an offer list").isNull();
+        long mlProgram = jdbcTemplate.queryForObject("select e.program_id from program_external_id e where e.scheme='POLON_COURSE' and e.value=?", Long.class, ml.courseUuid());
+        assertThat(jdbcTemplate.queryForObject("select official_program_url from degree_program where id=?", String.class, mlProgram)).isEqualTo(ml.programUrl());
         assertThat(jdbcTemplate.queryForObject("select value from program_university_fact where program_id=? and field_name='financial_url'", String.class, program)).isEqualTo(agh.feesUrl());
         assertThat(count("select count(*) from tuition_fee")).as("only AGH states an unambiguous fee").isEqualTo(1);
         var fee = jdbcTemplate.queryForMap("select amount, currency, billing_period, student_category from tuition_fee where program_id=" + program);
         assertThat(fee.get("amount").toString()).startsWith("3000");
         assertThat(fee).containsEntry("currency", "EUR").containsEntry("billing_period", "PER_SEMESTER").containsEntry("student_category", "INTERNATIONAL");
         assertThat(count("select count(*) from source_monitor where adapter_name='pl-university-page' and status='ACTIVE'")).isGreaterThanOrEqualTo(2);
-        assertThat(count("select count(*) from source s join program_source ps on ps.source_id=s.id where ps.program_id=" + program + " and s.source_type='UNIVERSITY_WEBSITE'")).isGreaterThanOrEqualTo(2);
+        assertThat(count("select count(*) from source s join program_source ps on ps.source_id=s.id where ps.program_id=" + program + " and s.source_type='UNIVERSITY_WEBSITE'")).isGreaterThanOrEqualTo(1);
         cli("apply", fingerprint).run(new DefaultApplicationArguments()); // idempotent
         assertThat(count("select count(*) from tuition_fee")).isEqualTo(1);
         assertThat(count("select count(*) from staged_change where status='PENDING_REVIEW'")).isZero();
