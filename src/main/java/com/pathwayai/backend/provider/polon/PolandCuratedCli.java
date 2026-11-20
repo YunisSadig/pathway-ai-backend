@@ -104,8 +104,10 @@ public class PolandCuratedCli implements ApplicationRunner {
                 if (!c.identityConfirmed()) { skipped.add(new Skipped(c, "identity mapping unconfirmed (POL-on name \"" + c.polonName() + "\" differs from the university page): a person must confirm it")); continue; }
                 var record = fetch(PolonSources.recordUrl(c.courseUuid()));
                 var program = PolonParser.parse(record.body(), c, taxonomy);
-                String page = c.programUrl() == null ? "NOT STATED (no live official programme page found)" : check(c.programUrl(), c, pages);
-                String fees = c.feesUrl() == null ? "none listed" : check(c.feesUrl(), c, pages);
+                boolean supported = c.pageMatch() != null; // no pageMatch = the university's pages are not readable reliably: not read, no link, no fact
+                String page = c.programUrl() == null ? "NOT STATED (no live official programme page found)"
+                        : !supported ? "NOT STATED (university pages unsupported: connection resets on repeated reads)" : check(c.programUrl(), c, pages);
+                String fees = c.feesUrl() == null ? "none listed" : !supported ? "NOT STATED (unsupported)" : check(c.feesUrl(), c, pages);
                 Long existing = jdbc.sql("select program_id from program_external_id where scheme=:s and value=:v")
                         .param("s", PolonParser.SCHEME_COURSE).param("v", c.courseUuid()).query(Long.class).optional().orElse(null);
                 List<ExtractedFact> pageFacts = new ArrayList<>();
