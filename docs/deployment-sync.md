@@ -42,7 +42,7 @@ Expected cost: **$0**. Billing conditions can change: read each sign-up page, an
 
 | When | Mode | What it does |
 |---|---|---|
-| daily 05:17 UTC | `run` | re-reads every source that is due (each program weekly; daily when an application window is near) |
+| daily 05:17 and 17:17 UTC (the second added 2026-11-20 after GitHub skipped a run) | `run` | re-reads every source that is due (each program weekly; daily when an application window is near) |
 | Mondays | `sync` | discovers new programs for the three reviewed universities, then `run` |
 | every run | `freshness` | **last-success watchdog**: fails unless *every* extractor-maintained program was read successfully within 10 days |
 | manual | `run`, `sync`, `force`, `bootstrap`, `freshness` | Actions tab, "Run workflow" |
