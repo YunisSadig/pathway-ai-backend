@@ -14,9 +14,11 @@ assessment: [country-candidates-2026-11-19.md](country-candidates-2026-11-19.md)
 ## What is imported (and what is not)
 - From POL-on only: programme name, level, teaching language (English instance), duration (semesters, stored as months = semesters x 6),
   ISCED field when the reviewed field map has it, status. ECTS, form and start date are printed in the preview but not stored yet.
-- **From the universities' own pages (phase 2a, adapter `pl-university-page`):** the official programme link and the fees-page link, only where the
-  page names the programme (11 of the 14 programmes; the SGH master pages answer 403 and are never bypassed, the Poznan UT bachelor page is a 404,
-  the Poznan UT master page is a PDF). A fee only where the page states it unambiguously: AGH Computer Science bachelor (EUR 3000 per semester,
+- **From the universities' own pages (phase 2a, adapter `pl-university-page`):** the official programme link only if the page is the programme's own
+  (exactly one `h1`, and it contains the programme name; checked on every read). An offer or landing page that merely lists the programme is NOT
+  stored as a programme link and no offer-link type exists, so the programme URL stays Not stated: AGH ("Education offer - Bachelor studies"),
+  TUL ("Educational offer") and Poznan UEB (masters landing page). The fees-page link is stored where the page names the programme or states its
+  fee. The SGH master pages answered 403 at times (never bypassed), the Poznan UT bachelor page is a 404, the Poznan UT master page is a PDF. A fee only where the page states it unambiguously: AGH Computer Science bachelor (EUR 3000 per semester,
   international students, academic year 2026/2027 printed in the table heading; stored as a structured fee), Poznan UT Artificial Intelligence
   bachelor and master (the fee row word for word, year 2026/2027 from the heading) and Poznan UEB Master in International Business (7 350 PLN
   per semester, kept word for word; the page calls it "current" and prints no academic year, so none is stored). Every fact carries its

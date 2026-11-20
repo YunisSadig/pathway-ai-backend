@@ -62,17 +62,28 @@ public class PolishPageAdapter implements ContextualScopedExtractionAdapter {
         if (!c.identityConfirmed() || c.pageMatch() == null || (!programPage && !feePage) || !PolonSources.owned(finalUrl, c.university()))
             return List.of();
         Document doc = Jsoup.parse(html, finalUrl);
+        boolean ownPage = isProgrammePage(doc, c);
         doc.select("nav,header,footer,script,style").remove();
         if (!norm(doc.text()).toLowerCase(Locale.ROOT).contains(c.pageMatch().toLowerCase(Locale.ROOT))) return List.of();
         List<ExtractedFact> facts = new ArrayList<>();
-        if (programPage) facts.add(fact(c, "official_program_url", "", finalUrl, null));
+        if (programPage && ownPage) facts.add(fact(c, "official_program_url", "", finalUrl, null)); // an offer list is not the programme's page
         if (feePage) {
-            if (c.feesUrl() != null) facts.add(fact(c, "financial_url", "financial", finalUrl, null));
+            if (c.feesUrl() != null || c.feeStrategy() != null) facts.add(fact(c, "financial_url", "financial", finalUrl, null));
             if ("AGH_TABLE".equals(c.feeStrategy())) aghTuition(doc, c).ifPresent(facts::add);
             if ("PUT_TABLE".equals(c.feeStrategy())) putTuition(doc, c).ifPresent(facts::add);
             if ("UEP_LINES".equals(c.feeStrategy())) uepTuition(doc, c).ifPresent(facts::add);
         }
         return facts;
+    }
+
+    /**
+     * A page is the programme's own page only if it has exactly one h1 and that heading contains the programme name. An offer or
+     * landing page that merely lists the programme ("Education offer", "Educational offer") never qualifies, and no offer-link type exists.
+     */
+    static boolean isProgrammePage(Document doc, PolonSources.Candidate c) {
+        var h1 = doc.select("h1");
+        return c.pageMatch() != null && h1.size() == 1
+                && norm(h1.first().text()).toLowerCase(Locale.ROOT).contains(c.pageMatch().toLowerCase(Locale.ROOT));
     }
 
     private static ExtractedFact fact(PolonSources.Candidate c, String field, String scope, String value, String academicYear) {

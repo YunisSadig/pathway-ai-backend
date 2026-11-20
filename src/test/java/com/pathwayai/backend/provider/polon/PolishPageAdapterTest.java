@@ -36,13 +36,17 @@ class PolishPageAdapterTest {
     }
 
     @Test
-    void theProgrammePageStatesTheOfficialLinkOnlyBecauseItNamesTheProgramme() throws IOException {
-        var c = candidate("akademia-computer-science-bachelor");
-        var facts = PolishPageAdapter.extract(page("agh-programme.html"), c.programUrl(), c.programUrl(), c);
-        assertThat(one(facts, FactType.UNIVERSITY_FACT, "official_program_url").values()).containsEntry("value", c.programUrl());
-        assertThat(facts).noneMatch(f -> f.type() == FactType.TUITION);
-        assertThat(PolishPageAdapter.extract("<html><body><h1>Another page</h1></body></html>", c.programUrl(), c.programUrl(), c))
+    void aProgrammesOwnPageIsStoredAsItsOfficialLinkButAnOfferListIsNot() throws IOException {
+        var ml = candidate("uniwersytet-machine-learning-master");
+        var facts = PolishPageAdapter.extract(page("uw-irk-ml-programme.html"), ml.programUrl(), ml.programUrl(), ml);
+        assertThat(one(facts, FactType.UNIVERSITY_FACT, "official_program_url").values()).containsEntry("value", ml.programUrl());
+        // AGH's programme page is the bachelor offer list (h1 "Education offer - Bachelor studies"): not the programme's page
+        var agh = candidate("akademia-computer-science-bachelor");
+        assertThat(PolishPageAdapter.extract(page("agh-programme.html"), agh.programUrl(), agh.programUrl(), agh)).isEmpty();
+        assertThat(PolishPageAdapter.extract("<html><body><h1>Another page</h1></body></html>", ml.programUrl(), ml.programUrl(), ml))
                 .as("a page that does not name the programme proves nothing").isEmpty();
+        assertThat(PolishPageAdapter.extract("<html><body><h1>Machine Learning</h1><h1>Second</h1></body></html>", ml.programUrl(), ml.programUrl(), ml))
+                .as("exactly one h1").isEmpty();
     }
 
     @Test
@@ -80,7 +84,8 @@ class PolishPageAdapterTest {
         var fee = one(facts, FactType.UNIVERSITY_FACT, "tuition_scope");
         assertThat(fee.values().get("value")).contains("7 350 PLN per semester").contains("current");
         assertThat(fee.values()).doesNotContainKey("academicYear");
-        assertThat(one(facts, FactType.UNIVERSITY_FACT, "official_program_url")).isNotNull();
+        assertThat(facts).as("the masters landing page is not the programme's page").noneMatch(f -> "official_program_url".equals(f.values().get("field")));
+        assertThat(one(facts, FactType.UNIVERSITY_FACT, "financial_url").values()).containsEntry("value", c.programUrl());
     }
 
     @Test
