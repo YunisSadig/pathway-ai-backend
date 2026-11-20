@@ -65,7 +65,7 @@ class PolonParserTest {
     void aLevelThatDiffersFromTheReviewedOneIsRefused() throws IOException {
         var c = first("akademia-computer-science-bachelor");
         var wrong = new PolonSources.Candidate(c.key(), c.university(), c.courseUuid(), c.courseInstanceUuid(), "MASTER",
-                c.programUrl(), c.feesUrl(), true, c.polonName(), c.officialDomain());
+                c.programUrl(), c.feesUrl(), true, c.polonName(), c.officialDomain(), c.pageMatch(), c.feeStrategy(), c.feeRow());
         assertThatThrownBy(() -> PolonParser.parse(fixture(c.courseUuid()), wrong, TAXONOMY)).hasMessageContaining("differs");
     }
 
@@ -73,7 +73,7 @@ class PolonParserTest {
     void aMissingInstanceAnEmptyAnswerAndAForeignCourseAreRefusedNeverEmpty() throws IOException {
         var c = first("akademia-computer-science-bachelor");
         var other = new PolonSources.Candidate(c.key(), c.university(), c.courseUuid(), "00000000-0000-0000-0000-000000000000",
-                c.entryLevel(), c.programUrl(), c.feesUrl(), true, c.polonName(), c.officialDomain());
+                c.entryLevel(), c.programUrl(), c.feesUrl(), true, c.polonName(), c.officialDomain(), c.pageMatch(), c.feeStrategy(), c.feeRow());
         assertThatThrownBy(() -> PolonParser.parse(fixture(c.courseUuid()), other, TAXONOMY)).hasMessageContaining("no longer listed");
         assertThatThrownBy(() -> PolonParser.parse("{\"results\":[]}", c, TAXONOMY)).hasMessageContaining("0 courses");
         assertThatThrownBy(() -> PolonParser.parse("{}", c, TAXONOMY)).hasMessageContaining("0 courses");

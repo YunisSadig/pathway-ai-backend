@@ -44,7 +44,7 @@ public class PolandCuratedCli implements ApplicationRunner {
     static final String NOT_STATED = "Not stated (no official extractor for it yet)";
 
     record Verified(PolonSources.Candidate candidate, PolonParser.Program program, PageFetcher.Result record,
-                    String pageStatus, String feesStatus, Long existingId) { }
+                    String pageStatus, String feesStatus, Long existingId, List<ExtractedFact> pageFacts) { }
     record Skipped(PolonSources.Candidate candidate, String reason) { }
 
     private final PolonSources sources;
@@ -70,7 +70,8 @@ public class PolandCuratedCli implements ApplicationRunner {
         this.clock = clock; this.transaction = new TransactionTemplate(tx); this.command = command; this.expected = expected;
     }
 
-    record Plan(List<Verified> verified, List<Skipped> skipped, String fingerprint, java.util.Map<String, String> slugs) { }
+    record Plan(List<Verified> verified, List<Skipped> skipped, String fingerprint, java.util.Map<String, String> slugs,
+                java.util.Map<String, PageFetcher.Result> pages) { }
 
     @Override
     public void run(ApplicationArguments args) {
@@ -89,7 +90,7 @@ public class PolandCuratedCli implements ApplicationRunner {
                 + " fingerprint=" + fingerprint);
         if (command.equals("preview")) { System.out.println("POLAND_PREVIEW no writes, no activation, cataloguePublic unchanged"); return; }
         if (!fingerprint.equals(expected)) throw new IllegalArgumentException("Plan differs from the approved fingerprint; run and review a fresh preview");
-        transaction.executeWithoutResult(status -> apply(verified, plan.slugs()));
+        transaction.executeWithoutResult(status -> apply(verified, plan.slugs(), plan.pages()));
         System.out.println("POLAND_APPLIED " + PolonSources.RELEASE + " " + verified.size() + " programmes; nothing was deleted");
     }
 
@@ -97,22 +98,36 @@ public class PolandCuratedCli implements ApplicationRunner {
     Plan plan() {
         List<Verified> verified = new ArrayList<>();
         List<Skipped> skipped = new ArrayList<>();
+        var pages = new java.util.LinkedHashMap<String, PageFetcher.Result>(); // pages read OK in this pass, shared between programmes
         for (var c : sources.candidates()) {
             try {
                 if (!c.identityConfirmed()) { skipped.add(new Skipped(c, "identity mapping unconfirmed (POL-on name \"" + c.polonName() + "\" differs from the university page): a person must confirm it")); continue; }
                 var record = fetch(PolonSources.recordUrl(c.courseUuid()));
                 var program = PolonParser.parse(record.body(), c, taxonomy);
-                String page = c.programUrl() == null ? "NOT STATED (no live official programme page found)" : check(c.programUrl(), c);
-                String fees = c.feesUrl() == null ? "none listed" : check(c.feesUrl(), c);
+                String page = c.programUrl() == null ? "NOT STATED (no live official programme page found)" : check(c.programUrl(), c, pages);
+                String fees = c.feesUrl() == null ? "none listed" : check(c.feesUrl(), c, pages);
                 Long existing = jdbc.sql("select program_id from program_external_id where scheme=:s and value=:v")
                         .param("s", PolonParser.SCHEME_COURSE).param("v", c.courseUuid()).query(Long.class).optional().orElse(null);
-                verified.add(new Verified(c, program, record, page, fees, existing));
+                List<ExtractedFact> pageFacts = new ArrayList<>();
+                for (String u : pageUrls(c)) {
+                    var r = pages.get(u);
+                    if (r != null) pageFacts.addAll(PolishPageAdapter.extract(r.body(), r.finalUrl(), u, c));
+                }
+                verified.add(new Verified(c, program, record, page, fees, existing, pageFacts));
             } catch (RuntimeException e) {
                 skipped.add(new Skipped(c, "not verified: " + e.getMessage()));
             }
         }
         var slugs = slugs(verified);
-        return new Plan(verified, skipped, fingerprint(verified, slugs), slugs);
+        return new Plan(verified, skipped, fingerprint(verified, slugs), slugs, pages);
+    }
+
+    /** The distinct reviewed pages of a candidate: its programme page and the page that states its fees. */
+    static List<String> pageUrls(PolonSources.Candidate c) {
+        var urls = new java.util.LinkedHashSet<String>();
+        if (c.programUrl() != null) urls.add(c.programUrl());
+        if (c.feePageUrl() != null) urls.add(c.feePageUrl());
+        return List.copyOf(urls);
     }
 
     /**
@@ -139,17 +154,29 @@ public class PolandCuratedCli implements ApplicationRunner {
         System.out.println("  VERIFIED language=en duration=" + p.semesters() + " semesters (" + p.semesters() * 6 + " months) ects=" + p.ects() + " form=" + p.form() + " " + period);
         System.out.println("  VERIFIED field=" + (p.fieldSlug() == null ? "NOT STATED (ISCED " + p.iscedCode() + " not in the reviewed field map)" : p.fieldSlug() + " (ISCED " + p.iscedCode() + " " + p.iscedName() + ")"));
         System.out.println("  PAGE programme=" + v.candidate().programUrl() + " -> " + v.pageStatus() + " | fees=" + v.candidate().feesUrl() + " -> " + v.feesStatus());
-        System.out.println("  MISSING tuition=" + NOT_STATED + "; deadlines=" + NOT_STATED + "; admission requirements=" + NOT_STATED + "; application URL=" + NOT_STATED);
+        boolean tuition = false;
+        for (var f : v.pageFacts()) {
+            var vals = f.values();
+            String field = f.type() == ExtractedFact.FactType.TUITION ? "tuition" : vals.get("field");
+            tuition |= f.type() == ExtractedFact.FactType.TUITION || "tuition_scope".equals(field);
+            String src = "official_program_url".equals(field) ? v.candidate().programUrl() : v.candidate().feePageUrl();
+            String year = vals.get("academicYear") == null ? "UNKNOWN_YEAR (the page prints no academic year)" : vals.get("academicYear");
+            String shown = f.type() == ExtractedFact.FactType.TUITION ? vals.get("currency") + " " + vals.get("amount") + " " + vals.get("billingPeriod") + " " + vals.get("studentCategory") : vals.get("value");
+            System.out.println("  VERIFIED page-fact " + field + "=" + shown + " src=" + src + " read=" + today + " year=" + year);
+        }
+        System.out.println("  MISSING tuition=" + (tuition ? "stated (see above)" : NOT_STATED) + "; deadlines=" + NOT_STATED + "; admission requirements=" + NOT_STATED + "; application URL=" + NOT_STATED
+                + (v.pageFacts().stream().anyMatch(f -> "official_program_url".equals(f.values().get("field"))) ? "" : "; official programme link=" + NOT_STATED));
     }
 
     /** The page must load over https from the university's own registered domain; its content is not interpreted. */
-    private String check(String url, PolonSources.Candidate c) {
+    private String check(String url, PolonSources.Candidate c, java.util.Map<String, PageFetcher.Result> pages) {
         URI uri = URI.create(url);
         String host = uri.getHost() == null ? "" : uri.getHost().toLowerCase(Locale.ROOT);
         if (!"https".equals(uri.getScheme()) || !(host.equals(c.officialDomain()) || host.endsWith("." + c.officialDomain())))
             throw new IllegalStateException("not an official https page of " + c.officialDomain() + ": " + url);
-        var r = fetcher.fetch(url, null, null);
+        var r = pages.containsKey(url) ? pages.get(url) : fetcher.fetch(url, null, null);
         // an unreadable page never blocks the programme (POL-on states it); the page is simply not recorded as verified
+        if (r.kind() == PageFetcher.Kind.OK) pages.put(url, r);
         return r.kind() == PageFetcher.Kind.OK ? "OK " + r.httpStatus() : "NOT VERIFIED (" + r.kind() + ")";
     }
 
@@ -164,12 +191,13 @@ public class PolandCuratedCli implements ApplicationRunner {
         for (var v : verified) {
             rows.add(v.candidate().courseUuid() + "|" + v.candidate().courseInstanceUuid() + "|" + v.program().name() + "|" + v.program().degreeLevel() + "|" + slugs.get(v.candidate().key()));
             PolonParser.toFacts(v.program()).forEach(f -> rows.add(f.type() + f.key() + f.canonicalValue()));
+            v.pageFacts().forEach(f -> rows.add(v.candidate().courseUuid() + "|page|" + f.type() + f.key() + f.canonicalValue()));
         }
         rows.sort(String::compareTo);
         return PageCanonicalizer.sha256(String.join("\n", rows));
     }
 
-    private void apply(List<Verified> verified, java.util.Map<String, String> slugs) {
+    private void apply(List<Verified> verified, java.util.Map<String, String> slugs, java.util.Map<String, PageFetcher.Result> pages) {
         Instant now = clock.instant();
         LocalDate today = LocalDate.ofInstant(now, ZoneOffset.UTC);
         jdbc.sql("select pg_advisory_xact_lock(721681204)").query((rs, n) -> 1).single();
@@ -190,14 +218,6 @@ public class PolandCuratedCli implements ApplicationRunner {
             if (v.existingId() != null) renameSlug(programId, c.university(), slugs.get(c.key()), source, now);
             jdbc.sql("insert into program_source(program_id,source_id) values(:p,:s) on conflict do nothing").param("p", programId).param("s", source).update();
             jdbc.sql("insert into university_source(university_id,source_id) values(:u,:s) on conflict do nothing").param("u", university).param("s", source).update();
-            if (v.pageStatus().startsWith("OK")) { // only a page read in this very preview is recorded as a source
-                long page = jdbc.sql("""
-                        insert into source(url,title,publisher,source_type,retrieved_on) values(:u,:t,:p,'UNIVERSITY_WEBSITE',:d)
-                        on conflict(url) do update set retrieved_on=excluded.retrieved_on returning id""")
-                        .param("u", c.programUrl()).param("t", "Programme page: " + v.program().name()).param("p", v.program().institution())
-                        .param("d", today).query(Long.class).single();
-                jdbc.sql("insert into program_source(program_id,source_id) values(:p,:s) on conflict do nothing").param("p", programId).param("s", page).update();
-            }
             monitors.register(source, new SourceMonitor.Spec(url, university, programId, "PROGRAM", "name,level,field,duration,languages", "ADAPTER",
                     PolonAdapter.NAME, PolonAdapter.VERSION, props.generalIntervalDays()), "VERIFIED", now);
             approvedHosts.refresh();
@@ -221,9 +241,42 @@ public class PolandCuratedCli implements ApplicationRunner {
                     set entry_level=excluded.entry_level,education_oid=excluded.education_oid,implementation_oid=excluded.implementation_oid""")
                     .param("r", PolonSources.RELEASE).param("p", programId).param("l", c.entryLevel())
                     .param("course", c.courseUuid()).param("instance", c.courseInstanceUuid()).update(); // POL-on course/instance uuids in the identifier columns
+            applyPages(v, programId, university, pages, now, today);
         }
         jdbc.sql("update catalog_release set enabled=true,approved_by='operator:reviewed-fingerprint',approved_at=:now where id=:r")
                 .param("now", Timestamp.from(now)).param("r", PolonSources.RELEASE).update();
+    }
+
+    /** Each page read in the preview becomes a source with its own fact-extracting monitor; its facts go through the normal pipeline. */
+    private void applyPages(Verified v, long programId, long university, java.util.Map<String, PageFetcher.Result> pages, Instant now, LocalDate today) {
+        var c = v.candidate();
+        for (String u : pageUrls(c)) {
+            var r = pages.get(u);
+            if (r == null) continue; // not read OK in the approved preview: no source, no fact
+            var facts = PolishPageAdapter.extract(r.body(), r.finalUrl(), u, c);
+            if (facts.isEmpty()) continue;
+            long source = jdbc.sql("""
+                    insert into source(url,title,publisher,source_type,retrieved_on) values(:u,:t,:p,'UNIVERSITY_WEBSITE',:d)
+                    on conflict(url) do update set retrieved_on=excluded.retrieved_on returning id""")
+                    .param("u", u).param("t", "Official page of " + v.program().institution()).param("p", v.program().institution())
+                    .param("d", today).query(Long.class).single();
+            jdbc.sql("insert into program_source(program_id,source_id) values(:p,:s) on conflict do nothing").param("p", programId).param("s", source).update();
+            monitors.register(source, new SourceMonitor.Spec(u, university, null, "PROGRAM", "official page facts", "ADAPTER",
+                    PolishPageAdapter.NAME, PolishPageAdapter.VERSION, props.generalIntervalDays()), "VERIFIED", now);
+            approvedHosts.refresh();
+            SourceMonitor monitor = monitors.findBySourceId(source).orElseThrow();
+            String parser = "curated-pl-1+" + PolishPageAdapter.NAME + "@" + PolishPageAdapter.VERSION;
+            var outcome = pipeline.process(monitor.withProgramId(programId), facts, parser, now, true);
+            if (outcome.rejectedCount() > 0 || outcome.pendingReview() > 0)
+                throw new IllegalStateException("Page facts need review before activation: " + c.key() + " " + u + " " + outcome.rejected());
+            String hash = new PageCanonicalizer().canonicalize(r.body(), r.contentType()).hash();
+            monitors.saveState(monitor.with(m -> {
+                m.status = "ACTIVE"; m.failureCount = 0; m.unsupportedReason = null; m.lastAttemptAt = now; m.lastSuccessAt = now;
+                m.nextCheckAt = CheckSchedule.next(now, monitor.checkIntervalDays(), false, props.deadlineIntervalDays(), 0);
+                m.lastResult = "BASELINE"; m.contentHash = hash; m.hashParserVersion = parser;
+            }));
+            monitors.logCheck(source, now, "BASELINE", r.httpStatus(), hash, r.durationMs(), parser, null);
+        }
     }
 
     private long createProgram(long university, PolonParser.Program p, String planned, LocalDate today) {

@@ -14,9 +14,17 @@ assessment: [country-candidates-2026-11-19.md](country-candidates-2026-11-19.md)
 ## What is imported (and what is not)
 - From POL-on only: programme name, level, teaching language (English instance), duration (semesters, stored as months = semesters x 6),
   ISCED field when the reviewed field map has it, status. ECTS, form and start date are printed in the preview but not stored yet.
-- **Not imported (Not stated):** tuition, deadlines, admission requirements, application URL. POL-on does not state them and no university
-  extractor exists yet. The candidate file keeps each university's programme/fee page URL; the preview reports whether it loaded over https
-  from the university's own registered domain, and only a page read in that preview is recorded as a source.
+- **From the universities' own pages (phase 2a, adapter `pl-university-page`):** the official programme link and the fees-page link, only where the
+  page names the programme (11 of the 14 programmes; the SGH master pages answer 403 and are never bypassed, the Poznan UT bachelor page is a 404,
+  the Poznan UT master page is a PDF). A fee only where the page states it unambiguously: AGH Computer Science bachelor (EUR 3000 per semester,
+  international students, academic year 2026/2027 printed in the table heading; stored as a structured fee), Poznan UT Artificial Intelligence
+  bachelor and master (the fee row word for word, year 2026/2027 from the heading) and Poznan UEB Master in International Business (7 350 PLN
+  per semester, kept word for word; the page calls it "current" and prints no academic year, so none is stored). Every fact carries its
+  source URL and read date; a changed value waits for review.
+- **Not imported (Not stated):** tuition for the other programmes (TUL prints 9000 PLN without stating the period, UEK/UW/SGH/PW have no
+  unambiguous row or page), deadlines, admission and language requirements, application URL, admissions URL. Nothing is guessed.
+- Page facts go through the normal pipeline (monitor bound to the university, program null, facts per programme slug), the POL-on course id
+  is the education identifier, and the URL facts must be https pages of the university's own registered domain (`PolonSources.owned`).
 - Identity: a candidate whose POL-on name is Polish or differs from the university page has `identityConfirmed=false` and is never imported
   until a person confirms the mapping (6 of 20 on 2026-11-20).
 
@@ -38,7 +46,7 @@ Rehearse on a Neon branch first; never run against production without the owner'
 ## Sync: NOT enabled (the scheduled run excludes Poland)
 The 14 monitors are registered (`ADAPTER polon-courses`, 7-day interval, first due 2026-11-27) and the daily Finland run (`run`) reads every
 due monitor, so the scheduled run EXCLUDES the adapter: `app.refresh.excluded-adapters` / env `REFRESH_EXCLUDED_ADAPTERS`, default
-`polon-courses`. The freshness watchdog skips it too (otherwise it would turn the Finland run red). An operator can still read it on purpose
+`polon-courses` and `pl-university-page`. The freshness watchdog skips them too (otherwise it would turn the Finland run red). An operator can still read it on purpose
 with `--app.refresh.command=sync-adapter --app.refresh.adapter=polon-courses`. Consequence: Poland programs stay as imported and, after
 45 days without a read (`app.discovery.max-source-age-days`; last read 2026-11-20, so after about 2027-01-04), leave discovery.
 To enable Poland sync later (owner decision, API terms not stated): set `REFRESH_EXCLUDED_ADAPTERS` to empty. When enabled, a changed

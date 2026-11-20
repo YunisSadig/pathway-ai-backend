@@ -26,12 +26,12 @@ public class SourceMonitorRepository {
 
     /**
      * Adapters whose monitors the scheduled run and the freshness watchdog leave out (comma separated in the environment as
-     * {@code REFRESH_EXCLUDED_ADAPTERS}; empty = none). Default: {@code polon-courses}, because Poland sync is not enabled. An operator
+     * {@code REFRESH_EXCLUDED_ADAPTERS}; empty = none). Default: {@code polon-courses,pl-university-page} (the POL-on and the Polish university-page adapters), because Poland sync is not enabled. An operator
      * can still read one explicitly with {@code --app.refresh.command=sync-adapter --app.refresh.adapter=polon-courses}.
      */
     private final List<String> excludedAdapters;
 
-    public SourceMonitorRepository(JdbcClient jdbc, @Value("${app.refresh.excluded-adapters:polon-courses}") List<String> excludedAdapters) {
+    public SourceMonitorRepository(JdbcClient jdbc, @Value("${app.refresh.excluded-adapters:polon-courses,pl-university-page}") List<String> excludedAdapters) {
         this.excludedAdapters = excludedAdapters.stream().map(String::strip).filter(s -> !s.isEmpty()).toList();
         this.jdbc = jdbc;
     }
