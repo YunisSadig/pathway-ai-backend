@@ -1,0 +1,292 @@
+{
+  "schemaVersion": 1,
+  "retrievedOn": "2026-11-20",
+  "countries": [
+    {
+      "iso2": "PL",
+      "name": "Poland"
+    }
+  ],
+  "universities": [
+    {
+      "slug": "akademia-gorniczo-hutnicza",
+      "name": "Akademia Górniczo-Hutnicza im. Stanisława Staszica w Krakowie",
+      "country": "PL",
+      "city": "Kraków",
+      "nativeName": null,
+      "websiteUrl": "https://www.agh.edu.pl/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "agh.edu.pl"
+        }
+      ],
+      "aliases": [],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-20",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/agh.edu.pl/hei",
+          "title": "HEI registry record: AKADEMIA GÓRNICZO-HUTNICZA IM. STANISŁAWA STASZICA W KRAKOWIE",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-20"
+        },
+        {
+          "url": "https://www.agh.edu.pl/en",
+          "title": "Akademia Górniczo-Hutnicza im. Stanisława Staszica w Krakowie",
+          "publisher": "Akademia Górniczo-Hutnicza im. Stanisława Staszica w Krakowie",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-20"
+        }
+      ]
+    },
+    {
+      "slug": "politechnika-lodzka",
+      "name": "Politechnika Łódzka",
+      "country": "PL",
+      "city": "Łódź",
+      "nativeName": null,
+      "websiteUrl": "https://p.lodz.pl/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "p.lodz.pl"
+        }
+      ],
+      "aliases": [],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-20",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/p.lodz.pl/hei",
+          "title": "HEI registry record: POLITECHNIKA ŁÓDZKA",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-20"
+        },
+        {
+          "url": "https://p.lodz.pl/en",
+          "title": "Politechnika Łódzka",
+          "publisher": "Politechnika Łódzka",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-20"
+        }
+      ]
+    },
+    {
+      "slug": "politechnika-poznanska",
+      "name": "Politechnika Poznańska",
+      "country": "PL",
+      "city": "Poznań",
+      "nativeName": null,
+      "websiteUrl": "https://put.poznan.pl/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "put.poznan.pl"
+        }
+      ],
+      "aliases": [],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-20",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/put.poznan.pl/hei",
+          "title": "HEI registry record: POLITECHNIKA POZNAŃSKA",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-20"
+        },
+        {
+          "url": "https://put.poznan.pl/en",
+          "title": "Politechnika Poznańska",
+          "publisher": "Politechnika Poznańska",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-20"
+        }
+      ]
+    },
+    {
+      "slug": "politechnika-warszawska",
+      "name": "Politechnika Warszawska",
+      "country": "PL",
+      "city": "Warszawa",
+      "nativeName": null,
+      "websiteUrl": "https://www.pw.edu.pl/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "pw.edu.pl"
+        }
+      ],
+      "aliases": [],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-20",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/pw.edu.pl/hei",
+          "title": "HEI registry record: POLITECHNIKA WARSZAWSKA",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-20"
+        },
+        {
+          "url": "https://www.pw.edu.pl/",
+          "title": "Politechnika Warszawska",
+          "publisher": "Politechnika Warszawska",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-20"
+        }
+      ]
+    },
+    {
+      "slug": "uniwersytet-warszawski",
+      "name": "Uniwersytet Warszawski",
+      "country": "PL",
+      "city": "Warszawa",
+      "nativeName": null,
+      "websiteUrl": "https://en.uw.edu.pl/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "uw.edu.pl"
+        }
+      ],
+      "aliases": [],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-20",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/uw.edu.pl/hei",
+          "title": "HEI registry record: UNIWERSYTET WARSZAWSKI",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-20"
+        },
+        {
+          "url": "https://en.uw.edu.pl/",
+          "title": "Uniwersytet Warszawski",
+          "publisher": "Uniwersytet Warszawski",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-20"
+        }
+      ]
+    },
+    {
+      "slug": "szkola-glowna-handlowa-w-warszawie",
+      "name": "Szkoła Główna Handlowa w Warszawie",
+      "country": "PL",
+      "city": "Warszawa",
+      "nativeName": null,
+      "websiteUrl": "https://www.sgh.waw.pl/en",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "sgh.waw.pl"
+        }
+      ],
+      "aliases": [],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-20",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/sgh.waw.pl/hei",
+          "title": "HEI registry record: SZKOŁA GŁÓWNA HANDLOWA W WARSZAWIE",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-20"
+        },
+        {
+          "url": "https://www.sgh.waw.pl/en",
+          "title": "Szkoła Główna Handlowa w Warszawie",
+          "publisher": "Szkoła Główna Handlowa w Warszawie",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-20"
+        }
+      ]
+    },
+    {
+      "slug": "uniwersytet-ekonomiczny-w-krakowie",
+      "name": "Uniwersytet Ekonomiczny w Krakowie",
+      "country": "PL",
+      "city": "Kraków",
+      "nativeName": null,
+      "websiteUrl": "https://uek.krakow.pl/en/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "uek.krakow.pl"
+        }
+      ],
+      "aliases": [],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-20",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/uek.krakow.pl/hei",
+          "title": "HEI registry record: UNIWERSYTET EKONOMICZNY W KRAKOWIE",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-20"
+        },
+        {
+          "url": "https://uek.krakow.pl/en/",
+          "title": "Uniwersytet Ekonomiczny w Krakowie",
+          "publisher": "Uniwersytet Ekonomiczny w Krakowie",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-20"
+        }
+      ]
+    },
+    {
+      "slug": "uniwersytet-ekonomiczny-w-poznaniu",
+      "name": "Uniwersytet Ekonomiczny w Poznaniu",
+      "country": "PL",
+      "city": "Poznań",
+      "nativeName": null,
+      "websiteUrl": "https://ue.poznan.pl/en/university/",
+      "admissionsUrl": null,
+      "programmeCatalogueUrl": null,
+      "externalIds": [
+        {
+          "scheme": "SCHAC_HOME_ORG",
+          "value": "ue.poznan.pl"
+        }
+      ],
+      "aliases": [],
+      "verificationStatus": "VERIFIED",
+      "verifiedOn": "2026-11-20",
+      "sources": [
+        {
+          "url": "https://hei.api.uni-foundation.eu/api/public/v1/schac/ue.poznan.pl/hei",
+          "title": "HEI registry record: UNIWERSYTET EKONOMICZNY W POZNANIU",
+          "publisher": "European University Foundation HEI API",
+          "type": "OTHER",
+          "retrievedOn": "2026-11-20"
+        },
+        {
+          "url": "https://ue.poznan.pl/en/university/",
+          "title": "Uniwersytet Ekonomiczny w Poznaniu",
+          "publisher": "Uniwersytet Ekonomiczny w Poznaniu",
+          "type": "UNIVERSITY_WEBSITE",
+          "retrievedOn": "2026-11-20"
+        }
+      ]
+    }
+  ]
+}

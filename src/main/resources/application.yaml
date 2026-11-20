@@ -62,7 +62,7 @@ app:
   refresh:
     # Hosts the crawler may contact besides those of registered sources. opintopolku.fi is the Studyinfo official API
     # (its robots.txt asks for a 30 second crawl delay, which the fetcher honours).
-    extra-approved-hosts: ${REFRESH_EXTRA_APPROVED_HOSTS:opintopolku.fi}
+    extra-approved-hosts: ${REFRESH_EXTRA_APPROVED_HOSTS:opintopolku.fi,radon.nauka.gov.pl}
 
   catalogue:
     # Off by default. Set IMPORT_UNIVERSITY_CATALOGUE=true to run the idempotent institution import at startup.
