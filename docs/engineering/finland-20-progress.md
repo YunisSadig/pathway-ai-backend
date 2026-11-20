@@ -255,3 +255,10 @@ connector does not read it yet; the university fact box remains the fee source (
   program rows unchanged), plan 10+10 with 16 new / 4 reused, apply + repeat OK; STOPPED by the university digest:
   new curated programs link their Studyinfo record to their university (`university_source`, existing importer
   behaviour). #42 `243c945`: row-level comparison that allows only those provenance links. Rerun: 44173405364.
+
+## Finland curated preview baseline, 2026-11-20 (read-only, Neon rehearsal branch)
+- The Finland curated preview fingerprint is now **`3a38029b57da14ad21654dbfa4a26dd919fb0e693cb20bf79563608c9cb8957b`** (plan 10 + 10, 20 offerings, 0 new).
+  It replaces `e9b169f5…` (recorded 2026-11-18). Likely reasons: #54 (field code falls back to its narrow code, merged 2026-11-19) and/or live
+  Studyinfo/university-page changes since 11-18; the exact split was not isolated.
+- Evidence that the Poland work (PR #57) does not affect Finland: the same preview run with a jar built from `origin/main` WITHOUT #57
+  (`9872cba`) and with the #57 jar printed the identical fingerprint against the same database. #57 changes no Finland fingerprint input.
