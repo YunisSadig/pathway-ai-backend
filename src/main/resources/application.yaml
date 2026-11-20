@@ -60,6 +60,8 @@ app:
     allow-static-records: ${ALLOW_STATIC_REFERENCE_RECORDS:false}
 
   refresh:
+    # Adapters the scheduled run and the freshness watchdog skip (comma separated; empty = none). Poland (POL-on) sync is not enabled.
+    excluded-adapters: ${REFRESH_EXCLUDED_ADAPTERS:polon-courses}
     # Hosts the crawler may contact besides those of registered sources. opintopolku.fi is the Studyinfo official API
     # (its robots.txt asks for a 30 second crawl delay, which the fetcher honours).
     extra-approved-hosts: ${REFRESH_EXTRA_APPROVED_HOSTS:opintopolku.fi,radon.nauka.gov.pl}

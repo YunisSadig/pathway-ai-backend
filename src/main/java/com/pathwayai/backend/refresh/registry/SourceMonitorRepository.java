@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -23,7 +24,15 @@ public class SourceMonitorRepository {
 
     private final JdbcClient jdbc;
 
-    public SourceMonitorRepository(JdbcClient jdbc) {
+    /**
+     * Adapters whose monitors the scheduled run and the freshness watchdog leave out (comma separated in the environment as
+     * {@code REFRESH_EXCLUDED_ADAPTERS}; empty = none). Default: {@code polon-courses}, because Poland sync is not enabled. An operator
+     * can still read one explicitly with {@code --app.refresh.command=sync-adapter --app.refresh.adapter=polon-courses}.
+     */
+    private final List<String> excludedAdapters;
+
+    public SourceMonitorRepository(JdbcClient jdbc, @Value("${app.refresh.excluded-adapters:polon-courses}") List<String> excludedAdapters) {
+        this.excludedAdapters = excludedAdapters.stream().map(String::strip).filter(s -> !s.isEmpty()).toList();
         this.jdbc = jdbc;
     }
 
@@ -42,8 +51,14 @@ public class SourceMonitorRepository {
     }
 
     public List<SourceMonitor> findDue(Instant now, int limit) {
-        return jdbc.sql(SELECT + " where m.status in ('ACTIVE','FAILING') and m.next_check_at <= :now order by m.next_check_at limit :limit")
-                .param("now", Timestamp.from(now)).param("limit", limit).query(SourceMonitorRepository::map).list();
+        var query = jdbc.sql(SELECT + " where m.status in ('ACTIVE','FAILING') and m.next_check_at <= :now" + excluded("m.adapter_name")
+                        + " order by m.next_check_at limit :limit")
+                .param("now", Timestamp.from(now)).param("limit", limit);
+        return (excludedAdapters.isEmpty() ? query : query.param("excluded", excludedAdapters)).query(SourceMonitorRepository::map).list();
+    }
+
+    private String excluded(String column) {
+        return excludedAdapters.isEmpty() ? "" : " and " + column + " not in (:excluded)";
     }
 
     /** Due sources read by one adapter only (used to run one provider without crawling every other monitored page). */
@@ -88,8 +103,8 @@ public class SourceMonitorRepository {
                        count(*) filter (where status <> 'ACTIVE') as not_active,
                        max(last_success_at) as newest, min(last_success_at) as oldest
                 from source_monitor
-                where program_id is not null and extraction_method in ('ADAPTER', 'JSON_LD')""")
-                .param("cutoff", Timestamp.from(cutoff))
+                where program_id is not null and extraction_method in ('ADAPTER', 'JSON_LD')""" + excluded("adapter_name"))
+                .param("cutoff", Timestamp.from(cutoff)).param("excluded", excludedAdapters.isEmpty() ? List.of("") : excludedAdapters)
                 .query((rs, i) -> new ExtractorFreshness(rs.getInt("total"), rs.getInt("fresh"), rs.getInt("never"),
                         rs.getInt("stale"), rs.getInt("not_active"), instant(rs, "newest"), instant(rs, "oldest")))
                 .single();

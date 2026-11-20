@@ -35,8 +35,12 @@ home page read 2026-11-20), `provider/polon/*` (parser, adapter `polon-courses`,
 3. Apply only with the approved fingerprint: `--app.poland.command=apply --app.poland.expected-fingerprint=<fingerprint>`.
 Rehearse on a Neon branch first; never run against production without the owner's approval.
 
-## Daily/weekly sync: plan only, NOT enabled
-POL-on programmes are refreshed by the existing monitor pipeline (`ADAPTER polon-courses`, 7-day interval): a changed name/level/field waits
-for review, a status change to not-active is the only discontinuation signal, errors never touch published facts. Enabling needs the
-existing `SYNC_ENABLED` + Healthchecks ping owner action; nothing is enabled for Poland today. Fee and deadline extractors per university
+## Sync: NOT enabled (the scheduled run excludes Poland)
+The 14 monitors are registered (`ADAPTER polon-courses`, 7-day interval, first due 2026-11-27) and the daily Finland run (`run`) reads every
+due monitor, so the scheduled run EXCLUDES the adapter: `app.refresh.excluded-adapters` / env `REFRESH_EXCLUDED_ADAPTERS`, default
+`polon-courses`. The freshness watchdog skips it too (otherwise it would turn the Finland run red). An operator can still read it on purpose
+with `--app.refresh.command=sync-adapter --app.refresh.adapter=polon-courses`. Consequence: Poland programs stay as imported and, after
+45 days without a read (`app.discovery.max-source-age-days`; last read 2026-11-20, so after about 2027-01-04), leave discovery.
+To enable Poland sync later (owner decision, API terms not stated): set `REFRESH_EXCLUDED_ADAPTERS` to empty. When enabled, a changed
+name/level/field waits for review, a status change to not-active is the only discontinuation signal, and errors never touch published facts. Fee and deadline extractors per university
 (AGH, TUL, PUT, WUT, SGH publish them per academic year) are the next increment.
