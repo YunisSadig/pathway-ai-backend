@@ -59,5 +59,5 @@ E. **Change detection without URL change:** the university-program and guidance 
    stage changed facts; add per-field change history to the status report.
 F. **UI:** hide empty study-track row; tuition card from undated/dated fees with their stated audience; scholarship ranges; documents/exams list;
    clearer "awaiting review" / "year not stated" states.
-G. **Unattended sync:** still disabled (SYNC_ENABLED unset, no HEALTHCHECK_PING_URL). Owner action required.
-H. **Poland / Czech Republic:** source research report + 2x20 candidate lists for approval (no import).
+G. **Unattended sync:** ON since 2026-11-19 (`SYNC_ENABLED=true`, Healthchecks ping configured). Poland sync is not enabled.
+H. **Poland / Czech Republic:** source research report + 2x20 candidate lists (2026-11-19). Poland: 14 of its 20 candidates were imported on 2026-11-20 from POL-on and 6 are skipped pending identity mapping (docs/data/poland-polon.md). Czech Republic: candidate list only.

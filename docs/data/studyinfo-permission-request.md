@@ -1,6 +1,6 @@
 # Draft: request to the Finnish National Agency for Education (Opetushallitus)
 
-**Not sent (nothing has been sent from any session; verified 2026-11-15).** Fill in your own name, role and contact and send it from your own
+**Asked on 2026-11-19; no reply yet.** (Earlier status: not sent as of 2026-11-15.) Fill in your own name, role and contact and send it from your own
 address to the contact the API documentation names: `palaute@opintopolku.fi` (source: the OpenAPI description served by `konfo-backend`,
 "Jos sinulla on kysyttävää rajapinnan käytöstä, lähetä sähköpostia osoitteeseen palaute@opintopolku.fi"). Keep the reply and record it in
 `docs/data/official-api-connectors.md`. Do not add credentials or anything about private systems. Until a written answer exists, program

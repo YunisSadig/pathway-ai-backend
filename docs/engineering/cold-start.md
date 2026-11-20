@@ -8,4 +8,6 @@
 
 **Mitigations in the code:** the browser waits up to 140 s with clear messages (`apiTimeoutMs`), the sign-in and data screens show a slow-start notice, and since 2026-11-15 the session re-reads itself in the background (3, 8, 20, 45 and 75 s, and when the browser goes online), so a refresh during a cold start no longer leaves the user looking logged out.
 
-**Optional, needs the owner's approval:** `docs/engineering/keep-warm.workflow.yml.example`, a ping every 10 minutes between 09:00 and 23:00 Asia/Baku. Activate: copy it to `.github/workflows/keep-warm.yml`, commit, then set the repository variable `KEEP_WARM` to `true`. Stop: set `KEEP_WARM` to anything else. Check: Actions, "Keep API warm", each run's summary shows the status and time of the ping. It lowers the number of cold starts in those hours; it cannot guarantee none.
+An UptimeRobot check on `/actuator/info` every 5 minutes (deployment-status.md row 8) keeps the backend awake in practice.
+
+**Optional, needs the owner's approval (not used):** `docs/engineering/keep-warm.workflow.yml.example`, a ping every 10 minutes between 09:00 and 23:00 Asia/Baku. Activate: copy it to `.github/workflows/keep-warm.yml`, commit, then set the repository variable `KEEP_WARM` to `true`. Stop: set `KEEP_WARM` to anything else. Check: Actions, "Keep API warm", each run's summary shows the status and time of the ping. It lowers the number of cold starts in those hours; it cannot guarantee none.

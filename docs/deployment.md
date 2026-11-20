@@ -3,7 +3,7 @@
 > **Unattended synchronization (hosted database + scheduled job), its limits, security and the steps that need the owner's accounts:
 > [deployment-sync.md](deployment-sync.md).** This page keeps the general CI/CD plan.
 
-CI and CD are separate concerns. **Nothing in this document has been provisioned, published or paid for.**
+CI and CD are separate concerns. **The hosted services this document describes (Render for the API, Neon for the database, Vercel for the frontend) are live as of 2026-11-20; see docs/engineering/deployment-status.md.**
 
 ## CI (implemented, automatic)
 `.github/workflows/ci.yml` runs on every push to `main` and every pull request: checkout → Temurin 21 (Maven cache) → `./mvnw -B -ntp clean verify` (unit tests + Testcontainers PostgreSQL integration tests; Docker is preinstalled on `ubuntu-latest`) → upload surefire/failsafe reports on failure. Needs no secrets. CI never deploys.

@@ -2,6 +2,16 @@
 
 COMPLETE = observed in a real run (link or measurement). PARTIAL = works, with a stated gap. UNVERIFIED = built, not proven. BLOCKED = needs the owner or an external answer.
 
+## Current state (2026-11-20)
+
+The rows below are the 2026-11-14 snapshot; they are not rewritten except where marked.
+
+* Live: frontend on Vercel, backend on Render, database on Neon (Flyway V14). An UptimeRobot check pings `/actuator/info` every 5 minutes.
+* The catalogue is private (`cataloguePublic=false`). Studyinfo permission was asked on 2026-11-19; no reply yet.
+* Finland: 7 universities, 72 programs (20 curated); daily sync ON since 2026-11-19 with Healthchecks; curated preview fingerprint baseline `3a38029b…` (finland-20-progress.md).
+* Poland: 8 universities, 14 programs imported 2026-11-20 from POL-on (CC0 dataset; API terms not stated); 6 candidates skipped pending identity mapping; no tuition or deadlines yet; sync NOT enabled (docs/data/poland-polon.md).
+* Google sign-in is verified in production. Email delivery is OFF (password reset and email verification unavailable), postponed: no domain yet; the SMTP configuration was reverted (#56).
+
 ## Live endpoints (protected staging: nothing public)
 
 | What | URL | Access |
@@ -22,7 +32,7 @@ COMPLETE = observed in a real run (link or measurement). PARTIAL = works, with a
 | 6 | Automatic deployment after approved merges | COMPLETE (observed twice) | Backend: PR #18 merged, Render deployed 208 s later, verification passed. Frontend: PR #24 merged, Vercel deployed, the `status`-triggered verification passed. The two pipelines are independent: each repository deploys only itself |
 | 7 | Academic-data updates reach the website without a frontend rebuild | PARTIAL | Measured locally with a synthetic fixture: a committed database change was served through the frontend proxy 310 ms later on revalidation (upper bound 300 s from `max-age`). The frontend holds no catalogue. A hosted propagation test was not run: it would mean changing hosted rows that must stay source-backed |
 | 8 | Scheduled synchronization operating unattended | DONE (2026-11-19) | `SYNC_ENABLED=true`; `HEALTHCHECK_PING_URL` set in environment `sync`; first scheduled run on 2026-11-19 succeeded with the ping sent (freshness 92/92). An UptimeRobot check on `/actuator/info` every 5 minutes also keeps the free Render backend awake |
-| 9 | Failure and missed-run monitoring | PARTIAL | Failing deployments fail the verification workflows visibly. The sync alert job has never fired (UNVERIFIED). Missed-run alarm (Healthchecks.io): BLOCKED, account creation needs a link emailed to the owner's inbox |
+| 9 | Failure and missed-run monitoring | PARTIAL | Failing deployments fail the verification workflows visibly. The sync alert job has never fired (UNVERIFIED). Missed-run alarm (Healthchecks.io): configured 2026-11-19 |
 | 10 | Security and backups | PARTIAL | See below. A restore drill passed on a Neon branch, but no independent off-site backup exists |
 | 10b | Cold start of the free backend | COMPLETE (measured) | 84.6 s after 17 idle minutes (2026-11-15 20:02Z). This exceeded the frontend proxy's 75 s upstream wait, so the first visitor after an idle period would have received a 502: fixed (proxy waits 130 s, `maxDuration` 150, loading state explains a long wait; frontend PR #26). **Verified through the live site:** after 17 idle minutes the first request via the site returned HTTP 200 with all 9 programs in 108.7 s (then 0.9 s and 0.6 s). The margin below 130 s is about 20 s, so a rare slower wake-up can still show the error state with its retry button |
 | 11 | Zero paid services | COMPLETE | Neon Free, Render Free, Vercel Hobby, GitHub free; no payment method added anywhere |
@@ -44,8 +54,8 @@ COMPLETE = observed in a real run (link or measurement). PARTIAL = works, with a
 
 ## Not done / owner decisions
 
-1. **Public launch: BLOCKED.** Studyinfo licence, attribution, persistent-copy and commercial terms are unanswered. The email is drafted in `docs/data/studyinfo-permission-request.md` (repository URL filled in; your name and contact remain). It has **not** been sent.
-2. **Healthchecks.io:** create an account (emailed link), create a check with a 1-day period and a short grace, store its ping URL as the `HEALTHCHECK_PING_URL` secret of environment `sync`, send a test ping, then set `SYNC_ENABLED=true`.
+1. **Public launch: BLOCKED.** Studyinfo licence, attribution, persistent-copy and commercial terms are unanswered. The email is drafted in `docs/data/studyinfo-permission-request.md` (repository URL filled in; your name and contact remain). The permission request was made on 2026-11-19; no reply yet.
+2. **Healthchecks.io (DONE 2026-11-19, see row 8):** create an account (emailed link), create a check with a 1-day period and a short grace, store its ping URL as the `HEALTHCHECK_PING_URL` secret of environment `sync`, send a test ping, then set `SYNC_ENABLED=true`.
 3. **Backups:** workflow `Backup` (encrypted `pg_dump` kept 30 days as an artifact, then an automatic restore test into a throwaway database). Manual dispatch works; the weekly schedule is off until you (or I, after a green run) set the repository variable `BACKUP_ENABLED=true`. Residual risk: artifacts live in GitHub, so a lost GitHub account loses them; a copy elsewhere is an owner decision.
 4. **Commercial use:** Vercel Hobby is for non-commercial use; revisit before any commercial launch.
 5. **The 37 `staged_change` rows are not a review queue.** Inspected 2026-11-14 in the database: all 37 are `AUTO_APPLIED`, risk `LOW`, reason "initial import of a new program from the official source" (9 deadlines, 9 durations, 9 campus cities, 9 languages, 1 academic field). Nothing is `PENDING_REVIEW`. Each deadline states its own year in the round label (Spring 2027, Admission 2027), so the year rule holds. An earlier report called them "awaiting review"; that was wrong.
