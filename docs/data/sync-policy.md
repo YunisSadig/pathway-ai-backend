@@ -64,12 +64,12 @@ java -jar target/pathway-ai-backend-*.jar --spring.main.web-application-type=non
 
 ### Is it unattended? (honest status)
 
-* **Schedule configured:** yes, two ways, both off by default: `app.refresh.scheduler.enabled=true` (in-process, cron
-  `0 0 5 * * *` UTC, only while the app runs) and `.github/workflows/source-refresh.yml` (commented-out `schedule`).
-* **Operational unattended:** **no.** There is no hosted database or always-on host, and provisioning one needs approval and
-  incurs cost. Until then synchronization runs only when `sync` is started by a person. Programs therefore show
-  `synchronization.status: AUTOMATIC` (an extractor maintains them) but are only *kept* fresh while that command runs; if it
-  stops for 45 days they leave discovery by design.
+* **Schedule configured:** `.github/workflows/source-refresh.yml` runs daily and does nothing unless the repository variable
+  `SYNC_ENABLED` is `true`; it has been `true` since 2026-11-19. The in-process scheduler (`app.refresh.scheduler.enabled=true`,
+  cron `0 0 5 * * *` UTC, only while the app runs) is off by default.
+* **Operational unattended:** **yes, since 2026-11-19** for Finland: the daily GitHub-scheduled run uses the hosted Neon database and
+  pings a Healthchecks dead-man's switch. Programs show `synchronization.status: AUTOMATIC` (an extractor maintains them) and stay
+  fresh while runs succeed; if runs stop for 45 days they leave discovery by design. Poland sync is not enabled.
 
 ## 4. Safe cleanup of the development database
 
@@ -100,10 +100,10 @@ failure rolls everything back. The PostgreSQL volume, Flyway history and other d
 * To add a university or program, add a **connector** first (an official API, or a permitted per-site extractor with a
   recorded fixture and one live run), then register it; never a JSON record.
 
-## 6. Unattended operation: prepared, not yet switched on (2026-11-14)
+## 6. Unattended operation: prepared 2026-11-14, switched on 2026-11-19
 
-Everything needed to run synchronization with the owner's computer off is in the repository and tested locally, but **no hosted
-database exists and no account was created**, so it is not operational. Facts and the owner's steps: [../deployment-sync.md](../deployment-sync.md).
+Everything needed to run synchronization with the owner's computer off is in the repository and tested locally, and since 2026-11-19 it
+is operational: the hosted Neon database exists and `SYNC_ENABLED` is `true`. Facts and the owner's steps: [../deployment-sync.md](../deployment-sync.md).
 
 * `.github/workflows/source-refresh.yml` runs daily (`run`), weekly (`sync`) and a last-success watchdog (`freshness`); it does nothing
   until the repository variable `SYNC_ENABLED` is `true` and the `DB_*` secrets exist.

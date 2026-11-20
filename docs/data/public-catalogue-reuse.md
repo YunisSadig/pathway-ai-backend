@@ -9,7 +9,7 @@ Checked 2026-11-15 against the official documentation
 - They are described as suited to "showing published training offerings on your own websites" (*Sopii erityisesti jos halutaan hakea julkaistua koulutustarjontaa näkyviin omille verkkosivuille*). That is a statement of purpose.
 - The page states **no licence, no attribution rule, no terms of use, no image or logo rights and no rate limits**. Linked pages (CAS, caller-id, CSRF) concern access, not reuse.
 
-**Conclusion: reuse of the Studyinfo fields is technically open but NOT licensed in writing.** We do not claim permission was obtained. The question to the provider (`studyinfo-permission-request.md`) is still **unsent**: that is a user action.
+**Conclusion: reuse of the Studyinfo fields is technically open but NOT licensed in writing.** We do not claim permission was obtained. The question to the provider (`studyinfo-permission-request.md`) was asked on 2026-11-19; there is no reply yet.
 
 ## Decision: a conservative public tier
 

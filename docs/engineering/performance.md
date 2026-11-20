@@ -59,7 +59,7 @@ The ~3.9 s first paint on the cold `/universities` run is Vercel's own idle page
 - **Public pages** no longer depend on it once the CDN has an answer: served stale for up to a day while one background
   request revalidates. The very first visitor after a CDN eviction or a new public URL (new filter combination) still waits.
 - **Neon Free** suspends compute after 5 idle minutes; resume is ~1–5 s, small next to Render.
-- No artificial keep-alive traffic is used (owner requirement). The existing inactive keep-warm proposal stays inactive.
+- No GitHub keep-warm workflow is used (the proposal stays inactive). An UptimeRobot check pings `/actuator/info` every 5 minutes, which also keeps the free Render backend awake (deployment-status.md row 8).
 
 ## Options (not implemented; owner decision, costs not incurred)
 

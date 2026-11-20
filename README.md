@@ -6,7 +6,7 @@ REST API for **Pathway AI**, a global study-abroad planning platform. Registrati
 
 | Part | Where it runs |
 | --- | --- |
-| This API (Spring Boot, Docker) | **Render** (free web service; sleeps when idle, a cold start can take up to about two minutes) |
+| This API (Spring Boot, Docker) | **Render** (free web service; sleeps when idle, a cold start can take up to about two minutes; an UptimeRobot check on `/actuator/info` every 5 minutes keeps it awake) |
 | Database (PostgreSQL 17) | **Neon** |
 | Frontend | **Vercel** (the browser never calls this API directly; the site's own server forwards the calls) |
 
@@ -25,7 +25,7 @@ account/     accounts, sessions, student profile v2, saved items, avatar   <- /a
 university/  program/  field/  requirement/  tuition/  source/  country/    <- academic catalogue (gated)
 refresh/ provider/  connectors, source monitoring, synchronization          <- official data only
 common/      exception, response, discovery policy
-src/main/resources/db/migration/                                             <- Flyway (V1-V10)
+src/main/resources/db/migration/                                             <- Flyway (V1-V14)
 docs/                                                                        <- decisions, data, deployment
 ```
 See [architecture decisions](docs/engineering/architecture-decisions.md).
@@ -173,7 +173,7 @@ Empty arrays mean "nothing known", not "none exist". **Every `intakes`, `tuition
 
 ### Curated catalogue fields (additive, Finland 20)
 Finnish discovery shows only the enabled curated release (10 bachelor's-entry + 10 master's programs). Other programs keep
-their identifiers, saves and direct links and report `catalogMembership: "OUTSIDE_CURATED_CATALOG"`.
+their identifiers, saves and direct links and report `catalogMembership: "OUTSIDE_CURATED_CATALOG"`. Poland has its own enabled release (`poland-curated-v1`: 14 programs imported 2026-11-20 from POL-on; see docs/data/poland-polon.md).
 `GET /api/v1/programs/{identifier}` adds `catalogMembership` and `universityInformation`:
 ```json
 "universityInformation": {
@@ -202,7 +202,7 @@ university page. The public `GET /api/v1/public/programs/{identifier}` adds only
   "notSynchronized": ["tuition", "scholarships", "admissionRequirements", "applicationUrl"]
 }
 ```
-`status: AUTOMATIC` means a working extractor maintains the program, **not** that an unattended scheduler is running: `fresh` and `lastSuccessfulSyncAt` say how recently it was read.
+`status: AUTOMATIC` means a working extractor maintains the program: `fresh` and `lastSuccessfulSyncAt` say how recently it was read. The daily GitHub-scheduled sync of the Finnish programs has been ON since 2026-11-19 (Healthchecks dead-man's switch). Poland sync is not enabled.
 A field with `REVIEW_REQUIRED` is re-read automatically but a change waits for a person (the old value stays until approved). Facts listed in `notSynchronized` have no connector
 and are omitted rather than shown as maintained. A program the official source has discontinued, or whose extractor is failing or stale, is withheld from discovery.
 
@@ -278,4 +278,4 @@ Measured on a developer laptop (Windows, PostgreSQL 17 in Docker, JDK 21, local 
 
 ## University catalogue and automated source monitoring
 
-The active catalogue is deliberately small: only institutions that have at least one program kept current by a working official-API connector (today the University of Helsinki, Aalto University and the University of Oulu with their Studyinfo programs). A source monitor that only notices a changed page is not synchronization and does not make a program eligible. The policy, what updates automatically, what still needs review, how stale data is withheld and how the development database was cleaned are in [docs/data/sync-policy.md](docs/data/sync-policy.md); the connectors are in [docs/data/official-api-connectors.md](docs/data/official-api-connectors.md); the monitoring and review machinery in [docs/data/](docs/data/) (`automated-refresh.md`, `change-review.md`). Everything runs from the command line (`--app.refresh.command=sync|run|report|review-list|review-approve|review-reject|studyinfo-import|studyinfo-sync|assign-adapter|sync-adapter`); there is no HTTP control surface.
+The active catalogue is deliberately small: only institutions that have at least one program kept current by a working official-API connector (today seven Finnish universities with their Studyinfo programs and eight Polish universities with their POL-on programs). A source monitor that only notices a changed page is not synchronization and does not make a program eligible. The policy, what updates automatically, what still needs review, how stale data is withheld and how the development database was cleaned are in [docs/data/sync-policy.md](docs/data/sync-policy.md); the connectors are in [docs/data/official-api-connectors.md](docs/data/official-api-connectors.md); the monitoring and review machinery in [docs/data/](docs/data/) (`automated-refresh.md`, `change-review.md`). Everything runs from the command line (`--app.refresh.command=sync|run|report|review-list|review-approve|review-reject|studyinfo-import|studyinfo-sync|assign-adapter|sync-adapter`); there is no HTTP control surface.
