@@ -13,7 +13,43 @@
     "pageMatch": "Computer Science",
     "feeStrategy": "AGH_TABLE",
     "feeRow": "Computer Science",
-    "factStrategy": "AGH_ACCORDION"
+    "factStrategy": "AGH_ACCORDION",
+    "admissionsUrl": "https://www.international.agh.edu.pl/en/studies/recruitment",
+    "admissionsTitle": "Recruitment -- Department for International Students AGH",
+    "extras": [
+      {
+        "url": "https://www.international.agh.edu.pl/en/studies/recruitment/deadlines-bachelor-studies",
+        "field": "application_period",
+        "regex": "(There is no admission for Bachelor studies held at the moment[.] Recruitment for the academic year [0-9]{4}/[0-9]{4} will start in [A-Za-z]+ [0-9]{4}[.] The Admission calendar will be published around [A-Za-z]+ [0-9]{4}[.])",
+        "max": 400,
+        "requires": "Deadlines - Bachelor studies",
+        "yearRegex": "Recruitment for the academic year ([0-9]{4})/([0-9]{4}) will start"
+      },
+      {
+        "url": "https://www.international.agh.edu.pl/en/studies/recruitment/recruitment-rules-bachelor",
+        "field": "selection",
+        "regex": "(The basis for qualifications for all fields of study is an admission rate W.*?may be admitted to the first year of full-time Bachelor [(]first-cycle[)] studies[.])",
+        "max": 700,
+        "requires": "Fields of Bachelor [(]first-cycle[)] studies",
+        "yearRegex": null
+      },
+      {
+        "url": "https://www.international.agh.edu.pl/en/studies/recruitment/recruitment-rules-bachelor",
+        "field": "language_tests",
+        "regex": "(I have a citizenship of a European Union country.*?You must provide the language document[.])",
+        "max": 2500,
+        "requires": "Fields of Bachelor [(]first-cycle[)] studies",
+        "yearRegex": null
+      },
+      {
+        "url": "https://www.international.agh.edu.pl/en/studies/recruitment/required-documents-bachelor",
+        "field": "documents",
+        "regex": "(Upload documents needed for recruitment into e-Rekrutacja system.*?) legalization/apostille to the secondary school leaving certificate",
+        "max": 1500,
+        "requires": "Required documents - Bachelor",
+        "yearRegex": null
+      }
+    ]
   },
   {
     "key": "politechnika-computer-science-bachelor",
@@ -29,7 +65,27 @@
     "pageMatch": "Computer Science",
     "feeStrategy": "TUL_TABLE",
     "feeRow": "Computer Science",
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": "https://apply.p.lodz.pl/en/enrollment/enroll",
+    "admissionsTitle": "Enrollment step by step",
+    "extras": [
+      {
+        "url": "https://apply.p.lodz.pl/en/enrollment/enroll/language-requirements",
+        "field": "language_tests",
+        "regex": "(You can apply for programmes taught in English if you know English at least at the B2 level and have:.*?conducted at institutions designated by the minister responsible for higher education[.])",
+        "max": 4500,
+        "requires": null,
+        "yearRegex": null
+      },
+      {
+        "url": "https://apply.p.lodz.pl/en/enrollment/enroll/exams",
+        "field": "entrance_tests",
+        "regex": "(Applicants for first-cycle programmes conducted in English might be required to take the entrance examination in English at the advanced level and obtain a minimum score of 60%[.])",
+        "max": 400,
+        "requires": "In the admission process for first-cycle studies",
+        "yearRegex": null
+      }
+    ]
   },
   {
     "key": "politechnika-information-technology-bachelor",
@@ -45,7 +101,27 @@
     "pageMatch": "Information Technology",
     "feeStrategy": "TUL_TABLE",
     "feeRow": "Information Technology",
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": "https://apply.p.lodz.pl/en/enrollment/enroll",
+    "admissionsTitle": "Enrollment step by step",
+    "extras": [
+      {
+        "url": "https://apply.p.lodz.pl/en/enrollment/enroll/language-requirements",
+        "field": "language_tests",
+        "regex": "(You can apply for programmes taught in English if you know English at least at the B2 level and have:.*?conducted at institutions designated by the minister responsible for higher education[.])",
+        "max": 4500,
+        "requires": null,
+        "yearRegex": null
+      },
+      {
+        "url": "https://apply.p.lodz.pl/en/enrollment/enroll/exams",
+        "field": "entrance_tests",
+        "regex": "(Applicants for first-cycle programmes conducted in English might be required to take the entrance examination in English at the advanced level and obtain a minimum score of 60%[.])",
+        "max": 400,
+        "requires": "In the admission process for first-cycle studies",
+        "yearRegex": null
+      }
+    ]
   },
   {
     "key": "politechnika-sztuczna-inteligencja-artificial-intelligence-bachelor",
@@ -61,7 +137,10 @@
     "pageMatch": "Artificial Intelligence",
     "feeStrategy": "PUT_TABLE",
     "feeRow": "ARTIFICIAL INTELLIGENCE",
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": "https://put.poznan.pl/en/admission-for-international",
+    "admissionsTitle": "Admission for international candidates",
+    "extras": []
   },
   {
     "key": "politechnika-informatyka-i-systemy-informacyjne-bachelor",
@@ -77,7 +156,10 @@
     "pageMatch": null,
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": null,
+    "admissionsTitle": null,
+    "extras": []
   },
   {
     "key": "politechnika-informatyka-bachelor",
@@ -93,7 +175,10 @@
     "pageMatch": null,
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": null,
+    "admissionsTitle": null,
+    "extras": []
   },
   {
     "key": "uniwersytet-finance-international-investment-and-accounting-bachelor",
@@ -109,7 +194,10 @@
     "pageMatch": "Finance, International Investment and Accounting",
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": "https://rekrutacja.uw.edu.pl/en/",
+    "admissionsTitle": "UW Admissions Office",
+    "extras": []
   },
   {
     "key": "szkola-globalny-biznes-finanse-i-zarz-dzanie-governance-bachelor",
@@ -125,7 +213,10 @@
     "pageMatch": null,
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": null,
+    "admissionsTitle": null,
+    "extras": []
   },
   {
     "key": "uniwersytet-international-business-bachelor",
@@ -141,7 +232,10 @@
     "pageMatch": null,
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": null,
+    "admissionsTitle": null,
+    "extras": []
   },
   {
     "key": "uniwersytet-global-finance-and-accounting-bachelor",
@@ -157,7 +251,10 @@
     "pageMatch": null,
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": null,
+    "admissionsTitle": null,
+    "extras": []
   },
   {
     "key": "uniwersytet-machine-learning-master",
@@ -173,7 +270,10 @@
     "pageMatch": "Machine Learning",
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": "UW_IRK"
+    "factStrategy": "UW_IRK",
+    "admissionsUrl": "https://rekrutacja.uw.edu.pl/en/",
+    "admissionsTitle": "UW Admissions Office",
+    "extras": []
   },
   {
     "key": "politechnika-sztuczna-inteligencja-artificial-intelligence-master",
@@ -189,7 +289,10 @@
     "pageMatch": "Artificial Intelligence",
     "feeStrategy": "PUT_TABLE",
     "feeRow": "ARTIFICIAL INTELLIGENCE",
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": "https://put.poznan.pl/en/admission-for-international",
+    "admissionsTitle": "Admission for international candidates",
+    "extras": []
   },
   {
     "key": "politechnika-computer-science-and-information-technology-master",
@@ -205,7 +308,19 @@
     "pageMatch": "Computer Science and Information Technology",
     "feeStrategy": "TUL_TABLE",
     "feeRow": "Computer Science and Information Technology",
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": "https://apply.p.lodz.pl/en/enrollment/enroll",
+    "admissionsTitle": "Enrollment step by step",
+    "extras": [
+      {
+        "url": "https://apply.p.lodz.pl/en/enrollment/enroll/language-requirements",
+        "field": "language_tests",
+        "regex": "(You can apply for programmes taught in English if you know English at least at the B2 level and have:.*?conducted at institutions designated by the minister responsible for higher education[.])",
+        "max": 4500,
+        "requires": null,
+        "yearRegex": null
+      }
+    ]
   },
   {
     "key": "politechnika-informatyka-master",
@@ -221,7 +336,10 @@
     "pageMatch": null,
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": null,
+    "admissionsTitle": null,
+    "extras": []
   },
   {
     "key": "politechnika-in-ynieria-i-analiza-danych-master",
@@ -237,7 +355,10 @@
     "pageMatch": null,
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": null,
+    "admissionsTitle": null,
+    "extras": []
   },
   {
     "key": "szkola-analiza-danych-big-data-master",
@@ -253,7 +374,10 @@
     "pageMatch": null,
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": null,
+    "admissionsTitle": null,
+    "extras": []
   },
   {
     "key": "szkola-international-business-master",
@@ -269,7 +393,10 @@
     "pageMatch": "International Business",
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": "SGH_DL"
+    "factStrategy": "SGH_DL",
+    "admissionsUrl": "https://www.sgh.waw.pl/en/educational-offer/admission-to-graduate-studies-in-english-for-international-applicants",
+    "admissionsTitle": "Admission to graduate studies in English for international applicants",
+    "extras": []
   },
   {
     "key": "uniwersytet-data-science-and-business-analytics-master",
@@ -285,7 +412,10 @@
     "pageMatch": "Data Science and Business Analytics",
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": "https://rekrutacja.uw.edu.pl/en/",
+    "admissionsTitle": "UW Admissions Office",
+    "extras": []
   },
   {
     "key": "uniwersytet-financial-analytics-master",
@@ -301,7 +431,10 @@
     "pageMatch": null,
     "feeStrategy": null,
     "feeRow": null,
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": null,
+    "admissionsTitle": null,
+    "extras": []
   },
   {
     "key": "uniwersytet-master-in-international-business-master",
@@ -317,6 +450,26 @@
     "pageMatch": "Master in International Business",
     "feeStrategy": "UEP_LINES",
     "feeRow": null,
-    "factStrategy": null
+    "factStrategy": null,
+    "admissionsUrl": "https://ue.poznan.pl/en/applicants/masters-level/",
+    "admissionsTitle": "Poznań University of Economics and Business",
+    "extras": [
+      {
+        "url": "https://ue.poznan.pl/en/applicants/masters-level/",
+        "field": "documents",
+        "regex": "(a signed application [(]generated from the IRK system[)],.*?) LANGUAGE REQUIREMENTS Accepted documents",
+        "max": 4000,
+        "requires": "Bachelor-/Master-level diploma",
+        "yearRegex": null
+      },
+      {
+        "url": "https://ue.poznan.pl/en/applicants/masters-level/",
+        "field": "language_tests",
+        "regex": "(Accepted documents certifying knowledge of English at a proficiency level of at least B2 are:.*?) NAWA RECOGNITION DECISION",
+        "max": 4900,
+        "requires": "Bachelor-/Master-level diploma",
+        "yearRegex": null
+      }
+    ]
   }
 ]

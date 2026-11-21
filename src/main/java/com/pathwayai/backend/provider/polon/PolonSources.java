@@ -25,15 +25,27 @@ public class PolonSources {
      * @param identityConfirmed a person confirmed that the POL-on course is the programme the university page describes
      *                          (the POL-on name is Polish or differs from the English page); unconfirmed candidates are never imported
      */
+    /**
+     * One verbatim section of an official page that states a requirement. {@code regex} captures the text (group 1); {@code requires} must also
+     * match the page text, which is how a section is tied to the programme's degree level; {@code yearRegex} (two year groups) is read from the
+     * page, never assumed.
+     */
+    public record Extra(String url, String field, String regex, int max, String requires, String yearRegex) { }
+
     public record Candidate(String key, String university, String courseUuid, String courseInstanceUuid, String entryLevel,
                             String programUrl, String feesUrl, boolean identityConfirmed, String polonName, String officialDomain,
-                            String pageMatch, String feeStrategy, String feeRow, String factStrategy) {
+                            String pageMatch, String feeStrategy, String feeRow, String factStrategy,
+                            String admissionsUrl, String admissionsTitle, List<Extra> extras) {
+        public Candidate {
+            extras = extras == null ? List.of() : List.copyOf(extras);
+        }
+
         /** A candidate without a programme-page fact strategy. */
         public Candidate(String key, String university, String courseUuid, String courseInstanceUuid, String entryLevel,
                          String programUrl, String feesUrl, boolean identityConfirmed, String polonName, String officialDomain,
                          String pageMatch, String feeStrategy, String feeRow) {
             this(key, university, courseUuid, courseInstanceUuid, entryLevel, programUrl, feesUrl, identityConfirmed, polonName,
-                    officialDomain, pageMatch, feeStrategy, feeRow, null);
+                    officialDomain, pageMatch, feeStrategy, feeRow, null, null, null, null);
         }
 
         /** The page that states this programme's fees: the fees page, else the programme page itself. */

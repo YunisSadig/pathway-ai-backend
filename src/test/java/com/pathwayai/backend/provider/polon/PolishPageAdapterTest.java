@@ -163,4 +163,65 @@ class PolishPageAdapterTest {
                 .as("an HTTP 200 that is another page proves nothing").isFalse();
         assertThat(PolishLinkMonitor.stillTheProgramme(page("uw-irk-ml-programme.html"), "https://evil.example/x", ml.programUrl(), ml)).isFalse();
     }
+
+    static java.util.List<ExtractedFact> read(String key, String url, String fixture) throws IOException {
+        var c = candidate(key);
+        return PolishPageAdapter.extract(page(fixture), url, url, c);
+    }
+
+    @Test
+    void everyAdmissionsPageIsStoredOnlyWhenItStillCarriesTheReviewedTitle() throws IOException {
+        var pages = java.util.Map.of(
+                "akademia-computer-science-bachelor", "agh-recruitment.html",
+                "politechnika-computer-science-bachelor", "tul-enroll.html",
+                "politechnika-sztuczna-inteligencja-artificial-intelligence-bachelor", "put-admission.html",
+                "uniwersytet-machine-learning-master", "uw-admissions.html",
+                "szkola-international-business-master", "sgh-admission.html",
+                "uniwersytet-master-in-international-business-master", "pueb-masters-2026-11-21.html");
+        for (var e : pages.entrySet()) {
+            var c = candidate(e.getKey());
+            var fact = one(read(e.getKey(), c.admissionsUrl(), e.getValue()), FactType.UNIVERSITY_FACT, "official_admissions_url");
+            assertThat(fact.values()).as(e.getKey()).containsEntry("value", c.admissionsUrl());
+            assertThat(PolonSources.owned(c.admissionsUrl(), c.university())).isTrue();
+            assertThat(PolishPageAdapter.extract("<html><head><title>Page not found</title></head><body>x</body></html>", c.admissionsUrl(), c.admissionsUrl(), c))
+                    .as("another page proves nothing: " + e.getKey()).noneMatch(f -> "official_admissions_url".equals(f.values().get("field")));
+        }
+        assertThat(candidate("uniwersytet-international-business-bachelor").admissionsUrl()).as("UEK is unsupported").isNull();
+    }
+
+    @Test
+    void aghBachelorRequirementsComeFromTheBachelorPagesWithTheirOwnSourceAndYear() throws IOException {
+        var c = candidate("akademia-computer-science-bachelor");
+        var base = "https://www.international.agh.edu.pl/en/studies/recruitment/";
+        var period = one(read(c.key(), base + "deadlines-bachelor-studies", "agh-deadlines-bachelor.html"), FactType.UNIVERSITY_FACT, "application_period").values();
+        assertThat(period.get("value")).contains("Recruitment for the academic year 2027/2028 will start in June 2027");
+        assertThat(period).containsEntry("academicYear", "2027-2028");
+        var rules = read(c.key(), base + "recruitment-rules-bachelor", "agh-rules-bachelor.html");
+        assertThat(one(rules, FactType.UNIVERSITY_FACT, "selection").values().get("value")).contains("300 points").contains("Bachelor (first-cycle)");
+        assertThat(one(rules, FactType.UNIVERSITY_FACT, "language_tests").values().get("value")).contains("You must provide the language document");
+        assertThat(one(read(c.key(), base + "required-documents-bachelor", "agh-documents-bachelor.html"), FactType.UNIVERSITY_FACT, "documents").values().get("value"))
+                .contains("secondary school-leaving certificate").doesNotContain("Master");
+        // the level guard: a page that is not the bachelor page yields nothing
+        assertThat(read(c.key(), base + "deadlines-bachelor-studies", "agh-recruitment.html")).noneMatch(f -> "application_period".equals(f.values().get("field")));
+    }
+
+    @Test
+    void lodzEnglishRequirementAppliesToEveryProgrammeButTheEntranceExamOnlyToBachelors() throws IOException {
+        for (var key : java.util.List.of("politechnika-computer-science-bachelor", "politechnika-computer-science-and-information-technology-master")) {
+            var lang = one(read(key, "https://apply.p.lodz.pl/en/enrollment/enroll/language-requirements", "tul-language.html"), FactType.UNIVERSITY_FACT, "language_tests");
+            assertThat(lang.values().get("value")).as(key).startsWith("You can apply for programmes taught in English if you know English at least at the B2 level");
+        }
+        var exams = read("politechnika-computer-science-bachelor", "https://apply.p.lodz.pl/en/enrollment/enroll/exams", "tul-exams.html");
+        assertThat(one(exams, FactType.UNIVERSITY_FACT, "entrance_tests").values().get("value")).contains("minimum score of 60%");
+        assertThat(read("politechnika-computer-science-and-information-technology-master", "https://apply.p.lodz.pl/en/enrollment/enroll/exams", "tul-exams.html"))
+                .as("the first-cycle exam is not stated for a master's programme").noneMatch(f -> "entrance_tests".equals(f.values().get("field")));
+    }
+
+    @Test
+    void poznanUebMastersPageGivesDocumentsAndEnglishRequirementForTheMastersProgramme() throws IOException {
+        var c = candidate("uniwersytet-master-in-international-business-master");
+        var facts = read(c.key(), c.programUrl(), "pueb-masters-2026-11-21.html");
+        assertThat(one(facts, FactType.UNIVERSITY_FACT, "documents").values().get("value")).startsWith("a signed application").contains("diploma");
+        assertThat(one(facts, FactType.UNIVERSITY_FACT, "language_tests").values().get("value")).startsWith("Accepted documents certifying knowledge of English");
+    }
 }

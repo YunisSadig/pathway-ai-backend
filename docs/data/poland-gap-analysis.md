@@ -1,38 +1,45 @@
-# Poland: gap against a Finnish programme page (2026-11-21)
+# Poland: gap against a Finnish programme page (state after phase 2c, 2026-11-21)
 
 Every cell was checked against the university's own pages read on 2026-11-21 (robots.txt respected, no 403 bypassed) and, for the
 POL-on columns, the official POL-on / RAD-on record. A Finnish programme page carries: programme page and admissions page links,
 degree title, study mode, duration, campus, tuition by applicant category, application period, eligibility / selection / entrance
-test, language requirement, scholarships, documents, and a link health status (`PROGRAM_PAGE`, `ADMISSIONS_PAGE`).
+test, documents, language requirement, scholarships, and a link health status (`PROGRAM_PAGE`, `ADMISSIONS_PAGE`).
 
-Legend. **live**: already published before this change. **NEW**: extracted by this change (rehearsal and preview first).
-**found**: the official page states it but it is shared by several programmes, a link only, or a layout not safely parseable
-(reason given); not extracted. **n/p**: the university's page does not publish it. **unsupp.**: source unsupported (never bypassed).
+Legend. **live**: published (phase 2a/2b or POL-on). **2c**: added in phase 2c. **found**: the official page states it but it is not
+level-specific, is a link only, or sits in a layout that cannot be read unambiguously (reason given); not extracted. **n/p**: the
+university's pages do not publish it. **unsupp.**: source unsupported (never bypassed).
 
-| Programme | Own programme page | Degree title | Mode | Duration | Campus | Tuition (category, year) | Application period / intake | Eligibility, selection, entrance test | Language requirement | Scholarships | Link health |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| AGH Computer Science (B) | n/p: offer list only | n/p | found: tab heading only | **NEW** 7 semesters | n/p | live: EUR 3000/semester, international, 2026/27 | **NEW** "June - September; start October 1", no year printed (UNKNOWN_YEAR) | found: link to "Recruitment rules" (not read) | found: link only | found: link only | n/a (no stored page link) |
-| TUL Computer Science (B) | n/p: offer list only | n/p | POL-on full-time (live) | POL-on (live) | n/p | **NEW** PLN 9000/semester, international, 2026/27 | found: `apply.p.lodz.pl` enrolment schedule, not read | found: not read | found: not read | found: fee-waiver page, not read | n/a |
-| TUL Information Technology (B) | n/p: offer list only | n/p | POL-on | POL-on | n/p | **NEW** PLN 9000/semester, 2026/27 | as above | as above | as above | as above | n/a |
-| TUL Computer Science and IT (M) | n/p: offer list only | n/p | POL-on | POL-on | n/p | **NEW** PLN 9000/semester, 2026/27 | as above | as above | as above | as above | n/a |
-| PUT Artificial Intelligence (B) | n/p: page 404 | n/p | POL-on | POL-on | n/p | live: verbatim EUR 1st semester + PLN later semesters, 2026/27 | n/p | n/p (no first-cycle admissions page found) | n/p | found: link "free of charge/scholarship" | n/a |
-| PUT Artificial Intelligence (M) | n/p: PDF only | n/p | POL-on | POL-on | n/p | live: verbatim, 2026/27 | n/p | n/p | n/p | found: link only | n/a |
-| UW Machine Learning (M) | live (IRK page) | **NEW** Magister (MSc) | **NEW** full-time | POL-on | **NEW** Ochota Campus | n/p on page; fees only in a PDF (merged cells, not parsed) | **NEW** exam 1 July 2026, results 22 July, document rounds 23-31 July 2026 (2026/27, ended) | **NEW** eligibility, 45% minimum, written exam topics | **NEW** English B2 rules | n/p | NEW: `PROGRAM_PAGE` |
-| UW Data Science and Business Analytics (M) | live (WNE page) | n/p | n/p | POL-on | n/p | n/p | n/p: only an older (2025) IRK unit page is linked | n/p | n/p | n/p | NEW: `PROGRAM_PAGE` |
-| UW Finance, Intl Investment and Accounting (B) | live (WNE page) | n/p | n/p | POL-on | n/p | n/p | n/p: as above | n/p | n/p | n/p | NEW: `PROGRAM_PAGE` |
-| SGH International Business (M) | live | n/p | **NEW** full-time | **NEW** 2 years (4 semesters) | n/p | **NEW** sentence "2400 EUR (per semester) or 2450 EUR (instalments)"; page prints no year or category | found: "documents period" named, no dates | found: link to admissions page, not read | n/p | found: generic link | NEW: `PROGRAM_PAGE` |
-| UEK International Business (B), Global Finance and Accounting (B), Financial Analytics (M) | unsupp. | unsupp. | POL-on | POL-on | unsupp. | unsupp. | unsupp. | unsupp. | unsupp. | unsupp. | unsupp. |
-| PUEB Master in International Business (M) | n/p: masters landing page | n/p | POL-on | POL-on | n/p | live: verbatim PLN 7350/semester, year not stated | found: shared by all masters | found: shared by all masters (85 PLN fee, documents) | found: shared (B2, accepted certificates) | found: shared | n/a |
+| Programme | Admissions page | Own programme page | Title / mode / duration / campus | Tuition | Application period | Eligibility, selection, tests, documents | Language | Scholarships | Link health |
+|---|---|---|---|---|---|---|---|---|---|
+| AGH Computer Science (B) | **2c** `/en/studies/recruitment` | n/p: offer list | live: 7 semesters; mode found as tab heading only | live: EUR 3000/semester, 2026/27 | live: undated window; **2c** "no admission now, recruitment 2027/2028 starts June 2027" (bachelor deadlines page, 2027-2028) | **2c** 300-point minimum rule and documents (bachelor pages only); subject choice per field found, heading context unclear | **2c** language-document rule (bachelor rules page) | found: generic AGH page, not level-specific | `PROGRAM_PAGE` n/a; **2c** `ADMISSIONS_PAGE` |
+| TUL Computer Science (B), Information Technology (B) | **2c** `/en/enrollment/enroll` | n/p: offer list | POL-on | live: PLN 9000/semester, 2026/27 | found: schedule tables for both cycles mixed on one page (second block carries a 2025/2026 note), not safely parseable | **2c** bachelor entrance exam: English at advanced level, minimum 60% (English-taught first-cycle); documents page found, not read | **2c** B2 rule and accepted certificates (page applies to all English programmes) | found: free-places contest and NAWA programmes, page does not state a degree level | **2c** `ADMISSIONS_PAGE` |
+| TUL Computer Science and IT (M) | **2c** same | n/p | POL-on | live: PLN 9000/semester, 2026/27 | found: as above | n/p (first-cycle exam text is not stated for master's) | **2c** as above | found: as above | **2c** `ADMISSIONS_PAGE` |
+| PUT Artificial Intelligence (B), (M) | **2c** `/en/admission-for-international` | n/p: 404 / PDF | POL-on | live: verbatim, 2026/27 | n/p | n/p | n/p | found: "free of charge / scholarship" page, not read | **2c** `ADMISSIONS_PAGE` |
+| UW Machine Learning (M) | **2c** `rekrutacja.uw.edu.pl/en/` | live (IRK page) | live: Magister (MSc), full-time, Ochota Campus | n/p on page: fees only in a PDF (below) | live: exam and rounds 2026 (ended) | live: eligibility, 45% minimum, written exam | live: B2 rules | n/p | live `PROGRAM_PAGE`; **2c** `ADMISSIONS_PAGE` |
+| UW Data Science and Business Analytics (M); Finance, Intl Investment and Accounting (B) | **2c** same | live (WNE pages) | n/p | n/p: PDF (below) | n/p: only an older (2025) IRK unit page is linked | n/p | n/p | n/p | live `PROGRAM_PAGE`; **2c** `ADMISSIONS_PAGE` |
+| SGH International Business (M) | **2c** graduate admission page for international applicants | live | live: full-time, 2 years (4 semesters) | live: sentence "2400 EUR ... 2450 EUR", no year | n/p: schedule is on a Polish-only subpage | found: sub-pages (documents, language, schedule) not read | found: sub-page not read | found: generic link | live `PROGRAM_PAGE`; **2c** `ADMISSIONS_PAGE` |
+| UEK International Business (B), Global Finance and Accounting (B), Financial Analytics (M) | unsupp. | unsupp. | POL-on | unsupp. | unsupp. | unsupp. | unsupp. | unsupp. | unsupp. |
+| PUEB Master in International Business (M) | **2c** masters-level page | n/p: landing page | POL-on | live: PLN 7350/semester, no year | found: calendar months only, no year | **2c** documents list (masters-level page) | **2c** accepted English certificates (B2) | n/p: the page's scholarship sentence concerns first-year undergraduates | **2c** `ADMISSIONS_PAGE` |
 
-"POL-on" = already published from POL-on (name, level, field, language, duration in semesters). Shared pages (PUEB masters, TUL enrolment)
-describe rules for every programme of the level; storing them on one programme would present a general rule as programme-specific, so
-they stay unextracted until a per-programme statement exists.
+## UW fees (blocked, nothing stored)
+The official PDF (`rekrutacja.uw.edu.pl/files/pdf/tuition_fees_2026-2027_05.10.2026.pdf`, 193 text lines) lays fees out in merged cells (rows
+of programme names beside two columns of amounts per cycle). Reading it at all needs a PDF text library (none is in the project; dependencies
+need an explicit decision) and the layout is positional, so even then a verbatim row could pair a fee with the wrong programme. UW fees stay
+Not stated; the fees page link is stored as `financial_url`.
 
 ## Not importable yet (6 candidates, identity unconfirmed)
-WUT x4 and SGH x2: the POL-on name is Polish and a person has not confirmed the mapping. No facts are read for them.
+WUT x4 and SGH x2: the POL-on name is Polish and a person has not confirmed the mapping. No facts are read for them. PW has no imported programme, so
+it has no admissions link.
+
+## How requirement facts are tied to a level
+Each requirement is a verbatim section of one reviewed page (`extras` in `curated-poland.json`), stored with that page as its source. It is stored
+only if the page also contains a level guard (for example "Fields of Bachelor (first-cycle) studies" on AGH's bachelor rules page), the section
+fits its size bound, and a year only if the page prints one. A page that does not name a level is used only where it states a rule for all
+programmes in English (TUL language page); scholarship pages that do not name a degree level are not stored.
 
 ## Link-status monitoring
-Finland checks `PROGRAM_PAGE`/`ADMISSIONS_PAGE` weekly (`--app.curated.command=links`). Poland now does the same in the same command
+Finland checks `PROGRAM_PAGE`/`ADMISSIONS_PAGE` weekly (`--app.curated.command=links`). Poland does the same in the same command
 (`PolishLinkMonitor`, same `program_link_status` table): a stored programme page is VERIFIED only if it still has exactly one h1 naming
-the programme; 403/robots/timeouts are SOURCE_UNAVAILABLE; 404/410 twice in a row is BROKEN; a redirect off the university domain waits for
-review. Polish links are never replaced automatically (no URL construction). Fee pages are covered by their `pl-university-page` monitors.
+the programme; a stored admissions page only if it still carries the reviewed title; 403/robots/timeouts are SOURCE_UNAVAILABLE; 404/410
+twice in a row is BROKEN; a redirect off the university domain waits for review. Polish links are never replaced automatically (no URL
+construction). Fee and requirement pages are covered by their `pl-university-page` monitors.

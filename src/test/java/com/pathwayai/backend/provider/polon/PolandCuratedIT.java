@@ -140,11 +140,20 @@ class PolandCuratedIT {
         transport.reset(ml.programUrl(), FakeTransport.text("text/html", PolishPageAdapterTest.page("uw-irk-ml-programme.html")));
         var tul = sources.candidates().stream().filter(c -> c.key().equals("politechnika-computer-science-bachelor")).findFirst().orElseThrow();
         transport.reset(tul.feesUrl(), FakeTransport.text("text/html", PolishPageAdapterTest.page("tul-fees.html")));
+        transport.reset(agh.admissionsUrl(), FakeTransport.text("text/html", PolishPageAdapterTest.page("agh-recruitment.html")));
+        for (var x : agh.extras()) {
+            String fixture = x.url().contains("deadlines") ? "agh-deadlines-bachelor.html" : x.url().contains("rules") ? "agh-rules-bachelor.html" : "agh-documents-bachelor.html";
+            transport.reset(x.url(), FakeTransport.text("text/html", PolishPageAdapterTest.page(fixture)));
+        }
         transport.reset(agh.feesUrl(), FakeTransport.text("text/html", PolishPageAdapterTest.page("agh-fees.html")));
         String fingerprint = cli("preview", "").plan().fingerprint();
         cli("apply", fingerprint).run(new DefaultApplicationArguments());
         long program = jdbcTemplate.queryForObject("select e.program_id from program_external_id e where e.scheme='POLON_COURSE' and e.value=?", Long.class, agh.courseUuid());
         assertThat(jdbcTemplate.queryForObject("select official_program_url from degree_program where id=?", String.class, program)).as("AGH's page is an offer list").isNull();
+        assertThat(jdbcTemplate.queryForObject("select official_admissions_url from degree_program where id=?", String.class, program)).isEqualTo(agh.admissionsUrl());
+        assertThat(jdbcTemplate.queryForObject("select value from program_university_fact where program_id=? and field_name='selection'", String.class, program)).contains("300 points");
+        assertThat(jdbcTemplate.queryForObject("select academic_year from program_university_fact where program_id=? and field_name='application_period' and scope_key='2027-2028'", String.class, program))
+                .as("the bachelor deadlines page prints the year").isEqualTo("2027-2028");
         long mlProgram = jdbcTemplate.queryForObject("select e.program_id from program_external_id e where e.scheme='POLON_COURSE' and e.value=?", Long.class, ml.courseUuid());
         assertThat(jdbcTemplate.queryForObject("select official_program_url from degree_program where id=?", String.class, mlProgram)).isEqualTo(ml.programUrl());
         assertThat(jdbcTemplate.queryForObject("select value from program_university_fact where program_id=? and field_name='financial_url'", String.class, program)).isEqualTo(agh.feesUrl());
@@ -152,7 +161,7 @@ class PolandCuratedIT {
         assertThat(jdbcTemplate.queryForObject("select academic_year from program_university_fact where program_id=? and field_name='application_period'", String.class, mlProgram))
                 .as("the year is the one the page prints").isEqualTo("2026-2027");
         assertThat(jdbcTemplate.queryForObject("select value from program_university_fact where program_id=? and field_name='duration_structure'", String.class, program)).isEqualTo("7 semesters (3,5 years)");
-        assertThat(jdbcTemplate.queryForObject("select academic_year from program_university_fact where program_id=? and field_name='application_period'", String.class, program))
+        assertThat(jdbcTemplate.queryForObject("select academic_year from program_university_fact where program_id=? and field_name='application_period' and scope_key='year-not-stated'", String.class, program))
                 .as("AGH prints no year, so none is stored").isNull();
         long putProgram = jdbcTemplate.queryForObject("select e.program_id from program_external_id e where e.scheme='POLON_COURSE' and e.value=?", Long.class, put.courseUuid());
         assertThat(jdbcTemplate.queryForObject("select academic_year from program_university_fact where program_id=? and field_name='tuition_scope'", String.class, putProgram)).isEqualTo("2026-2027");
