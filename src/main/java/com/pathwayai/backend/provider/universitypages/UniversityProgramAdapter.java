@@ -204,6 +204,11 @@ public class UniversityProgramAdapter implements ExtractionAdapter {
             for(String f:List.of("d MMM uuuu","d MMMM uuuu"))
                 try{last=LocalDate.parse(english.group(),DateTimeFormatter.ofPattern(f,Locale.ENGLISH));break;}catch(Exception ignored){}
         }
+        if(last!=null)return last;
+        // "31st of July, 2026" (University of Warsaw); the latest stated date wins
+        var ordinal=Pattern.compile("(\\d{1,2})(?:st|nd|rd|th) of ([A-Za-z]{3,9}),? (\\d{4})").matcher(value);
+        while(ordinal.find())
+            try{last=LocalDate.parse(ordinal.group(1)+" "+ordinal.group(2)+" "+ordinal.group(3),DateTimeFormatter.ofPattern("d MMMM uuuu",Locale.ENGLISH));}catch(Exception ignored){}
         return last;
     }
 }

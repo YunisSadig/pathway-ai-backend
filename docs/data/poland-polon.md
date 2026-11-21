@@ -26,8 +26,17 @@ assessment: [country-candidates-2026-11-19.md](country-candidates-2026-11-19.md)
 - **Unsupported source:** `study.uek.krakow.pl` (UEK, 3 programmes) resets connections on repeated reads (observed in four rehearsal runs: the
   first read succeeded, later ones failed even after two retries). A source that cannot be read reliably cannot be kept current, so its pages
   are not read at all (`pageMatch` is null in the candidate file): no programme link, no fees link, no fee. Revisit when the site answers reliably.
-- **Not imported (Not stated):** tuition for the other programmes (TUL prints 9000 PLN without stating the period, UEK/UW/SGH/PW have no
-  unambiguous row or page), deadlines, admission and language requirements, application URL, admissions URL. Nothing is guessed.
+- **Phase 2b (2026-11-21; gap table in `poland-gap-analysis.md`):** more facts, each only where the page states it (strategy per candidate in
+  `curated-poland.json`: `feeStrategy` / `factStrategy`). **TUL** tuition: PLN 9000 per semester, the full-time English row of the programme's own cycle,
+  non-Polish-citizen students, 2026/2027 printed in the page's own sentence (structured fee for the three TUL programmes; this replaces the earlier
+  "period not stated" reading, the 2026/27 page prints "per semester"). **AGH** duration and an undated recruitment window ("June - September", start
+  "October 1"; no year printed, so none stored) from the programme's own accordion item. **UW Machine Learning** (IRK page) degree title, study mode,
+  campus, eligibility, 45% minimum and written exam, English B2 rules and the dated deadlines (academic year 2026-2027 from the page header; text copied
+  word for word; its last date, 31 July 2026, makes the fact HISTORICAL). **SGH International Business** mode, duration and the tuition sentence (no year
+  or applicant category printed, so none stored). Polish links get weekly health checks (`PolishLinkMonitor`, run by `--app.curated.command=links`, table
+  `program_link_status`): never replaced automatically, a 403 or timeout never marks a link broken.
+- **Still Not stated:** UW fees (merged-cell PDF), UEK (unsupported), PW/WUT/SGH-bachelor (identity unconfirmed), deadlines and requirements for programmes whose
+  pages do not publish them or point to shared or unread pages (AGH, TUL, PUEB, PUT 404/PDF), scholarships, application URL, admissions URL. Nothing is guessed.
 - Page facts go through the normal pipeline (monitor bound to the university, program null, facts per programme slug), the POL-on course id
   is the education identifier, and the URL facts must be https pages of the university's own registered domain (`PolonSources.owned`).
 - Identity: a candidate whose POL-on name is Polish or differs from the university page has `identityConfirmed=false` and is never imported

@@ -12,7 +12,8 @@
     "officialDomain": "agh.edu.pl",
     "pageMatch": "Computer Science",
     "feeStrategy": "AGH_TABLE",
-    "feeRow": "Computer Science"
+    "feeRow": "Computer Science",
+    "factStrategy": "AGH_ACCORDION"
   },
   {
     "key": "politechnika-computer-science-bachelor",
@@ -26,8 +27,9 @@
     "polonName": "Computer Science",
     "officialDomain": "p.lodz.pl",
     "pageMatch": "Computer Science",
-    "feeStrategy": null,
-    "feeRow": null
+    "feeStrategy": "TUL_TABLE",
+    "feeRow": "Computer Science",
+    "factStrategy": null
   },
   {
     "key": "politechnika-information-technology-bachelor",
@@ -41,8 +43,9 @@
     "polonName": "Information Technology",
     "officialDomain": "p.lodz.pl",
     "pageMatch": "Information Technology",
-    "feeStrategy": null,
-    "feeRow": null
+    "feeStrategy": "TUL_TABLE",
+    "feeRow": "Information Technology",
+    "factStrategy": null
   },
   {
     "key": "politechnika-sztuczna-inteligencja-artificial-intelligence-bachelor",
@@ -57,7 +60,8 @@
     "officialDomain": "put.poznan.pl",
     "pageMatch": "Artificial Intelligence",
     "feeStrategy": "PUT_TABLE",
-    "feeRow": "ARTIFICIAL INTELLIGENCE"
+    "feeRow": "ARTIFICIAL INTELLIGENCE",
+    "factStrategy": null
   },
   {
     "key": "politechnika-informatyka-i-systemy-informacyjne-bachelor",
@@ -72,7 +76,8 @@
     "officialDomain": "pw.edu.pl",
     "pageMatch": null,
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": null
   },
   {
     "key": "politechnika-informatyka-bachelor",
@@ -87,7 +92,8 @@
     "officialDomain": "pw.edu.pl",
     "pageMatch": null,
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": null
   },
   {
     "key": "uniwersytet-finance-international-investment-and-accounting-bachelor",
@@ -102,7 +108,8 @@
     "officialDomain": "uw.edu.pl",
     "pageMatch": "Finance, International Investment and Accounting",
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": null
   },
   {
     "key": "szkola-globalny-biznes-finanse-i-zarz-dzanie-governance-bachelor",
@@ -117,7 +124,8 @@
     "officialDomain": "sgh.waw.pl",
     "pageMatch": null,
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": null
   },
   {
     "key": "uniwersytet-international-business-bachelor",
@@ -132,7 +140,8 @@
     "officialDomain": "uek.krakow.pl",
     "pageMatch": null,
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": null
   },
   {
     "key": "uniwersytet-global-finance-and-accounting-bachelor",
@@ -147,7 +156,8 @@
     "officialDomain": "uek.krakow.pl",
     "pageMatch": null,
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": null
   },
   {
     "key": "uniwersytet-machine-learning-master",
@@ -162,7 +172,8 @@
     "officialDomain": "uw.edu.pl",
     "pageMatch": "Machine Learning",
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": "UW_IRK"
   },
   {
     "key": "politechnika-sztuczna-inteligencja-artificial-intelligence-master",
@@ -177,7 +188,8 @@
     "officialDomain": "put.poznan.pl",
     "pageMatch": "Artificial Intelligence",
     "feeStrategy": "PUT_TABLE",
-    "feeRow": "ARTIFICIAL INTELLIGENCE"
+    "feeRow": "ARTIFICIAL INTELLIGENCE",
+    "factStrategy": null
   },
   {
     "key": "politechnika-computer-science-and-information-technology-master",
@@ -191,8 +203,9 @@
     "polonName": "Computer Science and Information Technology",
     "officialDomain": "p.lodz.pl",
     "pageMatch": "Computer Science and Information Technology",
-    "feeStrategy": null,
-    "feeRow": null
+    "feeStrategy": "TUL_TABLE",
+    "feeRow": "Computer Science and Information Technology",
+    "factStrategy": null
   },
   {
     "key": "politechnika-informatyka-master",
@@ -207,7 +220,8 @@
     "officialDomain": "pw.edu.pl",
     "pageMatch": null,
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": null
   },
   {
     "key": "politechnika-in-ynieria-i-analiza-danych-master",
@@ -222,7 +236,8 @@
     "officialDomain": "pw.edu.pl",
     "pageMatch": null,
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": null
   },
   {
     "key": "szkola-analiza-danych-big-data-master",
@@ -237,7 +252,8 @@
     "officialDomain": "sgh.waw.pl",
     "pageMatch": null,
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": null
   },
   {
     "key": "szkola-international-business-master",
@@ -252,7 +268,8 @@
     "officialDomain": "sgh.waw.pl",
     "pageMatch": "International Business",
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": "SGH_DL"
   },
   {
     "key": "uniwersytet-data-science-and-business-analytics-master",
@@ -267,7 +284,8 @@
     "officialDomain": "uw.edu.pl",
     "pageMatch": "Data Science and Business Analytics",
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": null
   },
   {
     "key": "uniwersytet-financial-analytics-master",
@@ -282,7 +300,8 @@
     "officialDomain": "uek.krakow.pl",
     "pageMatch": null,
     "feeStrategy": null,
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": null
   },
   {
     "key": "uniwersytet-master-in-international-business-master",
@@ -297,6 +316,7 @@
     "officialDomain": "ue.poznan.pl",
     "pageMatch": "Master in International Business",
     "feeStrategy": "UEP_LINES",
-    "feeRow": null
+    "feeRow": null,
+    "factStrategy": null
   }
 ]

@@ -166,7 +166,7 @@ public class OfficialLinkMonitor {
         catch(IllegalArgumentException e) { return false; }
     }
 
-    private int failures(long program,String type) {
+    public int failures(long program,String type) {
         return jdbc.sql("select consecutive_failures from program_link_status where program_id=:p and link_type=:t")
                 .param("p",program).param("t",type).query(Integer.class).optional().orElse(0);
     }
@@ -187,7 +187,7 @@ public class OfficialLinkMonitor {
     }
 
     /** {@code failures}: consecutive 404/410 count after this check; null keeps the previous count (403, timeout...). */
-    private Outcome record(long program,String type,String url,String status,String finalUrl,String candidateUrl,String detail,Instant now,Integer failures) {
+    public Outcome record(long program,String type,String url,String status,String finalUrl,String candidateUrl,String detail,Instant now,Integer failures) {
         boolean ok=status.endsWith("VERIFIED");
         String d=detail==null?null:detail.length()>500?detail.substring(0,500):detail;
         jdbc.sql("""
