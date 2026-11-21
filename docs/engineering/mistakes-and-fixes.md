@@ -403,3 +403,12 @@ Only problems that actually happened during development. Each entry was verified
 - **Verification:** actionlint clean; the new trigger is proven only by the first real deployment after merge (until then the manual trigger is the fallback). Status: fix proposed in a PR, not merged.
 - **Review finding (2026-11-18, before merge):** the first version of the fix had a workflow-level `concurrency` group with `cancel-in-progress: true`. The verify job runs in the `staging` environment and every environment job creates a GitHub deployment whose status events (also the `sync` ones from rehearsal, refresh and backup jobs) start this workflow again, so those runs would have cancelled the real verification. The group now sits on the verify job only, without cancellation.
 - **Prevention rule:** never start a workflow on main while the latest push is still undeployed; never make a check that waits for the deployment part of the check set that gates it; a workflow triggered by `deployment_status` must not use workflow-level concurrency with cancellation, because its own environment jobs and every other workflow's environment jobs trigger it.
+
+## 50. A fact shared by several programmes was stored for only the first one (2026-11-21)
+- **Evidence:** Neon rehearsal of Poland phase 2b: the preview listed PLN 9000/semester for three TUL programmes (one shared fees page), apply stored it for one. `staged_change` had a single TUITION row for that source.
+- **Root cause:** `ChangePipeline.stage` builds `dedupe_key` from source, type, key and value but not the programme. Programme 2 and 3 produced the same key as programme 1 and were silently counted as "already seen". Finland never hit it because each Finnish source belongs to one programme. The recorded-page IT had not stubbed the TUL page, so no test covered a shared page.
+- **Affected:** code of PR #68 only; nothing reached production (the rehearsal branch was the only target).
+- **Fix:** for `pl-university-page` monitors the programme id is part of the dedupe key; `PolandCuratedIT` now stubs the shared TUL page and expects 4 fee rows (AGH + 3 TUL).
+- **Verification:** rehearsal evidence above; IT passes (6/6).
+- **Prevention rule:** when one source feeds several programmes, a test must assert the fact for EVERY programme, and any dedupe key must include what the fact belongs to.
+- **Status:** fixed in the follow-up PR.
