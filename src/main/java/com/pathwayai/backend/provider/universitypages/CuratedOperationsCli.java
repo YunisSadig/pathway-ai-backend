@@ -25,19 +25,21 @@ import org.springframework.stereotype.Component;
 public class CuratedOperationsCli implements ApplicationRunner {
     static final List<String> COMMANDS=List.of("links","status");
     private final OfficialLinkMonitor links;
+    private final com.pathwayai.backend.provider.polon.PolishLinkMonitor polishLinks;
     private final JdbcClient jdbc;
     private final Clock clock;
     private final String command;
 
-    public CuratedOperationsCli(OfficialLinkMonitor links,JdbcClient jdbc,Clock clock,@Value("${app.curated.command}") String command) {
-        this.links=links;this.jdbc=jdbc;this.clock=clock;this.command=command;
+    public CuratedOperationsCli(OfficialLinkMonitor links,com.pathwayai.backend.provider.polon.PolishLinkMonitor polishLinks,JdbcClient jdbc,Clock clock,@Value("${app.curated.command}") String command) {
+        this.links=links;this.polishLinks=polishLinks;this.jdbc=jdbc;this.clock=clock;this.command=command;
     }
 
     @Override public void run(ApplicationArguments args) {
         if(!COMMANDS.contains(command)) return;
-        if(!releaseEnabled()) { System.out.println("CURATED_"+command.toUpperCase()+" no enabled curated release: nothing to do"); return; }
         if(command.equals("links")) {
-            var outcomes=links.checkAll(clock.instant());
+            var outcomes=new java.util.ArrayList<OfficialLinkMonitor.Outcome>();
+            if(releaseEnabled()) outcomes.addAll(links.checkAll(clock.instant()));
+            outcomes.addAll(polishLinks.checkAll(clock.instant())); // Polish programmes are not in the Studyinfo release
             outcomes.forEach(o->System.out.println("LINK "+o.status()+" program="+o.programId()+" "+o.linkType()+" "+o.url()
                     +(o.detail()==null?"":" | "+o.detail())));
             long attention=outcomes.stream().filter(OfficialLinkMonitor.Outcome::needsAttention).count();
@@ -45,6 +47,7 @@ public class CuratedOperationsCli implements ApplicationRunner {
             if(attention>0) throw new IllegalStateException(attention+" official link(s) need review: see LINK lines above");
             return;
         }
+        if(!releaseEnabled()) { System.out.println("CURATED_"+command.toUpperCase()+" no enabled curated release: nothing to do"); return; }
         report();
     }
 

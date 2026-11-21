@@ -24,7 +24,7 @@ class CuratedStatusDetailIT {
     @Autowired JdbcTemplate jdbc;
 
     @Test void detailSqlRunsOnTheMigratedSchemaAndReportsNothingForAnEmptyCatalogue() {
-        var cli=new CuratedOperationsCli(null,jdbcClient,Clock.systemUTC(),"status");
+        var cli=new CuratedOperationsCli(null,null,jdbcClient,Clock.systemUTC(),"status");
         List<String> lines=cli.detailLines();
         assertThat(lines).contains("== Curated data detail","tuition rows on curated programs: 0","tuition rows with an academic year: 0");
     }
@@ -37,7 +37,7 @@ class CuratedStatusDetailIT {
         jdbc.update("insert into tuition_fee(program_id,source_id,student_category,amount,currency,billing_period) values(?,?,'INTERNATIONAL',12000,'EUR','PER_YEAR')",program,source);
         jdbc.update("insert into catalog_release(id,country_code,enabled,approved_by,approved_at) values('synthetic-detail-release','ZZ',true,'test',now())");
         jdbc.update("insert into catalog_membership(release_id,program_id,entry_level,qualification_pathway,education_oid,implementation_oid) values('synthetic-detail-release',?,'MASTER','SINGLE_DEGREE','1.2.3','1.2.4')",program);
-        List<String> lines=new CuratedOperationsCli(null,jdbcClient,Clock.systemUTC(),"status").detailLines();
+        List<String> lines=new CuratedOperationsCli(null,null,jdbcClient,Clock.systemUTC(),"status").detailLines();
         assertThat(lines).contains("tuition rows on curated programs: 1","tuition rows with an academic year: 0");
         assertThat(lines).contains("tuition synthetic-detail-program | INTERNATIONAL | 12000 EUR | billing PER_YEAR | academic year: not stated | source: https://example.invalid/fee");
     }

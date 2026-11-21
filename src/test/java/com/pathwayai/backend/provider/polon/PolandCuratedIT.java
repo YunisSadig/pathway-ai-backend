@@ -146,6 +146,12 @@ class PolandCuratedIT {
         long mlProgram = jdbcTemplate.queryForObject("select e.program_id from program_external_id e where e.scheme='POLON_COURSE' and e.value=?", Long.class, ml.courseUuid());
         assertThat(jdbcTemplate.queryForObject("select official_program_url from degree_program where id=?", String.class, mlProgram)).isEqualTo(ml.programUrl());
         assertThat(jdbcTemplate.queryForObject("select value from program_university_fact where program_id=? and field_name='financial_url'", String.class, program)).isEqualTo(agh.feesUrl());
+        assertThat(jdbcTemplate.queryForObject("select value from program_university_fact where program_id=? and field_name='qualification'", String.class, mlProgram)).isEqualTo("Magister (MSc)");
+        assertThat(jdbcTemplate.queryForObject("select academic_year from program_university_fact where program_id=? and field_name='application_period'", String.class, mlProgram))
+                .as("the year is the one the page prints").isEqualTo("2026-2027");
+        assertThat(jdbcTemplate.queryForObject("select value from program_university_fact where program_id=? and field_name='duration_structure'", String.class, program)).isEqualTo("7 semesters (3,5 years)");
+        assertThat(jdbcTemplate.queryForObject("select academic_year from program_university_fact where program_id=? and field_name='application_period'", String.class, program))
+                .as("AGH prints no year, so none is stored").isNull();
         long putProgram = jdbcTemplate.queryForObject("select e.program_id from program_external_id e where e.scheme='POLON_COURSE' and e.value=?", Long.class, put.courseUuid());
         assertThat(jdbcTemplate.queryForObject("select academic_year from program_university_fact where program_id=? and field_name='tuition_scope'", String.class, putProgram)).isEqualTo("2026-2027");
         assertThat(jdbcTemplate.queryForObject("select value from program_university_fact where program_id=? and field_name='tuition_scope'", String.class, putProgram)).contains("EUR").contains("PLN");

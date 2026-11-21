@@ -27,7 +27,15 @@ public class PolonSources {
      */
     public record Candidate(String key, String university, String courseUuid, String courseInstanceUuid, String entryLevel,
                             String programUrl, String feesUrl, boolean identityConfirmed, String polonName, String officialDomain,
-                            String pageMatch, String feeStrategy, String feeRow) {
+                            String pageMatch, String feeStrategy, String feeRow, String factStrategy) {
+        /** A candidate without a programme-page fact strategy. */
+        public Candidate(String key, String university, String courseUuid, String courseInstanceUuid, String entryLevel,
+                         String programUrl, String feesUrl, boolean identityConfirmed, String polonName, String officialDomain,
+                         String pageMatch, String feeStrategy, String feeRow) {
+            this(key, university, courseUuid, courseInstanceUuid, entryLevel, programUrl, feesUrl, identityConfirmed, polonName,
+                    officialDomain, pageMatch, feeStrategy, feeRow, null);
+        }
+
         /** The page that states this programme's fees: the fees page, else the programme page itself. */
         public String feePageUrl() {
             return feesUrl != null ? feesUrl : programUrl;

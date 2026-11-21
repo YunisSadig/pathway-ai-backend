@@ -44,7 +44,8 @@ public class PolandCuratedCli implements ApplicationRunner {
     static final String NOT_STATED = "Not stated (no official extractor for it yet)";
 
     record Verified(PolonSources.Candidate candidate, PolonParser.Program program, PageFetcher.Result record,
-                    String pageStatus, String feesStatus, Long existingId, List<ExtractedFact> pageFacts) { }
+                    String pageStatus, String feesStatus, Long existingId, List<ExtractedFact> pageFacts,
+                    java.util.Map<ExtractedFact, String> factSource) { }
     record Skipped(PolonSources.Candidate candidate, String reason) { }
 
     private final PolonSources sources;
@@ -111,11 +112,13 @@ public class PolandCuratedCli implements ApplicationRunner {
                 Long existing = jdbc.sql("select program_id from program_external_id where scheme=:s and value=:v")
                         .param("s", PolonParser.SCHEME_COURSE).param("v", c.courseUuid()).query(Long.class).optional().orElse(null);
                 List<ExtractedFact> pageFacts = new ArrayList<>();
+                var factSource = new java.util.IdentityHashMap<ExtractedFact, String>();
                 for (String u : pageUrls(c)) {
                     var r = pages.get(u);
-                    if (r != null) pageFacts.addAll(PolishPageAdapter.extract(r.body(), r.finalUrl(), u, c));
+                    if (r == null) continue;
+                    for (var f : PolishPageAdapter.extract(r.body(), r.finalUrl(), u, c)) { pageFacts.add(f); factSource.put(f, u); }
                 }
-                verified.add(new Verified(c, program, record, page, fees, existing, pageFacts));
+                verified.add(new Verified(c, program, record, page, fees, existing, pageFacts, factSource));
             } catch (RuntimeException e) {
                 skipped.add(new Skipped(c, "not verified: " + e.getMessage()));
             }
@@ -161,12 +164,15 @@ public class PolandCuratedCli implements ApplicationRunner {
             var vals = f.values();
             String field = f.type() == ExtractedFact.FactType.TUITION ? "tuition" : vals.get("field");
             tuition |= f.type() == ExtractedFact.FactType.TUITION || "tuition_scope".equals(field);
-            String src = "official_program_url".equals(field) ? v.candidate().programUrl() : v.candidate().feePageUrl();
+            String src = v.factSource().get(f);
             String year = vals.get("academicYear") == null ? "UNKNOWN_YEAR (the page prints no academic year)" : vals.get("academicYear");
             String shown = f.type() == ExtractedFact.FactType.TUITION ? vals.get("currency") + " " + vals.get("amount") + " " + vals.get("billingPeriod") + " " + vals.get("studentCategory") : vals.get("value");
             System.out.println("  VERIFIED page-fact " + field + "=" + shown + " src=" + src + " read=" + today + " year=" + year);
         }
-        System.out.println("  MISSING tuition=" + (tuition ? "stated (see above)" : NOT_STATED) + "; deadlines=" + NOT_STATED + "; admission requirements=" + NOT_STATED + "; application URL=" + NOT_STATED
+        java.util.function.Predicate<java.util.Set<String>> has = names -> v.pageFacts().stream().anyMatch(f -> f.type() == ExtractedFact.FactType.UNIVERSITY_FACT && names.contains(f.values().get("field")));
+        System.out.println("  MISSING tuition=" + (tuition ? "stated (see above)" : NOT_STATED) + "; deadlines=" + (has.test(java.util.Set.of("application_period")) ? "stated (see above)" : NOT_STATED)
+                + "; admission requirements=" + (has.test(java.util.Set.of("eligibility", "entrance_tests", "selection", "language_tests")) ? "stated (see above)" : NOT_STATED)
+                + "; degree title/campus/mode/duration=" + (has.test(java.util.Set.of("qualification", "campus", "study_mode", "duration_structure")) ? "see above" : NOT_STATED) + "; application URL=" + NOT_STATED
                 + (v.pageFacts().stream().anyMatch(f -> "official_program_url".equals(f.values().get("field"))) ? "" : "; official programme link=" + NOT_STATED));
     }
 
