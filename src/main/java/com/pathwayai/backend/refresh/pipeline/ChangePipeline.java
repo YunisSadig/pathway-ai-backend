@@ -147,7 +147,9 @@ public class ChangePipeline {
     private Long stage(SourceMonitor m, ExtractedFact f, String oldValue, String risk, String status, String reason,
                        String parserVersion, Instant now, boolean decided, String dedupeSalt) {
         String newValue = f.canonicalValue();
-        String key = PageCanonicalizer.sha256(m.sourceId() + "|" + f.type() + "|" + f.key() + "|" + newValue
+        // a page shared by several programmes (one Polish fees page) states the same fact for each: the programme is part of the key
+        String shared = com.pathwayai.backend.provider.polon.PolishPageAdapter.NAME.equals(m.adapterName()) && m.programId() != null ? "|program=" + m.programId() : "";
+        String key = PageCanonicalizer.sha256(m.sourceId() + "|" + f.type() + "|" + f.key() + "|" + newValue + shared
                 + (dedupeSalt.isEmpty() ? "" : "|" + dedupeSalt));
         return jdbc.sql("""
                 insert into staged_change (source_id, university_id, program_id, fact_type, fact_key, old_value, new_value,
