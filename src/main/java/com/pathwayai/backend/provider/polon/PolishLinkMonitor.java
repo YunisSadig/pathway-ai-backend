@@ -62,6 +62,8 @@ public class PolishLinkMonitor {
                     return store.record(program, type, url, "PENDING_REVIEW", fin, null, "redirect leaves the university's own domain", now, null);
                 if (type.equals("PROGRAM_PAGE") && !stillTheProgramme(r.body(), fin, candidate.programUrl(), candidate))
                     return store.record(program, type, url, "STALE", fin, null, "page no longer shows the reviewed programme (final " + fin + ")", now, null);
+                if (type.equals("ADMISSIONS_PAGE") && !stillTheAdmissionsPage(r.body(), fin, candidate))
+                    return store.record(program, type, url, "STALE", fin, null, "page no longer carries the reviewed admissions title (final " + fin + ")", now, null);
                 return store.record(program, type, url, fin.equals(url) ? "VERIFIED" : "REDIRECTED_VERIFIED", fin, null,
                         fin.equals(url) ? null : "redirected to " + fin + "; stored URL unchanged until a person confirms", now, 0);
             }
@@ -81,6 +83,12 @@ public class PolishLinkMonitor {
                 return store.record(program, type, url, "SOURCE_UNAVAILABLE", null, null, r.kind() + ": " + r.error(), now, null);
             }
         }
+    }
+
+    /** The stored admissions page must still carry the title it was stored under. */
+    static boolean stillTheAdmissionsPage(String html, String finalUrl, PolonSources.Candidate candidate) {
+        return candidate.admissionsUrl() != null && PolishPageAdapter.extract(html, finalUrl, candidate.admissionsUrl(), candidate).stream()
+                .anyMatch(f -> "official_admissions_url".equals(f.values().get("field")));
     }
 
     /** The stored programme page must still pass the rule it was stored under (exactly one h1 naming the programme). */

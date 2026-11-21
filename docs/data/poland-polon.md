@@ -35,8 +35,14 @@ assessment: [country-candidates-2026-11-19.md](country-candidates-2026-11-19.md)
   word for word; its last date, 31 July 2026, makes the fact HISTORICAL). **SGH International Business** mode, duration and the tuition sentence (no year
   or applicant category printed, so none stored). Polish links get weekly health checks (`PolishLinkMonitor`, run by `--app.curated.command=links`, table
   `program_link_status`): never replaced automatically, a 403 or timeout never marks a link broken.
-- **Still Not stated:** UW fees (merged-cell PDF), UEK (unsupported), PW/WUT/SGH-bachelor (identity unconfirmed), deadlines and requirements for programmes whose
-  pages do not publish them or point to shared or unread pages (AGH, TUL, PUEB, PUT 404/PDF), scholarships, application URL, admissions URL. Nothing is guessed.
+- **Phase 2c (2026-11-21):** `officialAdmissionsUrl` for AGH, TUL, PUT, UW, SGH and PUEB (candidate fields `admissionsUrl` + `admissionsTitle`: stored only
+  if the page loads from the university domain and still carries the reviewed title; checked weekly as `ADMISSIONS_PAGE`). Requirements from official pages through
+  `extras` in `curated-poland.json` (verbatim section, its own page as source, a level guard so a bachelor page never feeds a master's programme, a year only if
+  the page prints one): AGH bachelor (deadline statement with the 2027/2028 year, 300-point rule, language-document rule, documents), TUL (English B2 rule for every
+  English programme, bachelor entrance exam), PUEB masters page (documents, accepted English certificates). Scholarship pages that name no degree level (AGH, TUL, PUEB
+  undergraduate-only sentence) are not stored. UW fees: see `poland-gap-analysis.md` (PDF needs a library the project does not have; not stored).
+- **Still Not stated:** UW fees (PDF), UEK (unsupported), PW/WUT/SGH-bachelor (identity unconfirmed), TUL schedules (two cycles mixed on one page), SGH
+  requirements (sub-pages not read), scholarships, application URL. Nothing is guessed.
 - Page facts go through the normal pipeline (monitor bound to the university, program null, facts per programme slug), the POL-on course id
   is the education identifier, and the URL facts must be https pages of the university's own registered domain (`PolonSources.owned`).
 - Identity: a candidate whose POL-on name is Polish or differs from the university page has `identityConfirmed=false` and is never imported

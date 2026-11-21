@@ -59,14 +59,22 @@ public class PolishPageAdapter implements ContextualScopedExtractionAdapter {
     public static List<ExtractedFact> extract(String html, String finalUrl, String registeredUrl, PolonSources.Candidate c) {
         boolean programPage = registeredUrl.equals(c.programUrl());
         boolean feePage = registeredUrl.equals(c.feePageUrl());
-        if (!c.identityConfirmed() || c.pageMatch() == null || (!programPage && !feePage) || !PolonSources.owned(finalUrl, c.university()))
+        boolean admissionsPage = c.admissionsUrl() != null && registeredUrl.equals(c.admissionsUrl());
+        var extras = c.extras().stream().filter(e -> registeredUrl.equals(e.url())).toList();
+        if (!c.identityConfirmed() || (!programPage && !feePage && !admissionsPage && extras.isEmpty()) || !PolonSources.owned(finalUrl, c.university()))
             return List.of();
         Document doc = Jsoup.parse(html, finalUrl);
-        boolean ownPage = isProgrammePage(doc, c);
+        String title = norm(doc.title()).toLowerCase(Locale.ROOT);
+        boolean ownPage = c.pageMatch() != null && isProgrammePage(doc, c);
         String fullText = norm(doc.text()); // before navigation is removed: the registration year lives in the page header
         doc.select("nav,header,footer,script,style").remove();
-        if (!norm(doc.text()).toLowerCase(Locale.ROOT).contains(c.pageMatch().toLowerCase(Locale.ROOT))) return List.of();
+        String bodyText = norm(doc.text());
         List<ExtractedFact> facts = new ArrayList<>();
+        // the official admissions page: it must still carry the reviewed page title (a 200 on another page proves nothing)
+        if (admissionsPage && c.admissionsTitle() != null && title.contains(c.admissionsTitle().toLowerCase(Locale.ROOT)))
+            facts.add(fact(c, "official_admissions_url", "", finalUrl, null));
+        for (var e : extras) extraFact(bodyText, fullText, c, e).ifPresent(facts::add);
+        if (c.pageMatch() == null || !bodyText.toLowerCase(Locale.ROOT).contains(c.pageMatch().toLowerCase(Locale.ROOT))) return facts;
         if (programPage && ownPage) facts.add(fact(c, "official_program_url", "", finalUrl, null)); // an offer list is not the programme's page
         if (programPage && c.factStrategy() != null) {
             switch (c.factStrategy()) {
@@ -84,6 +92,25 @@ public class PolishPageAdapter implements ContextualScopedExtractionAdapter {
             if ("UEP_LINES".equals(c.feeStrategy())) uepTuition(doc, c).ifPresent(facts::add);
         }
         return facts;
+    }
+
+    /**
+     * A requirement section copied word for word from a reviewed page. The section exists only if its pattern matches, the page also states
+     * the level guard (`requires`, e.g. "Bachelor"), and the text fits the bound; a year is stored only if the page prints it.
+     */
+    static java.util.Optional<ExtractedFact> extraFact(String bodyText, String fullText, PolonSources.Candidate c, PolonSources.Extra e) {
+        if (e.requires() != null && !Pattern.compile(e.requires()).matcher(bodyText).find()) return java.util.Optional.empty();
+        var m = Pattern.compile(e.regex()).matcher(bodyText);
+        if (!m.find()) return java.util.Optional.empty();
+        String value = m.group(1).strip();
+        if (value.isEmpty() || value.length() > Math.min(e.max() > 0 ? e.max() : 1500, 6000)) return java.util.Optional.empty();
+        String year = null;
+        if (e.yearRegex() != null) {
+            var y = Pattern.compile(e.yearRegex()).matcher(fullText);
+            if (y.find() && Integer.parseInt(y.group(2)) == Integer.parseInt(y.group(1)) + 1) year = y.group(1) + "-" + y.group(2);
+        }
+        String scope = e.field().equals("application_period") ? (year != null ? year : "year-not-stated") : "";
+        return java.util.Optional.of(fact(c, e.field(), scope, value, year));
     }
 
     /**

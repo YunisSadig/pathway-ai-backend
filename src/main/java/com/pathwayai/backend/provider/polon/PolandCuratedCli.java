@@ -109,6 +109,10 @@ public class PolandCuratedCli implements ApplicationRunner {
                 String page = c.programUrl() == null ? "NOT STATED (no live official programme page found)"
                         : !supported ? "NOT STATED (university pages unsupported: connection resets on repeated reads)" : check(c.programUrl(), c, pages);
                 String fees = c.feesUrl() == null ? "none listed" : !supported ? "NOT STATED (unsupported)" : check(c.feesUrl(), c, pages);
+                if (supported) { // admissions and requirement pages: read now so the plan (and its fingerprint) includes what they state
+                    if (c.admissionsUrl() != null) check(c.admissionsUrl(), c, pages);
+                    for (var x : c.extras()) check(x.url(), c, pages);
+                }
                 Long existing = jdbc.sql("select program_id from program_external_id where scheme=:s and value=:v")
                         .param("s", PolonParser.SCHEME_COURSE).param("v", c.courseUuid()).query(Long.class).optional().orElse(null);
                 List<ExtractedFact> pageFacts = new ArrayList<>();
@@ -132,6 +136,8 @@ public class PolandCuratedCli implements ApplicationRunner {
         var urls = new java.util.LinkedHashSet<String>();
         if (c.programUrl() != null) urls.add(c.programUrl());
         if (c.feePageUrl() != null) urls.add(c.feePageUrl());
+        if (c.admissionsUrl() != null) urls.add(c.admissionsUrl());
+        for (var e : c.extras()) urls.add(e.url());
         return List.copyOf(urls);
     }
 
