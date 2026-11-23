@@ -76,6 +76,7 @@ public class PolandCuratedCli implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        if (command.startsWith("uw-fees-pdf")) return; // handled by UwFeePdfCli
         if (!List.of("preview", "apply").contains(command))
             throw new IllegalArgumentException("Poland command must be preview or apply");
         var plan = plan();

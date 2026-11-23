@@ -116,3 +116,13 @@ becomes incomplete. "None yet" / "not taken" / "not sure" are explicit answers, 
 **Avatar.** Stored in PostgreSQL as a server-produced 256x256 JPEG (type decided from magic bytes, size and pixel limits before decoding, re-encoded, metadata
 removed); durable and backed up, no extra service and no cost. Object storage remains an option if volume ever demands it.
 **Future AI.** The structure is what a future advisor reads; no model, score or prediction exists. Profiles are not training data.
+
+## Apache PDFBox 3.0.8 (2026-11-23): reading the University of Warsaw fee PDF
+**Decision.** `org.apache.pdfbox:pdfbox:3.0.8` (pinned, Apache-2.0) is the only PDF reader in the project. It is used by one operator command
+(`--app.poland.command=uw-fees-pdf-preview|uw-fees-pdf-stage`, `provider/polon/UwFeePdfCli`), never by a monitor.
+**Rule.** A fact read from a PDF is never applied automatically. The command writes `staged_change` rows with status `PENDING_REVIEW` only, each carrying the
+PDF URL (the source), the page number, the exact row text and the PDF's SHA-256; a person approves or rejects each (`review-approve` / `review-reject`).
+No `source_monitor` exists for a PDF, so nothing scheduled reads it. `PageFetcher.fetchPdf` applies the same URL guard, robots.txt, throttling, size cap and
+redirect checks as every other read; the generic `fetch` still refuses `application/pdf`.
+**Why.** The PDF is a merged-cell table: a fee is attributed to a programme by position (vertical alignment with the name, horizontal column for the cycle and
+the EU/EFTA versus non-EU/EFTA sub-column). That is approximate, so only a row that passes every guard is staged and a person confirms it against the PDF.
