@@ -412,14 +412,6 @@
         "max": 3600,
         "requires": "first-cycle, second-cycle or long-cycle studies was English",
         "yearRegex": null
-      },
-      {
-        "url": "https://www.sgh.waw.pl/en/admissions-step-step-graduate-studies-international-applicants",
-        "field": "application_period",
-        "regex": "(Creating a personal account in the Internet Registration System [(]ISR[)] will be possible in June 2027[.].*?\\(until 3:00 p[.]m[.]\\)[.])",
-        "max": 500,
-        "requires": "Graduate studies [(]second-cycle[)] last four semesters",
-        "yearRegex": null
       }
     ]
   },
