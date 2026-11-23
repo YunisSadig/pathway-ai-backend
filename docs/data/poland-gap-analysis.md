@@ -5,7 +5,7 @@ POL-on columns, the official POL-on / RAD-on record. A Finnish programme page ca
 degree title, study mode, duration, campus, tuition by applicant category, application period, eligibility / selection / entrance
 test, documents, language requirement, scholarships, and a link health status (`PROGRAM_PAGE`, `ADMISSIONS_PAGE`).
 
-Legend. **live**: published (phase 2a/2b or POL-on). **2c**: added in phase 2c. **found**: the official page states it but it is not
+Legend. **live**: published (phase 2a/2b or POL-on). **2c**: added in phase 2c. **2d**: added 2026-11-23 (SGH sub-pages). **found**: the official page states it but it is not
 level-specific, is a link only, or sits in a layout that cannot be read unambiguously (reason given); not extracted. **n/p**: the
 university's pages do not publish it. **unsupp.**: source unsupported (never bypassed).
 
@@ -17,7 +17,7 @@ university's pages do not publish it. **unsupp.**: source unsupported (never byp
 | PUT Artificial Intelligence (B), (M) | **2c** `/en/admission-for-international` | n/p: 404 / PDF | POL-on | live: verbatim, 2026/27 | n/p | n/p | n/p | found: "free of charge / scholarship" page, not read | **2c** `ADMISSIONS_PAGE` |
 | UW Machine Learning (M) | **2c** `rekrutacja.uw.edu.pl/en/` | live (IRK page) | live: Magister (MSc), full-time, Ochota Campus | n/p on page: fees only in a PDF (below) | live: exam and rounds 2026 (ended) | live: eligibility, 45% minimum, written exam | live: B2 rules | n/p | live `PROGRAM_PAGE`; **2c** `ADMISSIONS_PAGE` |
 | UW Data Science and Business Analytics (M); Finance, Intl Investment and Accounting (B) | **2c** same | live (WNE pages) | n/p | n/p: PDF (below) | n/p: only an older (2025) IRK unit page is linked | n/p | n/p | n/p | live `PROGRAM_PAGE`; **2c** `ADMISSIONS_PAGE` |
-| SGH International Business (M) | **2c** graduate admission page for international applicants | live | live: full-time, 2 years (4 semesters) | live: sentence "2400 EUR ... 2450 EUR", no year | n/p: schedule is on a Polish-only subpage | found: sub-pages (documents, language, schedule) not read | found: sub-page not read | found: generic link | live `PROGRAM_PAGE`; **2c** `ADMISSIONS_PAGE` |
+| SGH International Business (M) | **2c** graduate admission page for international applicants | live | live: full-time, 2 years (4 semesters) | live: sentence "2400 EUR ... 2450 EUR", no year | **2d** main-round registration "from June 10, 2027 ... to July 22, 2027" (step-by-step page; no academic year is printed beside it, so none is stored; the 2026/27 schedule page is a finished round, not stored) | **2d** documents list (required-documents page, "graduate studies"); selection basis and places not stated for the English programme (the thresholds and entrance-exam pages are for Polish-taught programmes) | **2d** accepted English certificates and the B2 minimum (page states it for first-, second- and long-cycle) | found: generic link | live `PROGRAM_PAGE`; **2c** `ADMISSIONS_PAGE` |
 | UEK International Business (B), Global Finance and Accounting (B), Financial Analytics (M) | unsupp. | unsupp. | POL-on | unsupp. | unsupp. | unsupp. | unsupp. | unsupp. | unsupp. |
 | PUEB Master in International Business (M) | **2c** masters-level page | n/p: landing page | POL-on | live: PLN 7350/semester, no year | found: calendar months only, no year | **2c** documents list (masters-level page) | **2c** accepted English certificates (B2) | n/p: the page's scholarship sentence concerns first-year undergraduates | **2c** `ADMISSIONS_PAGE` |
 

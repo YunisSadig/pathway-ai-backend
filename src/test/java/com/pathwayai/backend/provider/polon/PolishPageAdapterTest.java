@@ -156,6 +156,33 @@ class PolishPageAdapterTest {
     }
 
     @Test
+    void sghRequirementsComeFromTheOfficialGraduateSubPagesWithTheLevelGuard() throws IOException {
+        var c = candidate("szkola-international-business-master");
+        var base = "https://www.sgh.waw.pl/en/";
+        var docs = one(read(c.key(), base + "required-documents-graduate-studies-international-applicants", "sgh-required-documents-graduate-2026-11-23.html"), FactType.UNIVERSITY_FACT, "documents").values();
+        System.out.println("SGH_DOCS " + docs.get("value"));
+        assertThat(docs.get("value")).startsWith("1. Signed application form").contains("Academic degree diploma").contains("Document confirming your knowledge of English")
+                .endsWith("courier.");
+        assertThat(docs).doesNotContainKey("academicYear");
+        var lang = one(read(c.key(), base + "how-demonstrate-your-proficiency-english", "sgh-english-proficiency-2026-11-23.html"), FactType.UNIVERSITY_FACT, "language_tests").values();
+        System.out.println("SGH_LANG " + lang.get("value"));
+        assertThat(lang.get("value")).startsWith("Below is the list of accepted language certificates:").contains("IELTS").contains("at least 5,5 points").endsWith("provided above.");
+        var period = one(read(c.key(), base + "admissions-step-step-graduate-studies-international-applicants", "sgh-admissions-step-graduate-2026-11-23.html"), FactType.UNIVERSITY_FACT, "application_period").values();
+        System.out.println("SGH_PERIOD " + period.get("value"));
+        assertThat(period.get("value")).contains("June 10, 2027").contains("July 22, 2027");
+        assertThat(period).as("the page prints no academic year beside the dates: none is stored").doesNotContainKey("academicYear");
+        assertThat(period).containsEntry("scope", "year-not-stated");
+    }
+
+    @Test
+    void sghStepPageWithoutTheGraduateLevelStatementStoresNothing() throws IOException {
+        var c = candidate("szkola-international-business-master");
+        String url = "https://www.sgh.waw.pl/en/admissions-step-step-graduate-studies-international-applicants";
+        String undergrad = page("sgh-admissions-step-graduate-2026-11-23.html").replace("Graduate studies (second-cycle) last four semesters", "Undergraduate studies last six semesters");
+        assertThat(PolishPageAdapter.extract(undergrad, url, url, c)).noneMatch(f -> "application_period".equals(f.values().get("field")));
+    }
+
+    @Test
     void linkMonitorOnlyVerifiesAPageThatStillIsTheReviewedProgramme() throws IOException {
         var ml = candidate("uniwersytet-machine-learning-master");
         assertThat(PolishLinkMonitor.stillTheProgramme(page("uw-irk-ml-programme.html"), ml.programUrl(), ml.programUrl(), ml)).isTrue();

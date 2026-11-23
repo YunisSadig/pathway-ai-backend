@@ -396,7 +396,32 @@
     "factStrategy": "SGH_DL",
     "admissionsUrl": "https://www.sgh.waw.pl/en/educational-offer/admission-to-graduate-studies-in-english-for-international-applicants",
     "admissionsTitle": "Admission to graduate studies in English for international applicants",
-    "extras": []
+    "extras": [
+      {
+        "url": "https://www.sgh.waw.pl/en/required-documents-graduate-studies-international-applicants",
+        "field": "documents",
+        "regex": "(1[.] Signed application form printed from the Internet Registration System[.].*?we do not accept documents sent by postal services or courier[.])",
+        "max": 3200,
+        "requires": "Required documents for graduate studies for international applicants",
+        "yearRegex": null
+      },
+      {
+        "url": "https://www.sgh.waw.pl/en/how-demonstrate-your-proficiency-english",
+        "field": "language_tests",
+        "regex": "(Below is the list of accepted language certificates:.*?minimum required level of B2 from the list provided above[.])",
+        "max": 3600,
+        "requires": "first-cycle, second-cycle or long-cycle studies was English",
+        "yearRegex": null
+      },
+      {
+        "url": "https://www.sgh.waw.pl/en/admissions-step-step-graduate-studies-international-applicants",
+        "field": "application_period",
+        "regex": "(Creating a personal account in the Internet Registration System [(]ISR[)] will be possible in June 2027[.].*?\\(until 3:00 p[.]m[.]\\)[.])",
+        "max": 500,
+        "requires": "Graduate studies [(]second-cycle[)] last four semesters",
+        "yearRegex": null
+      }
+    ]
   },
   {
     "key": "uniwersytet-data-science-and-business-analytics-master",
