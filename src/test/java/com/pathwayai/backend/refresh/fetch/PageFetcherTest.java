@@ -47,6 +47,19 @@ class PageFetcherTest {
     }
 
     @Test
+    void aPdfIsRefusedByTheGenericFetchAndReadLosslesslyOnlyByTheExplicitPdfFetch() {
+        byte[] bytes = {'%', 'P', 'D', 'F', (byte) 0xE2, (byte) 0xE3, (byte) 0xCF, (byte) 0xD3};
+        var response = new HttpTransport.Response(200, Map.of("content-type", "application/pdf"), bytes, false);
+        transport.on(PAGE, response, response);
+        var generic = fetcher.fetch(PAGE, null, null);
+        assertThat(generic.kind()).isEqualTo(Kind.FAILED);
+        assertThat(generic.error()).contains("unsupported content type");
+        var pdf = fetcher.fetchPdf(PAGE);
+        assertThat(pdf.kind()).isEqualTo(Kind.OK);
+        assertThat(pdf.body().getBytes(java.nio.charset.StandardCharsets.ISO_8859_1)).isEqualTo(bytes);
+    }
+
+    @Test
     void fetchesAPageAndReportsItsValidators() {
         transport.on(PAGE, FakeTransport.html("<main>hello</main>", Map.of("etag", "\"v1\"", "last-modified", "Mon, 01 Jan 2026 00:00:00 GMT")));
         var r = fetcher.fetch(PAGE, null, null);

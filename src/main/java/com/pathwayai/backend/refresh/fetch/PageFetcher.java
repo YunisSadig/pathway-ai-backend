@@ -68,6 +68,19 @@ public class PageFetcher {
     }
 
     public Result fetch(String url, String etag, String lastModified) {
+        return fetch(url, etag, lastModified, false);
+    }
+
+    /**
+     * One official PDF, under exactly the same URL guard, robots.txt, throttling, size cap and redirect checks. Only an
+     * explicit operator command calls this (no monitor fetches a PDF). The bytes come back in {@code body} decoded as
+     * ISO-8859-1, which is lossless: use {@code body().getBytes(StandardCharsets.ISO_8859_1)}.
+     */
+    public Result fetchPdf(String url) {
+        return fetch(url, null, null, true);
+    }
+
+    private Result fetch(String url, String etag, String lastModified, boolean pdf) {
         long start = System.nanoTime();
         try {
             String current = url;
@@ -88,7 +101,7 @@ public class PageFetcher {
                     return Result.of(Kind.FAILED, 0, "robots.txt Crawl-delay of " + robots.crawlDelay(uri.getHost()).toSeconds()
                             + " s exceeds the " + MAX_CRAWL_DELAY.toSeconds() + " s this crawler will wait; not fetched, never sped up", ms(start));
                 }
-                Result outcome = requestWithRetries(uri, hop == 0 ? etag : null, hop == 0 ? lastModified : null, start, redirect);
+                Result outcome = requestWithRetries(uri, hop == 0 ? etag : null, hop == 0 ? lastModified : null, start, redirect, pdf);
                 if (outcome != null) {
                     return outcome;
                 }
@@ -101,7 +114,8 @@ public class PageFetcher {
         }
     }
 
-    private Result requestWithRetries(URI uri, String etag, String lastModified, long start, String[] redirectOut)
+    private Result requestWithRetries(URI uri, String etag, String lastModified, long start, String[] redirectOut,
+                                    boolean pdf)
             throws InterruptedException {
         IOException lastIo = null;
         int lastStatus = 0;
@@ -112,7 +126,7 @@ public class PageFetcher {
             throttle(uri.getHost());
             Map<String, String> headers = new HashMap<>();
             headers.put("User-Agent", props.userAgent());
-            headers.put("Accept", "text/html,application/xhtml+xml,application/json;q=0.9,text/plain;q=0.5");
+            headers.put("Accept", pdf ? "application/pdf" : "text/html,application/xhtml+xml,application/json;q=0.9,text/plain;q=0.5");
             if (etag != null) {
                 headers.put("If-None-Match", etag);
             }
@@ -157,10 +171,10 @@ public class PageFetcher {
                 return Result.of(Kind.FAILED, s, "response larger than " + props.maxBodyBytes() + " bytes", ms(start));
             }
             String type = r.header("content-type") == null ? "" : r.header("content-type").split(";")[0].trim().toLowerCase(Locale.ROOT);
-            if (!TEXT_TYPES.contains(type)) {
+            if (pdf ? !"application/pdf".equals(type) : !TEXT_TYPES.contains(type)) {
                 return Result.of(Kind.FAILED, s, "unsupported content type: " + type, ms(start));
             }
-            String body = new String(r.body(), StandardCharsets.UTF_8);
+            String body = new String(r.body(), pdf ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8);
             if (type.contains("html") && CHALLENGE.matcher(body.substring(0, Math.min(body.length(), 4000))).find()) {
                 return Result.of(Kind.BLOCKED, s, "bot-protection challenge page; not bypassed", ms(start));
             }

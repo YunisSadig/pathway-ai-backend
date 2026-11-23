@@ -26,7 +26,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Preview and apply against PostgreSQL with recorded POL-on responses and a faked network; Finland data is never touched. */
-@SpringBootTest(properties = {"app.refresh.min-host-interval-ms=0", "app.refresh.extra-approved-hosts=radon.nauka.gov.pl,www.international.agh.edu.pl,irk.uw.edu.pl,put.poznan.pl,apply.p.lodz.pl"})
+@SpringBootTest(properties = {"app.refresh.min-host-interval-ms=0", "app.refresh.extra-approved-hosts=radon.nauka.gov.pl,www.international.agh.edu.pl,irk.uw.edu.pl,rekrutacja.uw.edu.pl,put.poznan.pl,apply.p.lodz.pl"})
 @Import({TestcontainersConfiguration.class, RefreshTestConfig.class})
 @Transactional
 class PolandCuratedIT {
@@ -100,6 +100,36 @@ class PolandCuratedIT {
         cli("apply", fingerprint).run(new DefaultApplicationArguments()); // idempotent
         assertThat(count("select count(*) from degree_program")).isEqualTo(14);
         assertThat(count("select count(*) from program_external_id where scheme='POLON_COURSE'")).isEqualTo(14);
+    }
+
+
+    UwFeePdfCli pdfCli(String command, String fingerprint) {
+        return new UwFeePdfCli(sources, fetcher, jdbc, clock, command, fingerprint);
+    }
+
+    @Test
+    void uwFeePdfRowsAreOnlyEverQueuedForReviewNeverPublishedAndStagingIsIdempotent() throws Exception {
+        cli("apply", cli("preview", "").plan().fingerprint()).run(new DefaultApplicationArguments());
+        transport.reset(UwFeePdfCli.PDF_URL, new com.pathwayai.backend.refresh.fetch.HttpTransport.Response(200,
+                java.util.Map.of("content-type", "application/pdf"), UwFeePdfTest.pdf(), false));
+        long tuitionBefore = count("select count(*) from tuition_fee");
+        var out = new java.io.ByteArrayOutputStream();
+        var saved = System.out;
+        System.setOut(new java.io.PrintStream(out, true, java.nio.charset.StandardCharsets.UTF_8));
+        try { pdfCli("uw-fees-pdf-preview", "").run(new DefaultApplicationArguments()); } finally { System.setOut(saved); }
+        String text = out.toString(java.nio.charset.StandardCharsets.UTF_8);
+        assertThat(text).contains("UWPDF_PREVIEW no writes").contains("items=1");
+        assertThat(count("select count(*) from staged_change where parser_version like 'uw-fees-pdf%'")).as("preview writes nothing").isZero();
+        String fingerprint = text.replaceAll("(?s).*fingerprint=([0-9a-f]{64}).*", "$1").trim();
+        assertThatThrownBy(() -> pdfCli("uw-fees-pdf-stage", "wrong").run(new DefaultApplicationArguments())).hasMessageContaining("fingerprint");
+
+        pdfCli("uw-fees-pdf-stage", fingerprint).run(new DefaultApplicationArguments());
+        pdfCli("uw-fees-pdf-stage", fingerprint).run(new DefaultApplicationArguments()); // idempotent
+        assertThat(count("select count(*) from staged_change where fact_type='TUITION'")).isEqualTo(1);
+        assertThat(count("select count(*) from staged_change where parser_version like 'uw-fees-pdf%' and status='PENDING_REVIEW' and risk='HIGH' and decided_at is null and decided_by is null")).isEqualTo(1);
+        assertThat(count("select count(*) from staged_change where reason like '%PDF page 2, exact row text%3,300 EUR%'")).isEqualTo(1);
+        assertThat(count("select count(*) from tuition_fee")).as("nothing is published").isEqualTo(tuitionBefore);
+        assertThat(count("select count(*) from source_monitor m join source s on s.id=m.source_id where s.url like '%.pdf'")).as("no monitor reads the PDF").isZero();
     }
 
     String slugs(String university) {

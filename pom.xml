@@ -116,6 +116,12 @@
 			<artifactId>jsoup</artifactId>
 			<version>1.24.1</version>
 		</dependency>
+		<!-- Reads the official university fee PDF (operator command only; its rows are never applied automatically). Pinned. -->
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>3.0.8</version>
+		</dependency>
 	</dependencies>
 
 	<build>

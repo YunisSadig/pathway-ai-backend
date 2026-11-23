@@ -21,11 +21,16 @@ university's pages do not publish it. **unsupp.**: source unsupported (never byp
 | UEK International Business (B), Global Finance and Accounting (B), Financial Analytics (M) | unsupp. | unsupp. | POL-on | unsupp. | unsupp. | unsupp. | unsupp. | unsupp. | unsupp. |
 | PUEB Master in International Business (M) | **2c** masters-level page | n/p: landing page | POL-on | live: PLN 7350/semester, no year | found: calendar months only, no year | **2c** documents list (masters-level page) | **2c** accepted English certificates (B2) | n/p: the page's scholarship sentence concerns first-year undergraduates | **2c** `ADMISSIONS_PAGE` |
 
-## UW fees (blocked, nothing stored)
-The official PDF (`rekrutacja.uw.edu.pl/files/pdf/tuition_fees_2026-2027_05.10.2026.pdf`, 193 text lines) lays fees out in merged cells (rows
-of programme names beside two columns of amounts per cycle). Reading it at all needs a PDF text library (none is in the project; dependencies
-need an explicit decision) and the layout is positional, so even then a verbatim row could pair a fee with the wrong programme. UW fees stay
-Not stated; the fees page link is stored as `financial_url`.
+## UW fees (PDF: queued for review, nothing published)
+The official PDF (`rekrutacja.uw.edu.pl/files/pdf/tuition_fees_2026-2027_05.10.2026.pdf`, 3 pages, Last-Modified 2026-10-05) lays fees out in merged cells. Since
+2026-11-23 `--app.poland.command=uw-fees-pdf-preview|uw-fees-pdf-stage` reads it with Apache PDFBox (pinned 3.0.8; see architecture-decisions.md) and
+reconstructs each row by position. **A PDF fee is never applied automatically**: `stage` writes only `PENDING_REVIEW` items (source = the PDF URL, reason = page
+number + exact row text + PDF SHA-256) and a person approves or rejects each with `--app.refresh.command=review-approve|review-reject`. There is no monitor for
+the PDF. A row is staged only if the year (page header), the cycle column (1st = bachelor, 2nd = master, must match the programme level), the per-year
+header and a printed non-EU/EFTA sub-column header all agree and exactly one amount sits in that sub-column; otherwise the preview prints "Not stated" and the
+reason. Result on 2026-11-23: Machine Learning (M) is staged; Data Science and Business Analytics (M) and Finance, International Investment and Accounting (B)
+print one centred amount with no applicant-category header, so their category is Not stated and nothing is staged. EU/EFTA "free of charge" is not stored.
+The fees page link stays stored as `financial_url`.
 
 ## Not importable yet (6 candidates, identity unconfirmed)
 WUT x4 and SGH x2: the POL-on name is Polish and a person has not confirmed the mapping. No facts are read for them. PW has no imported programme, so
